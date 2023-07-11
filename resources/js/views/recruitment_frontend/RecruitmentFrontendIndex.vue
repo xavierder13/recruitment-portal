@@ -1442,6 +1442,18 @@ export default {
       how_learn_2: { required },
       myFileInput: { required },
     },
+    highschool: {
+      school: { required },
+      sy_attended: { required },
+      honors: { required },
+    },
+    college: {
+      school: { required },
+      course: { required },
+      major: { required },
+      sy_attended: { required },
+      honors: { required },
+    },
   },
 
   data() {
