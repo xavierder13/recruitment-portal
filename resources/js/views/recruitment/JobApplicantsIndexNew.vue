@@ -98,6 +98,7 @@
               <v-icon
                 small
                 color="red"
+                v-if="userPermissions.jobapplicants_delete"
                 @click="deleteApplicant(item.id)"
               >
                 mdi-delete
@@ -343,7 +344,7 @@
                       dark
                       text
                       @click="updateStatus(status = 1)"
-                      v-if="applicant.status < 1"
+                      v-if="applicant.status < 1 && hasPermission('jobapplicants-approve')"
                     >
                       Approve
                     </v-btn>
@@ -351,7 +352,7 @@
                       dark
                       text
                       @click="updateStatus(status = 2)"
-                      v-if="applicant.status < 1"
+                      v-if="applicant.status < 1 && hasPermission('jobapplicants-approve')"
                     >
                       Deny
                     </v-btn>
@@ -360,7 +361,7 @@
                       dark
                       text
                       @click="updateStatus(status = 3)"
-                      v-if="applicant.status === 1"
+                      v-if="applicant.status === 1 && hasPermission('jobapplicants-hire')"
                     >
                       Hired
                     </v-btn>
@@ -368,7 +369,7 @@
                       dark
                       text
                       @click="updateStatus(status = 4)"
-                      v-if="applicant.status === 1"
+                      v-if="applicant.status === 1 && hasPermission('jobapplicants-hire')"
                     >
                       Failed
                     </v-btn>
@@ -617,7 +618,7 @@
 import axios from "axios";
 import { validationMixin } from "vuelidate";
 import { required, maxLength, email } from "vuelidate/lib/validators";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 
 export default {
 
@@ -738,16 +739,16 @@ export default {
       }
     },
 
-    getBranch() {
-      axios.get("/api/branch/index").then(
-        (response) => {
-          this.branches = response.data.branches;
-        },
-        (error) => {
-          this.isUnauthorized(error);
-        }
-      );
-    },
+    // getBranch() {
+    //   axios.get("/api/branch/index").then(
+    //     (response) => {
+    //       this.branches = response.data.branches;
+    //     },
+    //     (error) => {
+    //       this.isUnauthorized(error);
+    //     }
+    //   );
+    // },
 
     getApplicants() {
       this.v_table = false;
@@ -759,6 +760,7 @@ export default {
           this.table_loader = false;
           this.loading = false;
           this.job_applicants = response.data.job_applicants;
+          this.branches = response.data.branches;
         },
         (error) => {
           this.isUnauthorized(error);
@@ -994,7 +996,7 @@ export default {
     downloadfile(applicant_file){
       const file = applicant_file;
 
-      let url = "http://127.0.0.1:8000" + "/wysiwyg/resume_files/" + file;
+      let url = "http://192.168.1.48:8000/wysiwyg/resume_files/" + file;
 
       // let url = "https://recruitmentportal.addessa.com" + "/wysiwyg/resume_files/" + file;    
       window.open(url, 'Download');
@@ -1043,6 +1045,7 @@ export default {
     },
 
     ...mapState("userRolesPermissions", ["userRoles", "userPermissions"]),
+    ...mapGetters("userRolesPermissions", ["hasRole", "hasPermission"]),
   },
   mounted() {
     axios.defaults.headers.common["Authorization"] =
@@ -1050,7 +1053,7 @@ export default {
     this.websocket();
 
     this.getApplicants();
-    this.getBranch();
+    // this.getBranch();
   }
 };
 </script>

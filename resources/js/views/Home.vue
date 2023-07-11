@@ -141,12 +141,7 @@
           </v-list-item> -->
           <v-list-item 
             link to="/jobapplicants/index-new"
-            v-if="
-              userPermissions.jobapplicants_change_status &&
-              userPermissions.jobapplicants_view &&
-              userPermissions.jobapplicants_delete &&
-              userPermissions.jobapplicants_export
-            "
+            v-if="userPermissions.jobapplicants_list"
           >
             <v-list-item-content>
               <v-list-item-title>Job Applicants</v-list-item-title>
