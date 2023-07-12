@@ -96,7 +96,6 @@
             v-if="table_loader"
           >
             <v-skeleton-loader
-              v-bind="attrs"
               type="table-thead, image, table-tfoot"
             ></v-skeleton-loader>
           </v-col>
@@ -110,6 +109,9 @@
               loading-text="Loading... Please wait"
               v-if="userPermissions.position_list"
             >
+              <template v-slot:item.cnt_id="{ item }">
+                {{ positions.indexOf(item) + 1 }}
+              </template>
               <template v-slot:item.status="{ item }">
                 <v-chip
                   color="#37474f"
@@ -175,7 +177,7 @@ export default {
       search: "",
       table_loader: false,
       headers: [
-        { text: "#", value: "cnt_id" },
+        { text: "#", value: "cnt_id", width: "20px" },
         { text: "Position", value: "name" },
         { text: "Status", value: "status" },
         { text: "Actions", value: "actions", sortable: false, width: "80px" },

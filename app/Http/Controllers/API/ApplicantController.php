@@ -12,6 +12,7 @@ use Excel;
 use Mail;
 use File;
 use DB;
+use Auth;
 
 class ApplicantController extends Controller
 {
@@ -55,13 +56,25 @@ class ApplicantController extends Controller
 																 'branches.name AS branch_name',
 																 'applicants.status'
 																)
+												->where(function($query) {
+														$user = Auth::user();
+														if($user->hasRole('Branch Manager'))
+														{
+															$query->where('applicants.status', 1)
+																		->where('applicants.branch_id', $user->branch_id);
+														}
+												})
 												->orderBy('applicants.created_at', 'DESC')
 												->get()
 												->each(function ($row, $index) {
 													$row->cnt_id = $index + 1;
 												});	
 
-		return response()->json(['job_applicants' => $job_applicants], 200);										
+		$branches = db::table('branches')
+												->orderBy('id', 'ASC')
+												->get();
+
+		return response()->json(['job_applicants' => $job_applicants, 'branches' => $branches], 200);										
 	}
 
 	public function submit_application(Request $req){

@@ -121,13 +121,17 @@ const state = {
     mss: false,
   },
   userRolesPermissionsIsLoaded: false,
+  permissions: [],
+  roles: [],
 };
 
 //assigning data
 const mutations = {
   setUserRoles(state, roles) {
-
+    
     let role = state.userRoles;
+
+    state.roles = roles;
 
     role.administrator = roles.includes("Administrator");
     role.hr_admin = roles.includes("HR Admin");
@@ -139,6 +143,8 @@ const mutations = {
   setUserPermissions(state, permissions) {
 
     let permission = state.userPermissions;
+
+    state.permissions = permissions;
 
     // USER RECORD MAINTENANCE PERMISSIONS
     permission.user_list = permissions.includes("user-list");
@@ -295,7 +301,14 @@ const mutations = {
 };
 
 // actions
-const getters = {};
+const getters = {
+  hasRole: (state) => (role) => {
+      return state.roles.includes(role);
+  },
+  hasPermission: (state) => (permission) => {
+      return state.permissions.includes(permission);
+  },
+};
 
 const actions = {
   async userRolesPermissions({ commit }) {

@@ -327,7 +327,7 @@
                       <v-btn
                         x-large
                         style="background-color: #f44336; color: #ffffff;"
-                        @click="(dialog_submit_now = true), (e1 = 1)"
+                        @click="(dialog_submit_now = true), (stepper = 1)"
                       >
                         Submit Application
                       </v-btn>
@@ -360,25 +360,25 @@
               </v-btn>
             </v-card-title>
             <v-card-text>
-              <v-stepper v-model="e1" class="mt-2">
+              <v-stepper v-model="stepper" class="mt-2">
                 <v-stepper-header>
-                  <v-stepper-step :complete="e1 > 1" step="1">
+                  <v-stepper-step :complete="stepper > 1" step="1">
                     Personal Details
                   </v-stepper-step>
                   <v-divider></v-divider>
-                  <v-stepper-step :complete="e1 > 2" step="2">
+                  <v-stepper-step :complete="stepper > 2" step="2">
                     Educational Attainment
                   </v-stepper-step>
                   <v-divider></v-divider>
-                  <v-stepper-step :complete="e1 > 3" step="3">
+                  <v-stepper-step :complete="stepper > 3" step="3">
                     Work Experience
                   </v-stepper-step>
                   <v-divider></v-divider>
-                  <v-stepper-step :complete="e1 > 4" step="4">
+                  <v-stepper-step :complete="stepper > 4" step="4">
                     Attach Resume
                   </v-stepper-step>
                   <v-divider></v-divider>
-                  <v-stepper-step :complete="e1 > 5" step="5">
+                  <v-stepper-step :complete="stepper > 5" step="5">
                     Submit
                   </v-stepper-step>
                 </v-stepper-header>
@@ -578,7 +578,7 @@
                         <v-fade-transition mode="out-in">
                           <v-btn
                             color="primary"
-                            @click="e1 = 2"
+                            @click="stepper = 2"
                             v-if="continue_1"
                           >
                             Continue
@@ -840,14 +840,14 @@
                         <v-fade-transition mode="out-in">
                           <v-btn
                             color="primary"
-                            @click="e1 = 3"
+                            @click="stepper = 3"
                             v-if="continue_2"
                           >
                             Continue
                           </v-btn>
                         </v-fade-transition>  
 
-                        <v-btn @click="e1 = 1">
+                        <v-btn @click="stepper = 1">
                           Back
                         </v-btn>
                       </v-col>  
@@ -957,14 +957,14 @@
                         <v-fade-transition mode="out-in">
                           <v-btn
                             color="primary"
-                            @click="e1 = 4"
+                            @click="stepper = 4"
                             v-if="continue_2"
                           >
                             Continue
                           </v-btn>
                         </v-fade-transition>  
 
-                        <v-btn @click="e1 = 2">
+                        <v-btn @click="stepper = 2">
                           Back
                         </v-btn>
                       </v-col>  
@@ -992,14 +992,14 @@
                         <v-fade-transition mode="out-in">
                           <v-btn
                             color="primary"
-                            @click="e1 = 5"
+                            @click="stepper = 5"
                             v-if="continue_2"
                           >
                             Continue
                           </v-btn>
                         </v-fade-transition>  
 
-                        <v-btn @click="e1 = 3">
+                        <v-btn @click="stepper = 3">
                           Back
                         </v-btn>
                       </v-col>  
@@ -1016,7 +1016,7 @@
                             </template>
                           </v-checkbox>
                         </v-container>
-                        <v-btn @click="(e1 = 4), (checkbox = false)">
+                        <v-btn @click="(stepper = 4), (checkbox = false)">
                           Back
                         </v-btn>
                       </v-col>
@@ -1442,6 +1442,18 @@ export default {
       how_learn_2: { required },
       myFileInput: { required },
     },
+    highschool: {
+      school: { required },
+      sy_attended: { required },
+      honors: { required },
+    },
+    college: {
+      school: { required },
+      course: { required },
+      major: { required },
+      sy_attended: { required },
+      honors: { required },
+    },
   },
 
   data() {
@@ -1462,7 +1474,7 @@ export default {
       dialog_apply_now: false,
       dialog_submit_now: true,
       submit_dialog: false,
-      e1: 3,
+      stepper: 1,
       checkbox: false,
 
       model: 0,
@@ -1689,7 +1701,7 @@ export default {
       //revert selection to index 0
       this.selection = 0;
 
-      this.e1 = 1;
+      this.stepper = 1;
       this.loader_dialog = false;
     },
 
@@ -1904,7 +1916,7 @@ export default {
             this.reset();
           }else{
 
-            this.e1 = 1;
+            this.stepper = 1;
             this.checkbox = false;
 
             let errors = response.data;
