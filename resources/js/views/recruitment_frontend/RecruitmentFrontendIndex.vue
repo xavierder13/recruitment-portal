@@ -345,7 +345,7 @@
         <v-dialog
           v-model="dialog_submit_now"
           persistent
-          max-width="1000px"
+          max-width="1200px"
         >
           <v-card>
             <v-card-title style="background-color: #f44336; color: #ffffff;" class="mb-0">
@@ -386,7 +386,14 @@
                 <v-stepper-items>
                   <v-stepper-content step="1">
                     <v-row>
-                      <v-col class="mb-0 pb-0">
+                      <v-col 
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
                         <v-text-field
                           label="Last name"
                           persistent-hint
@@ -396,9 +403,14 @@
                           @blur="$v.applicant.lastname.$touch() + (applicantError.lastname = [])"
                         ></v-text-field>
                       </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col class="mb-0 py-0">
+                      <v-col 
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
                         <v-text-field
                           label="First name"
                           persistent-hint
@@ -408,9 +420,14 @@
                           @blur="$v.applicant.firstname.$touch() + (applicantError.firstname = [])"
                         ></v-text-field>
                       </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col class="mb-0 py-0">
+                      <v-col 
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
                         <v-text-field
                           label="Middle name"
                           hint="Note: Just put asterisk (*) if you have no middlename."
@@ -423,15 +440,49 @@
                       </v-col>
                     </v-row>
                     <v-row>
-                      <v-col class="my-2 py-0">
+                      <v-col 
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
                         <v-text-field
-                          label="Complete Address"
+                          label="Present Address"
                           hint="St./Brgy, Municipality, Province"
                           persistent-hint
                           v-model="applicant.address"
-                          :error-messages="addressErrors + applicantError.address"
-                          @input="$v.applicant.address.$touch() + (applicantError.address = []) + (validateFields_form1())"
-                          @blur="$v.applicant.address.$touch() + (applicantError.address = [])"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
+                        <v-text-field
+                          label="Home Address"
+                          hint="St./Brgy, Municipality, Province"
+                          persistent-hint
+                          v-model="applicant.address2"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
+                        <v-text-field
+                          label="Place of Birth"
+                          hint="St./Brgy, Municipality, Province"
+                          persistent-hint
+                          v-model="applicant.birth_place"
                         ></v-text-field>
                       </v-col>
                     </v-row>
@@ -439,10 +490,10 @@
                       <v-col
                         cols="12"
                         xs="12"
-                        sm="6"
-                        md="6"
-                        lg="6"
-                        class="ma-0 py-0"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
                       >
                         <v-text-field
                           label="Birthday"
@@ -454,23 +505,29 @@
                           @blur="$v.applicant.birthdate.$touch() + (applicantError.birthdate = [])"
                         ></v-text-field>
                       </v-col>
-                      <v-col
+                      <!-- <v-col
                         cols="12"
                         xs="12"
                         sm="6"
                         md="6"
                         lg="6"
-                        class="mb-0 py-0"
+                        class="mb-0 pb-0"
                       >
                         <v-text-field
                           label="Age"
                           v-model="applicant.age"
                           readonly
                         ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col class="mb-0 py-0">
+                      </v-col> -->
+                    
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
                         <v-autocomplete
                           v-model="applicant.gender"
                           :items="['Male', 'Female']"
@@ -480,9 +537,14 @@
                           @blur="$v.applicant.gender.$touch() + (applicantError.gender = [])"
                         ></v-autocomplete>
                       </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col class="mb-0 py-0">
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
                         <v-autocomplete
                           v-model="applicant.civil_status"
                           :items="['Single', 'Married', 'Widow', 'Domestic Partnership']"
@@ -494,7 +556,14 @@
                       </v-col>
                     </v-row>
                     <v-row>
-                      <v-col class="mb-0 py-0">
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
                         <v-text-field
                           label="Contact No."
                           v-model="applicant.contact_no"
@@ -505,9 +574,14 @@
                           @blur="$v.applicant.contact_no.$touch() + (applicantError.contact_no = [])"
                         ></v-text-field>
                       </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col class="mb-0 py-0">
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
                         <v-text-field
                           label="Email"
                           v-model="applicant.email"
@@ -516,8 +590,123 @@
                           @blur="$v.applicant.email.$touch() + (applicantError.email = [])"
                         ></v-text-field>
                       </v-col>
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
+                        <v-text-field
+                          label="Citizenship"
+                          v-model="applicant.citizenship"
+                          :error-messages="citizenshipErrors + applicantError.citizenship"
+                          @input="$v.applicant.citizenship.$touch() + (applicantError.citizenship = []) + (validateFields_form1())"
+                          @blur="$v.applicant.citizenship.$touch() + (applicantError.citizenship = [])"
+                        ></v-text-field>
+                      </v-col>
                     </v-row>
                     <v-row>
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
+                        <v-text-field
+                          label="Religion"
+                          v-model="applicant.religion"
+                          :error-messages="religionErrors + applicantError.religion"
+                          @input="$v.applicant.religion.$touch() + (applicantError.religion = []) + (validateFields_form1())"
+                          @blur="$v.applicant.religion.$touch() + (applicantError.religion = [])"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
+                        <v-text-field
+                          label="Height"
+                          v-model="applicant.height"
+                          :error-messages="heightErrors + applicantError.height"
+                          @input="$v.applicant.height.$touch() + (applicantError.height = []) + (validateFields_form1())"
+                          @blur="$v.applicant.height.$touch() + (applicantError.height = [])"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col class="mb-0 py-0">
+                        <v-text-field
+                          label="Weight"
+                          v-model="applicant.weight"
+                          :error-messages="weightErrors + applicantError.weight"
+                          @input="$v.applicant.weight.$touch() + (applicantError.weight = []) + (validateFields_form1())"
+                          @blur="$v.applicant.weight.$touch() + (applicantError.weight = [])"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
+                        <v-text-field
+                          label="SSS #"
+                          v-model="applicant.sss_no"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
+                        <v-text-field
+                          label="PHILHEALTH #"
+                          v-model="applicant.philhealth_no"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
+                        <v-text-field
+                          label="PAGIBIG #"
+                          v-model="applicant.pagibig_no"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
+                        <v-text-field
+                          label="TIN #"
+                          v-model="applicant.tin_no"
+                        ></v-text-field>
+                      </v-col>
+
+                    <!-- <v-row>
                       <v-col class="mb-0 py-0">
                         <v-autocomplete
                           v-model="applicant.educ_attain"
@@ -550,9 +739,15 @@
                           @blur="$v.applicant.school_grad.$touch() + (applicantError.school_grad = [])"
                         ></v-text-field>
                       </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col class="mb-0 py-0">
+                    </v-row> -->
+                      <v-col
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                      >
                         <v-autocomplete
                           v-model="applicant.how_learn"
                           :items="this.how_learn"
@@ -567,9 +762,9 @@
                           label="(Please specify here.)"
                           v-model="applicant.how_learn_2"
                           :error-messages="howLearn2Errors"
-                          @input="$v.applicant.how_learn_2.$touch() + (validateHowlearn2_form1())"
+                          @input="$v.applicant.how_learn_2.$touch() + (validateFields_form1())"
                           @blur="$v.applicant.how_learn_2.$touch()"
-                          v-if="hide_howlearn_2"
+                          v-if="applicant.how_learn == 'Others'"
                         ></v-text-field>
                       </v-col>
                     </v-row>
@@ -1416,7 +1611,7 @@
 <script>
 import axios from "axios";
 import { validationMixin } from "vuelidate";
-import { required, minLength, email } from "vuelidate/lib/validators";
+import { required, requiredIf, minLength, email } from "vuelidate/lib/validators";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -1435,11 +1630,19 @@ export default {
       civil_status: { required },
       contact_no: { required, minLength: minLength(11) },
       email: { required, email },
-      educ_attain: { required },
-      course: { required },
-      school_grad: { required },
+      // educ_attain: { required },
+      // course: { required },
+      // school_grad: { required },
+      citizenship: { required },
+      religion: { required },
+      height: { required },
+      weight: { required },
       how_learn: { required },
-      how_learn_2: { required },
+      how_learn_2: {
+        required: requiredIf(function () {
+          return this.howLearn2IsRequired;
+        }),
+      },
       myFileInput: { required },
     },
     highschool: {
@@ -1541,15 +1744,21 @@ export default {
         firstname: "",
         middlename: "",
         address: "",
+        address2: "",
+        birth_place: "",
         birthdate: "",
         age: "",
         gender: "",
         civil_status: "",
         contact_no: "",
         email: "",
-        educ_attain: "",
-        course: "",
-        school_grad: "",
+        // educ_attain: "",
+        // course: "",
+        // school_grad: "",
+        citizenship: "",
+        religion: "",
+        height: "",
+        weight: "",
         how_learn: "",
         myFileInput: []
       },
@@ -1568,6 +1777,10 @@ export default {
         civil_status: [],
         contact_no: [],
         email: [],
+        citizenship: [],
+        religion: [],
+        height: [],
+        weight: [],
         educ_attain: [],
         course: [],
         school_grad: [],
@@ -1676,6 +1889,7 @@ export default {
       this.applicant.firstname = "";
       this.applicant.middlename = "";
       this.applicant.address = "";
+      this.applicant.birth_place = "";
       this.applicant.birthdate = "";
       this.applicant.age = "";
       this.applicant.gender = "";
@@ -1685,6 +1899,14 @@ export default {
       this.applicant.educ_attain = "";
       this.applicant.course = "";
       this.applicant.school_grad = "";
+      this.applicant.citizenship = "";
+      this.applicant.religion = "";
+      this.applicant.weight = "";
+      this.applicant.height = "";
+      this.applicant.sss_no = "";
+      this.applicant.philhealth_no = "";
+      this.applicant.pagibig_no = "";
+      this.applicant.tin_no = "";
       this.applicant.how_learn = "";
       this.applicant.how_learn_2 = "";
       this.applicant.myFileInput = [];
@@ -1872,7 +2094,8 @@ export default {
       formData.append('lastname', this.applicant.lastname);
       formData.append('firstname', this.applicant.firstname);
       formData.append('middlename', this.applicant.middlename);
-      formData.append('address', this.applicant.address);
+      formData.append('address', this.applicant.address2);
+      formData.append('address', this.applicant.birth_place);
       formData.append('birthdate', this.applicant.birthdate);
       formData.append('age', this.applicant.age);
       formData.append('gender', this.applicant.gender);
@@ -1967,12 +2190,11 @@ export default {
 
         const how_learn2 = this.applicant.how_learn_2;
         if(how_learn2){
-          this.continue_1 = true;
         }
 			}else{
 				this.hide_howlearn_2 = false;
-        this.continue_1 = true;
 			}
+      console.log('howLearn2Required', this.howLearn2IsRequired);
 		},
 
     validateFields_form1(){
@@ -1987,6 +2209,7 @@ export default {
           }
         }
       });
+      
     },
 
     validateHowlearn2_form1(){
@@ -2123,6 +2346,38 @@ export default {
       return errors;
     },
 
+    citizenshipErrors() {
+      const errors = [];
+      if (!this.$v.applicant.citizenship.$dirty) return errors;
+      !this.$v.applicant.citizenship.required &&
+        errors.push("Citizenship is required. ");
+      return errors;
+    },
+
+    religionErrors() {
+      const errors = [];
+      if (!this.$v.applicant.religion.$dirty) return errors;
+      !this.$v.applicant.religion.required &&
+        errors.push("Religion is required. ");
+      return errors;
+    },
+
+    weightErrors() {
+      const errors = [];
+      if (!this.$v.applicant.weight.$dirty) return errors;
+      !this.$v.applicant.weight.required &&
+        errors.push("Weight is required. ");
+      return errors;
+    },
+
+    heightErrors() {
+      const errors = [];
+      if (!this.$v.applicant.height.$dirty) return errors;
+      !this.$v.applicant.height.required &&
+        errors.push("Height is required. ");
+      return errors;
+    },
+
     schoolGradErrors() {
       const errors = [];
       if (!this.$v.applicant.school_grad.$dirty) return errors;
@@ -2148,11 +2403,15 @@ export default {
     },
 
     howLearn2Errors() {
+
       const errors = [];
       if (!this.$v.applicant.how_learn_2.$dirty) return errors;
       !this.$v.applicant.how_learn_2.required &&
         errors.push("This field is required.");
       return errors;
+    },
+    howLearn2IsRequired() {
+      return this.applicant.how_learn == 'Others';
     },
   },
   created(){
