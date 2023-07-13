@@ -23,6 +23,15 @@ class Applicant extends Model
                          'school_grad',
                          'how_learn', 
                          'file',
-                         'status'
+                         'status',
+                         'birth_place',
+                         'citizenship',
+                         'religion',
+                         'weight',
+                         'height',
+                         'sss_no',
+                         'philhealth_no',
+                         'pagibig_no',
+                         'tin_no',
                         ];
 }

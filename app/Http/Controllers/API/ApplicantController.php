@@ -96,24 +96,32 @@ class ApplicantController extends Controller
 				return response()->json(['duplicate' => true, 'message' => 'Duplicate records']);
 			}else{
 				$rules = [
-					'lastname.required' 	 => 'Last name is required.',
-					'firstname.required' 	 => 'First name is required.',
-					'middlename.required'  => 'Middle name is required.',
-					'address.required' 		 => 'Address is required.',
-					'birthdate.required' 	 => 'Birthday is required.',
+					'lastname.required' 	  => 'Last name is required.',
+					'firstname.required' 	  => 'First name is required.',
+					'middlename.required'   => 'Middle name is required.',
+					'address.required' 		  => 'Address is required.',
+					'birth_place.required'  => 'Birth place is required',
+					'birthdate.required' 	  => 'Birthday is required.',
 					'gender.required' 	   	=> 'Gender is required.',
 					'civil_status.required' => 'Civil Status is required.',	
-					'contact_no.required'  => 'Contact Number is required.',
-					'contact_no.digits'  	 => 'Must be a valid Phone Number.',
+					'contact_no.required'   => 'Contact Number is required.',
+					'contact_no.digits'  	  => 'Must be a valid Phone Number.',
 	
-					'email.required' 			 => 'Email is required.',
-					'email.email' 			   => 'Must be a valid Email Address.',
-	
-					'educ_attain.required' => 'Educational attainment is required.',
-					'course.required' 		 => 'Course is required.',
-					'school_grad.required' => 'School graduated is required.',
-					'how_learn.required' 	 => 'This field is required.',
-					'file.required' 			 => 'File is required.'
+					'email.required' 			  => 'Email is required.',
+					'email.email' 			    => 'Must be a valid Email Address.',
+					'citizenship.required'  => 'Citizenship is required',
+					'religion.required'  		=> 'Religion is required',
+					'weight.required'		    => 'Enter a valid value',
+          'weight.numeric' 				=> 'Enter a valid value',
+          'weight.between'	 			=> 'Enter a valid value',
+					'height.required'		    => 'Enter a valid value',
+          'height.numeric' 				=> 'Enter a valid value',
+          'height.between'	 			=> 'Enter a valid value',
+					// 'educ_attain.required' => 'Educational attainment is required.',
+					// 'course.required' 		 => 'Course is required.',
+					// 'school_grad.required' => 'School graduated is required.',
+					'how_learn.required' 	  => 'This field is required.',
+					'file.required' 			  => 'File is required.'
 				];
 	
 				$validator = Validator::make($req->all(),[
@@ -131,7 +139,11 @@ class ApplicantController extends Controller
 					'course' 				=> 'required',
 					'school_grad' 	=> 'required',
 					'how_learn' 		=> 'required',
-					'file'			  	=> 'required'
+					'file'			  	=> 'required',
+					'religion'			=> 'required',
+					'citizenship'		=> 'required',
+					'weight'			  => 'required|numeric|between:1, 999999.99',
+					'height'			  => 'required|numeric|between:1, 999999.99',
 				], $rules);
 	
 				if($validator->fails()){
@@ -164,15 +176,24 @@ class ApplicantController extends Controller
 				$applicant->firstname 			= $req->get('firstname');
 				$applicant->middlename 			= $req->get('middlename');
 				$applicant->address 				= $req->get('address');
+				$applicant->birth_place 		= $req->get('birth_place');
 				$applicant->birthdate 			= $req->get('birthdate');
 				$applicant->age 						= $req->get('age');
 				$applicant->gender 					= $req->get('gender');
 				$applicant->civil_status 		= $req->get('civil_status');
 				$applicant->contact_no 			= $req->get('contact_no');
 				$applicant->email 					= $req->get('email');
-				$applicant->educ_attain 		= $req->get('educ_attain');
-				$applicant->course 					= $req->get('course');
-				$applicant->school_grad 		= $req->get('school_grad');
+				$applicant->citizenship 		= $req->get('citizenship');
+				$applicant->religion 				= $req->get('religion');
+				$applicant->height 					= $req->get('height');
+				$applicant->weight 					= $req->get('weight');
+				// $applicant->educ_attain 		= $req->get('educ_attain');
+				// $applicant->course 					= $req->get('course');
+				// $applicant->school_grad 		= $req->get('school_grad');
+				$applicant->sss_no 					= $req->get('sss_no');
+				$applicant->philhealth_no 	= $req->get('philhealth_no');
+				$applicant->pagibig_no 			= $req->get('pagibig_no');
+				$applicant->tin_no 					= $req->get('tin_no');
 				$applicant->how_learn 			= $req->get('how_learn');
 				$applicant->file 						= $file_name;
 				$applicant->status 					= 0;

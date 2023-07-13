@@ -632,22 +632,44 @@
                         lg="4"
                         class="mb-0 pb-0"
                       >
-                        <v-text-field
-                          label="Height"
+                        <v-text-field-money
+                          class="pa-0"
+                          label="Height (cm)"
                           v-model="applicant.height"
-                          :error-messages="heightErrors + applicantError.height"
-                          @input="$v.applicant.height.$touch() + (applicantError.height = []) + (validateFields_form1())"
+                          v-bind:properties="{
+                            placeholder: '0',
+                            error: heightErrors.length || applicantError.height.length ? true : false,
+                            messages: weightErrors + applicantError.weight
+                          }"
+                          v-bind:options="{
+                            length: 11,
+                            precision: 2,
+                            empty: null,
+                          }"
+                           @input="$v.applicant.height.$touch() + (applicantError.height = []) + (validateFields_form1())"
                           @blur="$v.applicant.height.$touch() + (applicantError.height = [])"
-                        ></v-text-field>
+                        >
+                        </v-text-field-money>
                       </v-col>
-                      <v-col class="mb-0 py-0">
-                        <v-text-field
-                          label="Weight"
+                      <v-col class="mb-0 pb-0">
+                        <v-text-field-money
+                          class="pa-0"
+                          label="Weight (kg)"
                           v-model="applicant.weight"
-                          :error-messages="weightErrors + applicantError.weight"
+                          v-bind:properties="{
+                            placeholder: '0',
+                            error: weightErrors.length || applicantError.weight.length ? true : false,
+                            messages: weightErrors + applicantError.weight
+                          }"
+                          v-bind:options="{
+                            length: 11,
+                            precision: 2,
+                            empty: null,
+                          }"
                           @input="$v.applicant.weight.$touch() + (applicantError.weight = []) + (validateFields_form1())"
                           @blur="$v.applicant.weight.$touch() + (applicantError.weight = [])"
-                        ></v-text-field>
+                        >
+                        </v-text-field-money>
                       </v-col>
                     </v-row>
                     <v-row>
@@ -757,14 +779,22 @@
                           @blur="$v.applicant.how_learn.$touch() + (applicantError.how_learn = [])"
                           @change="handleChange"
                         ></v-autocomplete>
-
+                      </v-col>
+                      <v-col 
+                        cols="12"
+                        xs="12"
+                        sm="4"
+                        md="4"
+                        lg="4"
+                        class="mb-0 pb-0"
+                        v-if="applicant.how_learn == 'Others'"
+                      >
                         <v-text-field
                           label="(Please specify here.)"
                           v-model="applicant.how_learn_2"
                           :error-messages="howLearn2Errors"
                           @input="$v.applicant.how_learn_2.$touch() + (validateFields_form1())"
                           @blur="$v.applicant.how_learn_2.$touch()"
-                          v-if="applicant.how_learn == 'Others'"
                         ></v-text-field>
                       </v-col>
                     </v-row>
