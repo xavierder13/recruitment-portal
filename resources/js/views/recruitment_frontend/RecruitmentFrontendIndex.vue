@@ -639,7 +639,7 @@
                           v-bind:properties="{
                             placeholder: '0',
                             error: heightErrors.length || applicantError.height.length ? true : false,
-                            messages: weightErrors + applicantError.weight
+                            messages: heightErrors + applicantError.height
                           }"
                           v-bind:options="{
                             length: 11,
@@ -727,7 +727,16 @@
                           v-model="applicant.tin_no"
                         ></v-text-field>
                       </v-col>
-
+                      <v-col class="mb-0 py-0">
+                        <v-autocomplete
+                          v-model="applicant.educ_attain"
+                          :items="['College Graduate', 'College Undergraduate', 'Senior Highschool Graduate', 'Highschool Graduate', 'Vocational/TESDA Graduate']"
+                          label="Educational Attainment"
+                          :error-messages="educAttainErrors + applicantError.educ_attain"
+                          @input="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = []) + (validateFields_form1())"
+                          @blur="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = [])"
+                        ></v-autocomplete>
+                      </v-col>
                     <!-- <v-row>
                       <v-col class="mb-0 py-0">
                         <v-autocomplete
@@ -833,6 +842,9 @@
                           class="ma-0 pa-0"
                           label="Name of School"
                           v-model="highschool.school"
+                          :error-messages="HSSchoolErrors"
+                          @input="$v.highschool.school.$touch() + (validateFields_form2())"
+                          @blur="$v.highschool.school.$touch()"
                         ></v-text-field>
                       </v-col>
                       <v-col
@@ -846,6 +858,9 @@
                           class="ma-0 pa-0"
                           label="S.Y Attended"
                           v-model="highschool.sy_attended"
+                          :error-messages="HSSYErrors"
+                          @input="$v.highschool.sy_attended.$touch() + (validateFields_form2())"
+                          @blur="$v.highschool.sy_attended.$touch()"
                         ></v-text-field>
                       </v-col>
                       <v-col
@@ -1207,7 +1222,7 @@
                           persistent-hint
                           accept=".pdf, .docs, .docx, .jpeg, .png, .jpg"
                           :error-messages="resumefileErrors + applicantError.file"
-                          @change="$v.applicant.myFileInput.$touch() + (applicantError.file = []) + (validateFields_form2())"
+                          @change="$v.applicant.myFileInput.$touch() + (applicantError.file = []) + (validateFile())"
                           @blur="$v.applicant.myFileInput.$touch() + (applicantError.file = [])"
                         ></v-file-input>
                       </v-col>
@@ -1660,7 +1675,7 @@ export default {
       civil_status: { required },
       contact_no: { required, minLength: minLength(11) },
       email: { required, email },
-      // educ_attain: { required },
+      educ_attain: { required },
       // course: { required },
       // school_grad: { required },
       citizenship: { required },
@@ -2242,17 +2257,20 @@ export default {
       
     },
 
-    validateHowlearn2_form1(){
-      const how_learn2 = this.applicant.how_learn_2;
+    validateFields_form2(){
+      let hs_fields = Object.keys(this.highschool);
+
+      this.continue_2 = true;
+
+      hs_fields.forEach(value => {
+        if(!this.highschool[value]){
+          this.continue_2 = false;
+        }
+      });
       
-      if(how_learn2){
-        this.continue_1 = true;
-      }else{
-        this.continue_1 = false;
-      }
     },
 
-    validateFields_form2(){
+    validateFile(){
       let myFileInput = this.applicant.myFileInput;
 
       this.continue_2 = true;
@@ -2408,11 +2426,35 @@ export default {
       return errors;
     },
 
-    schoolGradErrors() {
+    // schoolGradErrors() {
+    //   const errors = [];
+    //   if (!this.$v.applicant.school_grad.$dirty) return errors;
+    //   !this.$v.applicant.school_grad.required &&
+    //     errors.push("School graduated is required.");
+    //   return errors;
+    // },
+
+    HSSchoolErrors() {
       const errors = [];
-      if (!this.$v.applicant.school_grad.$dirty) return errors;
-      !this.$v.applicant.school_grad.required &&
-        errors.push("School graduated is required.");
+      if (!this.$v.highschool.school.$dirty) return errors;
+      !this.$v.highschool.school.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    HSSchoolErrors() {
+      const errors = [];
+      if (!this.$v.highschool.school.$dirty) return errors;
+      !this.$v.highschool.school.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    HSSYErrors() {
+      const errors = [];
+      if (!this.$v.highschool.sy_attended.$dirty) return errors;
+      !this.$v.highschool.sy_attended.required &&
+        errors.push("This field is required.");
       return errors;
     },
 

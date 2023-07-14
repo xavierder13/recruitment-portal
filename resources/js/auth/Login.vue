@@ -141,7 +141,7 @@ export default {
             if (response.data.access_token) {
               localStorage.setItem("access_token", response.data.access_token);
               this.$router.push("/").catch((e) => {});
-              // this.$router.push("/jobapplicants/index").catch((e) => {});
+              // this.$router.push("/jobapplicants/index-new").catch((e) => {});
               this.clear();
             } else {
               this.isInvalid = true;

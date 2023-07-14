@@ -73,23 +73,18 @@
         </v-list-item>
       </v-list>
 
-      <v-list>
+      <<v-list>
         <v-list-group
           no-action
           v-if="
-            userPermissions.user_list && 
-            userPermissions.user_create &&
+            hasPermission('user-list') || 
+            hasPermission('user-create') ||
 
-            userPermissions.jobvacancies_create && 
-            userPermissions.jobvacancies_list &&
-            userPermissions.jobvacancies_edit &&
-            userPermissions.jobvacancies_update &&
-            userPermissions.jobvacancies_delete &&
+            hasPermission('jobvacancies-create') || 
+            hasPermission('jobvacancies-list') ||
 
-            userPermissions.jobapplicants_change_status &&
-            userPermissions.jobapplicants_view &&
-            userPermissions.jobapplicants_delete &&
-            userPermissions.jobapplicants_export
+            hasPermission('jobapplicants-list')
+            
           "
         >
           <!-- List Group Icon-->
@@ -105,7 +100,7 @@
             link
             to="/position/index"
             v-if="
-              userPermissions.position_list || userPermissions.position_create
+              hasPermission('position-list') || hasPermission('position-create')
             "
           >
             <v-list-item-content>
@@ -115,11 +110,8 @@
           <v-list-item 
             link to="/jobvacancies/index"
             v-if="
-              userPermissions.jobvacancies_create && 
-              userPermissions.jobvacancies_list &&
-              userPermissions.jobvacancies_edit &&
-              userPermissions.jobvacancies_update &&
-              userPermissions.jobvacancies_delete
+              hasPermission('jobvacancies-create') || 
+              hasPermission('jobvacancies-list') 
             "
           >
             <v-list-item-content>
@@ -128,12 +120,7 @@
           </v-list-item>
           <!-- <v-list-item 
             link to="/jobapplicants/index"
-            v-if="
-              userPermissions.jobapplicants_change_status &&
-              userPermissions.jobapplicants_view &&
-              userPermissions.jobapplicants_delete &&
-              userPermissions.jobapplicants_export
-            "
+            v-if="hasPermission('jobapplicants-list')"
           >
             <v-list-item-content>
               <v-list-item-title>Job Applicants</v-list-item-title>
@@ -141,7 +128,7 @@
           </v-list-item> -->
           <v-list-item 
             link to="/jobapplicants/index-new"
-            v-if="userPermissions.jobapplicants_list"
+            v-if="hasPermission('jobapplicants-list')"
           >
             <v-list-item-content>
               <v-list-item-title>Job Applicants</v-list-item-title>
@@ -150,7 +137,7 @@
         </v-list-group>
         <v-list-group
           no-action
-          v-if="userPermissions.user_list || userPermissions.user_create"
+          v-if="hasPermission('user-list') || hasPermission('user-create')"
         >
           <!-- List Group Icon-->
           <v-icon slot="prependIcon">mdi-account-arrow-right-outline</v-icon>
@@ -161,7 +148,7 @@
             </v-list-item-content>
           </template>
           <!-- List Group Items -->
-          <v-list-item link to="/user/index" v-if="userPermissions.user_list">
+          <v-list-item link to="/user/index" v-if="hasPermission('user-list')">
             <v-list-item-content>
               <v-list-item-title>User Record</v-list-item-title>
             </v-list-item-content>
@@ -169,7 +156,7 @@
           <v-list-item
             link
             to="/user/create"
-            v-if="userPermissions.user_create"
+            v-if="hasPermission('user-create')"
           >
             <v-list-item-content>
               <v-list-item-title>Create New</v-list-item-title>
@@ -179,12 +166,12 @@
         <v-list-group
           no-action
           v-if="
-            userPermissions.branch_list ||
-            userPermissions.branch_create ||
-            userPermissions.role_list ||
-            userPermissions.role_create ||
-            userPermissions.permission_list ||
-            userPermissions.permission_create
+            hasPermission('branch-list') ||
+            hasPermission('branch-create') ||
+            hasPermission('role-list') ||
+            hasPermission('role-create') ||
+            hasPermission('permission-list') ||
+            hasPermission('permission-create')
           "
         >
           <!-- List Group Icon-->
@@ -199,7 +186,7 @@
           <v-list-item
             link
             to="/branch/index"
-            v-if="userPermissions.branch_list || userPermissions.branch_create"
+            v-if="hasPermission('branch-list') || hasPermission('branch-create')"
           >
             <v-list-item-content>
               <v-list-item-title>Branch</v-list-item-title>
@@ -208,7 +195,7 @@
           <v-list-item
             link
             to="/role/index"
-            v-if="userPermissions.role_list || userPermissions.role_create"
+            v-if="hasPermission('role-list') || hasPermission('role-create')"
           >
             <v-list-item-content>
               <v-list-item-title>Role</v-list-item-title>
@@ -217,7 +204,7 @@
           <v-list-item
             link
             to="/permission/index"
-            v-if="userPermissions.permission_list"
+            v-if="hasPermission('permission-list') || hasPermission('permission-create')"
           >
             <v-list-item-content>
               <v-list-item-title>Permission</v-list-item-title>
@@ -276,7 +263,7 @@ a {
 
 <script>
 import axios from "axios";
-import { mapState, mapActions } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -342,6 +329,7 @@ export default {
   computed: {
     ...mapState("auth", ["user"]),
     ...mapState("userRolesPermissions", ["userRoles", "userPermissions"]),
+    ...mapGetters("userRolesPermissions", ["hasRole", "hasPermission"]),
   },
 
   mounted() {

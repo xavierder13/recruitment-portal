@@ -38,7 +38,7 @@
             :search="search"
             :loading="loading"
            
-            v-if="userPermissions.jobvacancies_list, v_table"
+            v-if="userPermissions.jobapplicants_list"
           >
             <template v-slot:item.status="{ item }">
               <v-chip
