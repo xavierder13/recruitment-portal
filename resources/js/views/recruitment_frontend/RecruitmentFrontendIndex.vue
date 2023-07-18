@@ -295,7 +295,7 @@
                           </p>
                           <h6 class="font-weight-medium mt-5" style="color: #6e6767;">EDUCATION LEVEL:</h6>
                           <p>
-                            <span>{{ this.educ_attain }}</span>
+                            <span>{{ educ_attain }}</span>
                           </p>
                           <h6 class="font-weight-medium mt-5" style="color: #6e6767;">SEARCH TAGS:</h6>
                           <p>
@@ -727,7 +727,7 @@
                           v-model="applicant.tin_no"
                         ></v-text-field>
                       </v-col>
-                      <v-col class="mb-0 py-0">
+                      <!-- <v-col class="mb-0 pb-0">
                         <v-autocomplete
                           v-model="applicant.educ_attain"
                           :items="['College Graduate', 'College Undergraduate', 'Senior Highschool Graduate', 'Highschool Graduate', 'Vocational/TESDA Graduate']"
@@ -736,7 +736,7 @@
                           @input="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = []) + (validateFields_form1())"
                           @blur="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = [])"
                         ></v-autocomplete>
-                      </v-col>
+                      </v-col> -->
                     <!-- <v-row>
                       <v-col class="mb-0 py-0">
                         <v-autocomplete
@@ -781,7 +781,7 @@
                       >
                         <v-autocomplete
                           v-model="applicant.how_learn"
-                          :items="this.how_learn"
+                          :items="how_learn"
                           label="How did you learn about job vacancy?"
                           :error-messages="howLearnErrors + applicantError.how_learn"
                           @input="$v.applicant.how_learn.$touch() + (applicantError.how_learn = []) + (validateFields_form1())"
@@ -824,257 +824,449 @@
 
                   <v-stepper-content step="2">
                     <v-row>
-                      <v-col>
-                        <span class="text-h6">
-                          <strong>High School</strong> 
-                        </span>
+                      <v-col 
+                        class="mt-2"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="6"
+                      >
+                        <v-autocomplete
+                          class="ma-0 pa-0"
+                          v-model="applicant.educ_attain"
+                          :items="educ_attains"
+                          item-text="text"
+                          item-value="value"
+                          label="Educational Attainment"
+                          :error-messages="educAttainErrors + applicantError.educ_attain"
+                          @input="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = []) + (validateFields_form2())"
+                          @blur="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = [])"
+                        ></v-autocomplete>
                       </v-col>
-                    </v-row>
-                    <v-row>
                       <v-col 
                         cols="12"
                         xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
+                        sm="6"
+                        md="6"
+                        lg="6"
+                        v-if="applicant.educ_attain > 3"
                       >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Name of School"
-                          v-model="highschool.school"
-                          :error-messages="HSSchoolErrors"
-                          @input="$v.highschool.school.$touch() + (validateFields_form2())"
-                          @blur="$v.highschool.school.$touch()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="S.Y Attended"
-                          v-model="highschool.sy_attended"
-                          :error-messages="HSSYErrors"
-                          @input="$v.highschool.sy_attended.$touch() + (validateFields_form2())"
-                          @blur="$v.highschool.sy_attended.$touch()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Honors Received"
-                          v-model="highschool.honors"
-                        ></v-text-field>
+                        <div class="d-flex">
+                          <v-checkbox class="mt-2 pa-0" v-model="k_12_checkbox">
+                            <template v-slot:label>
+                              <span class="mt-2">K-12 Highschool</span>
+                            </template>
+                          </v-checkbox>
+                        </div>
                       </v-col>
                     </v-row>
-                    <v-divider></v-divider>
-                    <v-row>
-                      <v-col>
-                        <span class="text-h6">
-                          <strong>College</strong> 
-                        </span>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Name of School"
-                          v-model="college.school"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Course/Specialization"
-                          v-model="college.course_specialization"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="S.Y Attended"
-                          v-model="college.sy_attended"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Honors Received"
-                          v-model="college.honors"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-divider></v-divider>
-                    <v-row>
-                      <v-col>
-                        <span class="text-h6">
-                          <strong>Graduate School</strong> 
-                        </span>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Name of School"
-                          v-model="graduate_school.school"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Course/Specialization"
-                          v-model="graduate_school.course_specialization"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="S.Y Attended"
-                          v-model="graduate_school.sy_attended"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Honors Received"
-                          v-model="graduate_school.honors"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-divider></v-divider>
-                    <v-row>
-                      <v-col>
-                        <span class="text-h6">
-                          <strong>Vocational School</strong> 
-                        </span>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Name of School"
-                          v-model="voc_school.school"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Course/Specialization"
-                          v-model="voc_school.course_specialization"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="S.Y Attended"
-                          v-model="voc_school.sy_attended"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="3"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Honors Received"
-                          v-model="voc_school.honors"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
+                    <template v-if="applicant.educ_attain">
+                      <template v-if="!k_12_checkbox && ![2, 3].includes(applicant.educ_attain)">
+                        <v-row>
+                          <v-col class="mt-0">
+                            <span class="text-h6">
+                              <strong>High School</strong> 
+                            </span>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col 
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Name of School"
+                              v-model="highschool.school"
+                              :error-messages="HSSchoolErrors"
+                              @input="$v.highschool.school.$touch() + (validateFields_form2())"
+                              @blur="$v.highschool.school.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="S.Y Attended"
+                              v-model="highschool.sy_attended"
+                              :error-messages="HSSYErrors"
+                              @input="$v.highschool.sy_attended.$touch() + (validateFields_form2())"
+                              @blur="$v.highschool.sy_attended.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Honors Received"
+                              v-model="highschool.honors"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-divider></v-divider>
+                      </template>
+                      <template v-if="(k_12_checkbox && applicant.educ_attain > 3) || (applicant.educ_attain > 1 && applicant.educ_attain < 4)">
+                        <v-row>
+                          <v-col>
+                            <span class="text-h6">
+                              <strong>Junior High School</strong> 
+                            </span>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col 
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Name of School"
+                              v-model="jr_highschool.school"
+                              :error-messages="JRHSchoolErrors"
+                              @input="$v.jr_highschool.school.$touch() + (validateFields_form2())"
+                              @blur="$v.jr_highschool.school.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="S.Y Attended"
+                              v-model="jr_highschool.sy_attended"
+                              :error-messages="JRHSYErrors"
+                              @input="$v.jr_highschool.sy_attended.$touch() + (validateFields_form2())"
+                              @blur="$v.jr_highschool.sy_attended.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Honors Received"
+                              v-model="jr_highschool.honors"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-divider></v-divider>
+                      </template>
+                      <template v-if="(k_12_checkbox && applicant.educ_attain > 2) || applicant.educ_attain == 3">
+                        <v-row>
+                          <v-col>
+                            <span class="text-h6">
+                              <strong>Senior High School</strong> 
+                            </span>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col 
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Name of School"
+                              v-model="sr_highschool.school"
+                              :error-messages="SRHSchoolErrors"
+                              @input="$v.sr_highschool.school.$touch() + (validateFields_form2())"
+                              @blur="$v.sr_highschool.school.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="S.Y Attended"
+                              v-model="sr_highschool.sy_attended"
+                              :error-messages="SRHSYErrors"
+                              @input="$v.sr_highschool.sy_attended.$touch() + (validateFields_form2())"
+                              @blur="$v.sr_highschool.sy_attended.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Honors Received"
+                              v-model="sr_highschool.honors"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-divider></v-divider>
+                      </template>
+                      <template v-if="applicant.educ_attain > 3 && applicant.educ_attain != 7">
+                        <v-row>
+                          <v-col>
+                            <span class="text-h6">
+                              <strong>College</strong> 
+                            </span>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Name of School"
+                              v-model="college.school"
+                              :error-messages="collegeSchoolErrors"
+                              @input="$v.college.school.$touch() + (validateFields_form2())"
+                              @blur="$v.college.school.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Course/Specialization"
+                              v-model="college.course"
+                              :error-messages="collegeCourseErrors"
+                              @input="$v.college.course.$touch() + (validateFields_form2())"
+                              @blur="$v.college.course.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="S.Y Attended"
+                              v-model="college.sy_attended"
+                              :error-messages="collegeSYErrors"
+                              @input="$v.college.sy_attended.$touch() + (validateFields_form2())"
+                              @blur="$v.college.sy_attended.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Honors Received"
+                              v-model="college.honors"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-divider></v-divider>
+                      </template>
+
+                      <template v-if="applicant.educ_attain === 6">
+                        <v-row>
+                          <v-col>
+                            <span class="text-h6">
+                              <strong>Graduate School</strong> 
+                            </span>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Name of School"
+                              v-model="graduate_school.school"
+                              :error-messages="gradSchoolErrors"
+                              @input="$v.graduate_school.school.$touch() + (validateFields_form2())"
+                              @blur="$v.graduate_school.school.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Course/Specialization"
+                              v-model="graduate_school.course"
+                              :error-messages="gradCourseErrors"
+                              @input="$v.graduate_school.course.$touch() + (validateFields_form2())"
+                              @blur="$v.graduate_school.course.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="S.Y Attended"
+                              v-model="graduate_school.sy_attended"
+                              :error-messages="gradSYErrors"
+                              @input="$v.graduate_school.sy_attended.$touch() + (validateFields_form2())"
+                              @blur="$v.graduate_school.sy_attended.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Honors Received"
+                              v-model="graduate_school.honors"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-divider></v-divider>
+                      </template>
+                      
+                      <template v-if="applicant.educ_attain == 7">
+                        <v-row>
+                          <v-col>
+                            <span class="text-h6">
+                              <strong>Vocational School</strong> 
+                            </span>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Name of School"
+                              v-model="vocational_school.school"
+                              :error-messages="vocSchoolErrors"
+                              @input="$v.vocational_school.school.$touch() + (validateFields_form2())"
+                              @blur="$v.vocational_school.school.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Course/Specialization"
+                              v-model="vocational_school.course"
+                              :error-messages="vocCourseErrors"
+                              @input="$v.vocational_school.course.$touch() + (validateFields_form2())"
+                              @blur="$v.vocational_school.course.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="S.Y Attended"
+                              v-model="vocational_school.sy_attended"
+                              :error-messages="vocSYErrors"
+                              @input="$v.vocational_school.sy_attended.$touch() + (validateFields_form2())"
+                              @blur="$v.vocational_school.sy_attended.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="3"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Honors Received"
+                              v-model="vocational_school.honors"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                      </template>
+                    </template>
+                    
                     <v-row>
                       <v-col cols="12" class="my-4 py-0">
                         <v-fade-transition mode="out-in">
@@ -1695,6 +1887,16 @@ export default {
       sy_attended: { required },
       honors: { required },
     },
+    jr_highschool: {
+      school: { required },
+      sy_attended: { required },
+      honors: { required },
+    },
+    sr_highschool: {
+      school: { required },
+      sy_attended: { required },
+      honors: { required },
+    },
     college: {
       school: { required },
       course: { required },
@@ -1702,6 +1904,21 @@ export default {
       sy_attended: { required },
       honors: { required },
     },
+    graduate_school: {
+      school: { required },
+      course: { required },
+      major: { required },
+      sy_attended: { required },
+      honors: { required },
+    },
+    vocational_school: {
+      school: { required },
+      course: { required },
+      major: { required },
+      sy_attended: { required },
+      honors: { required },
+    },
+    
   },
 
   data() {
@@ -1722,7 +1939,7 @@ export default {
       dialog_apply_now: false,
       dialog_submit_now: true,
       submit_dialog: false,
-      stepper: 1,
+      stepper: 2,
       checkbox: false,
 
       model: 0,
@@ -1738,22 +1955,18 @@ export default {
       job_vac_id: "",
       branch_id: "",
       file: "",
-      // educ_attains: [
-      //   { description: "High School", school: "", course_specialization: "", major: "", sy_attended: "", honors: "" },
-      //   { description: "College", school: "", course_specialization: "", major: "", sy_attended: "", honors: "" },
-      //   { description: "Graduate School", school: "", course_specialization: "", major: "", sy_attended: "", honors: "" },
-      //   { description: "Vocational School", school: "", course_specialization: "", major: "", sy_attended: "", honors: "" },
-      // ],
-      // educ_attain_headers: [
-      //   { text: "", value: "description", sortable: false },
-      //   { text: "Name of School", value: "school", sortable: false },
-      //   { text: "Course/Specialization", value: "course_specialization", sortable: false },
-      //   { text: "Major", value: "major", sortable: false },
-      //   { text: "S.Y Attended", value: "sy_attended", sortable: false },
-      //   { text: "Honors Received", value: "honors", sortable: false },
-      // ],
     
       highschool: {
+        school: "",
+        sy_attended: "",
+        honors: "",
+      },
+      jr_highschool: {
+        school: "",
+        sy_attended: "",
+        honors: "",
+      },
+      sr_highschool: {
         school: "",
         sy_attended: "",
         honors: "",
@@ -1772,7 +1985,7 @@ export default {
         sy_attended: "",
         honors: "",
       },
-      voc_school: {
+      vocational_school: {
         school: "",
         course: "",
         major: "",
@@ -1780,6 +1993,17 @@ export default {
         honors: "",
       },
 
+      k_12_checkbox: false,
+      
+      educ_attains: [
+        { text: 'Highschool Graduate', value: 1 }, 
+        { text: 'Junior Highschool Graduate', value: 2 },
+        { text: 'Senior Highschool Graduate', value: 3 },
+        { text: 'College Undergraduate', value: 4 },
+        { text: 'College Graduate', value: 5 },
+        { text: 'Graduate School', value: 6 },
+        { text: 'Vocational School', value: 7 },
+      ],
       work_experiences: [
         { company: "", position: "", salary: "", date_service: "", job_description: "" },
       ],
@@ -2133,6 +2357,14 @@ export default {
 
       const how_learn_selected = this.applicant.how_learn;
 
+      let educ_attain = "";
+
+      this.educ_attains.forEach(value => {
+        if (value.value == this.applicant.educ_attain) {
+          educ_attain = value.text;
+        }
+      });
+
       let formData = new FormData();
       formData.append('jobvacancy_id', this.job_vac_id);
       formData.append('branch_id', this.branch_id);
@@ -2147,7 +2379,7 @@ export default {
       formData.append('civil_status', this.applicant.civil_status);
       formData.append('contact_no', this.applicant.contact_no);
       formData.append('email', this.applicant.email);
-      formData.append('educ_attain', this.applicant.educ_attain);
+      formData.append('educ_attain', educ_attain);
       formData.append('course', this.applicant.course);
       formData.append('school_grad', this.applicant.school_grad);
 
@@ -2239,7 +2471,6 @@ export default {
 			}else{
 				this.hide_howlearn_2 = false;
 			}
-      console.log('howLearn2Required', this.howLearn2IsRequired);
 		},
 
     validateFields_form1(){
@@ -2259,15 +2490,75 @@ export default {
 
     validateFields_form2(){
       let hs_fields = Object.keys(this.highschool);
-
+      let jhs_fields = Object.keys(this.jr_highschool);
+      let shs_fields = Object.keys(this.sr_highschool);
+      let college_fields = Object.keys(this.college);
+      let grad_fields = Object(this.graduate_school);
+      let voc_fields = Object.keys(this.vocational_school);
+    
       this.continue_2 = true;
 
-      hs_fields.forEach(value => {
-        if(!this.highschool[value]){
-          this.continue_2 = false;
-        }
-      });
+      if(this.HSIsRequired)
+      {
+        hs_fields.forEach(value => {
+          if(!this.highschool[value] && value != 'honors'){
+            this.continue_2 = false;
+          }
+        });
+      }
+
+      if(this.JHSIsRequired)
+      {
+        jhs_fields.forEach(value => {
+          if(!this.jr_highschool[value] && value != 'honors'){
+            this.continue_2 = false;
+          }
+        });
+      }
+
+      if(this.SHSIsRequired)
+      {
+        shs_fields.forEach(value => {
+          if(!this.sr_highschool[value] && value != 'honors'){
+            this.continue_2 = false;
+          }
+        });
+      }
+
+      if(this.collegeIsRequired)
+      {
+        college_fields.forEach(value => {
+          if(!this.college[value] && value != 'honors'){
+            this.continue_2 = false;
+          }
+        });
+      }
+
+      if(this.gradSchoolIsRequired)
+      {
+        grad_fields.forEach(value => {
+          if(!this.graduate_school[value] && value != 'honors'){
+            this.continue_2 = false;
+          }
+        });
+      }
+
+      if(this.vocSchoolIsRequired)
+      {
+        voc_fields.forEach(value => {
+          if(!this.vocational_school[value] && value != 'honors'){
+            this.continue_2 = false;
+          }
+        });
+      }
       
+      console.log('hs is required', this.HSIsRequired);
+      console.log('jr is required', this.JHSIsRequired);
+      console.log('sr is required', this.SHSIsRequired);
+      console.log('college is required', this.collegeIsRequired);
+      console.log('grad is required', this.gradSchoolIsRequired);
+      console.log('voc is required', this.vocSchoolIsRequired);
+
     },
 
     validateFile(){
@@ -2442,14 +2733,6 @@ export default {
       return errors;
     },
 
-    HSSchoolErrors() {
-      const errors = [];
-      if (!this.$v.highschool.school.$dirty) return errors;
-      !this.$v.highschool.school.required &&
-        errors.push("This field is required.");
-      return errors;
-    },
-
     HSSYErrors() {
       const errors = [];
       if (!this.$v.highschool.sy_attended.$dirty) return errors;
@@ -2457,6 +2740,111 @@ export default {
         errors.push("This field is required.");
       return errors;
     },
+
+    JRHSchoolErrors() {
+      const errors = [];
+      if (!this.$v.jr_highschool.school.$dirty) return errors;
+      !this.$v.jr_highschool.school.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    JRHSYErrors() {
+      const errors = [];
+      if (!this.$v.jr_highschool.sy_attended.$dirty) return errors;
+      !this.$v.jr_highschool.sy_attended.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    SRHSchoolErrors() {
+      const errors = [];
+      if (!this.$v.sr_highschool.school.$dirty) return errors;
+      !this.$v.sr_highschool.school.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    SRHSYErrors() {
+      const errors = [];
+      if (!this.$v.sr_highschool.sy_attended.$dirty) return errors;
+      !this.$v.sr_highschool.sy_attended.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    collegeSchoolErrors() {
+      const errors = [];
+      if (!this.$v.college.school.$dirty) return errors;
+      !this.$v.college.school.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    collegeCourseErrors() {
+      const errors = [];
+      if (!this.$v.college.course.$dirty) return errors;
+      !this.$v.college.course.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    collegeSYErrors() {
+      const errors = [];
+      if (!this.$v.college.sy_attended.$dirty) return errors;
+      !this.$v.college.sy_attended.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    gradSchoolErrors() {
+      const errors = [];
+      if (!this.$v.graduate_school.school.$dirty) return errors;
+      !this.$v.graduate_school.school.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    gradCourseErrors() {
+      const errors = [];
+      if (!this.$v.graduate_school.course.$dirty) return errors;
+      !this.$v.graduate_school.course.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    gradSYErrors() {
+      const errors = [];
+      if (!this.$v.graduate_school.sy_attended.$dirty) return errors;
+      !this.$v.graduate_school.sy_attended.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    vocSchoolErrors() {
+      const errors = [];
+      if (!this.$v.vocational_school.school.$dirty) return errors;
+      !this.$v.vocational_school.school.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    vocCourseErrors() {
+      const errors = [];
+      if (!this.$v.vocational_school.course.$dirty) return errors;
+      !this.$v.vocational_school.course.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
+    vocSYErrors() {
+      const errors = [];
+      if (!this.$v.vocational_school.sy_attended.$dirty) return errors;
+      !this.$v.vocational_school.sy_attended.required &&
+        errors.push("This field is required.");
+      return errors;
+    },
+
 
     howLearnErrors() {
       const errors = [];
@@ -2482,9 +2870,36 @@ export default {
         errors.push("This field is required.");
       return errors;
     },
+
     howLearn2IsRequired() {
       return this.applicant.how_learn == 'Others';
     },
+
+    HSIsRequired() {
+      return !this.k_12_checkbox && ![2, 3].includes(this.applicant.educ_attain);
+    },
+
+    JHSIsRequired() {
+      let educ_attain = this.applicant.educ_attain;
+      return (this.k_12_checkbox && educ_attain > 3) || (educ_attain > 1 && educ_attain < 4);
+    },
+
+    SHSIsRequired() {
+      let educ_attain = this.applicant.educ_attain;
+      return (this.k_12_checkbox && educ_attain > 3) || (educ_attain > 1 && educ_attain == 3);
+    },
+
+    collegeIsRequired() {
+      return this.applicant.educ_attain > 3 && this.applicant.educ_attain != 7;
+    },
+
+    gradSchoolIsRequired() {
+      return this.applicant.educ_attain  === 6;
+    },
+
+    vocSchoolIsRequired() {
+      return this.applicant.educ_attain === 7;
+    }
   },
   created(){
     AOS.init();
