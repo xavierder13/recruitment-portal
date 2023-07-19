@@ -1271,6 +1271,7 @@
                       <v-col cols="12" class="my-4 py-0">
                         <v-fade-transition mode="out-in">
                           <v-btn
+                            class="mr-1"
                             color="primary"
                             @click="stepper = 3"
                             v-if="continue_2"
@@ -1388,6 +1389,7 @@
                       <v-col cols="12" class="my-4 py-0">
                         <v-fade-transition mode="out-in">
                           <v-btn
+                            class="mr-1"
                             color="primary"
                             @click="stepper = 4"
                             v-if="continue_2"
@@ -1405,7 +1407,7 @@
 
                   <v-stepper-content step="4">
                     <v-row>
-                      <v-col cols="12" class="my-2 py-0">
+                      <v-col cols="12" class="my-4 py-0">
                         <v-file-input
                           show-size
                           label="Please attach your resume here."
@@ -1420,9 +1422,10 @@
                       </v-col>
                     </v-row>
                     <v-row>
-                      <v-col cols="12" class="my-2 py-0">
+                      <v-col cols="12" class="my-4 py-0">
                         <v-fade-transition mode="out-in">
                           <v-btn
+                            class="mr-1"
                             color="primary"
                             @click="stepper = 5"
                             v-if="continue_2"
@@ -1473,7 +1476,7 @@
                 </v-btn>
               </v-fade-transition>  
               <v-btn
-                class="mb-3 mr-4"
+                class="mb-3 mr-6"
                 @click="reset()"
               >
                 Close
@@ -1939,7 +1942,7 @@ export default {
       dialog_apply_now: false,
       dialog_submit_now: true,
       submit_dialog: false,
-      stepper: 2,
+      stepper: 1,
       checkbox: false,
 
       model: 0,
@@ -2483,9 +2486,19 @@ export default {
           if(!this.applicant[value]){
             this.continue_1 = false;
           }
+          else
+          {
+            if(this.$v.applicant.contact_no.$error || this.$v.applicant.email.$error)
+            { 
+              this.continue_1 = false;
+            }
+
+          }
+
         }
+  
       });
-      
+     
     },
 
     validateFields_form2(){
@@ -2528,7 +2541,7 @@ export default {
       if(this.collegeIsRequired)
       {
         college_fields.forEach(value => {
-          if(!this.college[value] && value != 'honors'){
+          if(!this.college[value] && !['honors', 'major'].includes(value)){
             this.continue_2 = false;
           }
         });
@@ -2537,7 +2550,7 @@ export default {
       if(this.gradSchoolIsRequired)
       {
         grad_fields.forEach(value => {
-          if(!this.graduate_school[value] && value != 'honors'){
+          if(!this.graduate_school[value] && !['honors', 'major'].includes(value)){
             this.continue_2 = false;
           }
         });
@@ -2546,7 +2559,7 @@ export default {
       if(this.vocSchoolIsRequired)
       {
         voc_fields.forEach(value => {
-          if(!this.vocational_school[value] && value != 'honors'){
+          if(!this.vocational_school[value] && !['honors', 'major'].includes(value)){
             this.continue_2 = false;
           }
         });
@@ -2558,6 +2571,8 @@ export default {
       console.log('college is required', this.collegeIsRequired);
       console.log('grad is required', this.gradSchoolIsRequired);
       console.log('voc is required', this.vocSchoolIsRequired);
+
+      console.log(this.continue_2);
 
     },
 
