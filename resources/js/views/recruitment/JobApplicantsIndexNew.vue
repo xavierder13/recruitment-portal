@@ -158,12 +158,14 @@
                           :error-messages="branchIdErrors"
                           @input="$v.branch_id.$touch()"
                           @blur="$v.branch_id.$touch()"
+                          :readonly="hasRole('Branch Manager')"
                         ></v-autocomplete>
                       </v-col>
                     </v-row>
                   </v-card-text>
-                  <v-divider></v-divider>
-                  <v-card-actions class="justify-end">
+                  <v-divider class="my-0"></v-divider>
+                  <v-card-actions class="pr-4 py-4">
+                    <v-spacer></v-spacer>
                     <v-btn
                       color="success"
                       transition="scale-transition"
@@ -1045,7 +1047,17 @@ export default {
     },
 
     ...mapState("userRolesPermissions", ["userRoles", "userPermissions"]),
+    ...mapState("auth", ["user", "userIsLoaded"]),
     ...mapGetters("userRolesPermissions", ["hasRole", "hasPermission"]),
+  },
+  watch: {
+    userIsLoaded: {
+      handler() {
+        if (this.userIsLoaded) {
+          this.branch_id = this.user.branch_id;
+        }
+      },
+    },
   },
   mounted() {
     axios.defaults.headers.common["Authorization"] =
@@ -1053,6 +1065,7 @@ export default {
     this.websocket();
 
     this.getApplicants();
+    
     // this.getBranch();
   }
 };
