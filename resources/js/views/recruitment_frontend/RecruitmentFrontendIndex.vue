@@ -375,7 +375,7 @@
                   </v-stepper-step>
                 </v-stepper-header>
                 <v-row>
-                  <v-col class="px-8 mt-8">
+                  <v-col class="px-9 mt-8">
                     <span class="font-italic font-weight-bold">Note: All fields with asterisk(*) are required</span>
                   </v-col>
                 </v-row>

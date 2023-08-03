@@ -117,7 +117,7 @@ class ApplicantController extends Controller
 					'height.required'		    => 'Enter a valid value',
           'height.numeric' 				=> 'Enter a valid value',
           'height.between'	 			=> 'Enter a valid value',
-					// 'educ_attain.required' => 'Educational attainment is required.',
+					'educ_attain.required' => 'Educational attainment is required.',
 					// 'course.required' 		 => 'Course is required.',
 					// 'school_grad.required' => 'School graduated is required.',
 					'how_learn.required' 	  => 'This field is required.',
@@ -136,8 +136,8 @@ class ApplicantController extends Controller
 					'contact_no' 		=> 'required|digits:11',
 					'email' 				=> 'required|email',
 					'educ_attain' 	=> 'required',
-					'course' 				=> 'required',
-					'school_grad' 	=> 'required',
+					// 'course' 				=> 'required',
+					// 'school_grad' 	=> 'required',
 					'how_learn' 		=> 'required',
 					'file'			  	=> 'required',
 					'religion'			=> 'required',
@@ -187,7 +187,7 @@ class ApplicantController extends Controller
 				$applicant->religion 				= $req->get('religion');
 				$applicant->height 					= $req->get('height');
 				$applicant->weight 					= $req->get('weight');
-				// $applicant->educ_attain 		= $req->get('educ_attain');
+				$applicant->educ_attain 		= $req->get('educ_attain');
 				// $applicant->course 					= $req->get('course');
 				// $applicant->school_grad 		= $req->get('school_grad');
 				$applicant->sss_no 					= $req->get('sss_no');
