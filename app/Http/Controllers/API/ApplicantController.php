@@ -78,7 +78,7 @@ class ApplicantController extends Controller
 	}
 
 	public function submit_application(Request $req){
-
+		
 		try{
 			$applicant_lastname 	= $req->get('lastname');
 			$applicant_firstname  = $req->get('firstname');
@@ -145,6 +145,15 @@ class ApplicantController extends Controller
 					'weight'			  => 'required|numeric|between:1, 999999.99',
 					'height'			  => 'required|numeric|between:1, 999999.99',
 				], $rules);
+
+				$higher_level = ['College Undergraduate', 'College Graduate', 'Graduate School', 'Vocationl School'];
+
+				$educ_attain = $req->educ_attain;
+
+				if($educ_attain == 'Highschool Granduate' || (!$req->k_12_highschool && in_array($educ_attain, $higher_level)))
+				{
+					
+				}
 	
 				if($validator->fails()){
 					return response()->json($validator->errors(), 200);

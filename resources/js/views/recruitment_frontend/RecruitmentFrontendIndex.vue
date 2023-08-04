@@ -813,9 +813,9 @@
                         class="mt-2 mb-0"
                         cols="12"
                         xs="12"
-                        sm="6"
-                        md="6"
-                        lg="6"
+                        sm="4"
+                        md="4"
+                        lg="4"
                       >
                         <v-autocomplete
                           class="ma-0 pa-0"
@@ -833,9 +833,9 @@
                         class="mb-0"
                         cols="12"
                         xs="12"
-                        sm="6"
-                        md="6"
-                        lg="6"
+                        sm="4"
+                        md="4"
+                        lg="4"
                         v-if="applicant.educ_attain > 3"
                       >
                         <div class="d-flex mb-0">
@@ -1526,7 +1526,7 @@
                       </v-row>
                       <v-row>
                         <v-col class="my-2 py-0">
-                          <v-divider v-if="fam_members.length > i + 1" class="my-0"></v-divider>
+                          <v-divider class="my-0"></v-divider>
                         </v-col>
                       </v-row>
                     </template>
@@ -1652,21 +1652,21 @@
                           <v-btn
                             class="mr-1"
                             color="primary"
-                            @click="stepper = 5"
+                            @click="stepper = 3"
                             v-if="continue_2"
                           >
                             Continue
                           </v-btn>
                         </v-fade-transition>  
 
-                        <v-btn @click="stepper = 3">
+                        <v-btn @click="stepper = 1">
                           Back
                         </v-btn>
                       </v-col>  
                     </v-row>
                   </v-stepper-content>
 
-                  <v-stepper-content step="5">
+                  <v-stepper-content step="3">
                     <v-row>
                       <v-col cols="12" class="my-4 py-0">
                         <v-container>
@@ -1676,7 +1676,7 @@
                             </template>
                           </v-checkbox>
                         </v-container>
-                        <v-btn @click="(stepper = 4), (checkbox = false)">
+                        <v-btn @click="(stepper = 2), (checkbox = false)">
                           Back
                         </v-btn>
                       </v-col>
@@ -2302,8 +2302,8 @@ export default {
         height: [],
         weight: [],
         educ_attain: [],
-        course: [],
-        school_grad: [],
+        // course: [],
+        // school_grad: [],
         how_learn: [],
         file: []
       },
@@ -2585,8 +2585,8 @@ export default {
 
     submit_application(){
 
-      this.loader_dialog = true;
-      this.saving_loader_text = true;
+      // this.loader_dialog = true;
+      // this.saving_loader_text = true;
       
       this.applicantError = {
         lastname: [],
@@ -2599,8 +2599,12 @@ export default {
         contact_no: [],
         email: [],
         educ_attain: [],
-        course: [],
-        school_grad: [],
+        citizenship: [],
+        religion: [],
+        height: [],
+        weight: [],
+        // course: [],
+        // school_grad: [],
         how_learn: [],
         how_learn_2: [],
         file: []
@@ -2631,15 +2635,69 @@ export default {
       formData.append('contact_no', this.applicant.contact_no);
       formData.append('email', this.applicant.email);
       formData.append('educ_attain', educ_attain);
-      formData.append('course', this.applicant.course);
-      formData.append('school_grad', this.applicant.school_grad);
-
+      formData.append('k_12_highschool', this.k_12_checkbox);
+      // formData.append('course', this.applicant.course);
+      // formData.append('school_grad', this.applicant.school_grad);
+      
       if(how_learn_selected === 'Others'){
         formData.append('how_learn', this.applicant.how_learn_2);
       }else{
         formData.append('how_learn', this.applicant.how_learn);
       }
+
+      let hs_fieldnames = Object.keys(this.highschool)
+      hs_fieldnames.forEach(value => {
+        formData.append('highschool['+value+']', this.highschool[value]);
+      });
+
+      let jrhs_fieldnames = Object.keys(this.jr_highschool)
+      jrhs_fieldnames.forEach(value => {
+        formData.append('jr_highschool['+value+']', this.jr_highschool[value]);
+      });
+
+      let srhs_fieldnames = Object.keys(this.sr_highschool)
+      srhs_fieldnames.forEach(value => {
+        formData.append('sr_highschool['+value+']', this.sr_highschool[value]);
+      });
+
+      let college_fieldnames = Object.keys(this.college)
+      college_fieldnames.forEach(value => {
+        formData.append('college['+value+']', this.college[value]);
+      });
+
+      let gs_fieldnames = Object.keys(this.graduate_school)
+      gs_fieldnames.forEach(value => {
+        formData.append('graduate_school['+value+']', this.graduate_school[value]);
+      });
+
+      let voc_fieldnames = Object.keys(this.vocational_school)
+      voc_fieldnames.forEach(value => {
+        formData.append('vocational_shcool['+value+']', this.vocational_school[value]);
+      });
+
+      formData.append('references[]', this.references);
       
+      let father_fieldnames = Object.keys(this.father)
+      father_fieldnames.forEach(value => {
+        formData.append('father['+value+']', this.father[value]);
+      });
+
+      let mother_fieldnames = Object.keys(this.mother)
+      mother_fieldnames.forEach(value => {
+        formData.append('mother['+value+']', this.mother[value]);
+      });
+
+      let spouse_fieldnames = Object.keys(this.spouse)
+      spouse_fieldnames.forEach(value => {
+        formData.append('spouse['+value+']', this.spouse[value]);
+      });
+
+      let guardian_fieldnames = Object.keys(this.guardian)
+      guardian_fieldnames.forEach(value => {
+        formData.append('guardian['+value+']', this.guardian[value]);
+      });
+
+      formData.append('dependents', this.dependents);
       formData.append('file', this.applicant.myFileInput);
 
       axios.post("/api/public_api/submit_application", formData, {
@@ -2648,6 +2706,7 @@ export default {
         }
       }).then(
         (response) => {
+          console.log(response.data)
           if(response.data.success){
 
             // send data to Sockot.IO Server
@@ -2657,14 +2716,14 @@ export default {
               timeout: 2000
             });
 
-            this.reset();
+            // this.reset();
           }else if(response.data.duplicate){
 
             this.$toaster.error('You have already applied to this position, please select another position to apply.', {
               timeout: 7000
             });
 
-            this.reset();
+            // this.reset();
           }else{
 
             this.stepper = 1;
@@ -2756,7 +2815,7 @@ export default {
       let jhs_fields = Object.keys(this.jr_highschool);
       let shs_fields = Object.keys(this.sr_highschool);
       let college_fields = Object.keys(this.college);
-      let grad_fields = Object(this.graduate_school);
+      let grad_fields = Object.keys(this.graduate_school);
       let voc_fields = Object.keys(this.vocational_school);
     
       this.continue_1 = true;
