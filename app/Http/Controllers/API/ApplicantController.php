@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Exports\ApplicantsExport;
 use App\Applicant;
+use App\ApplicantEducAttain;
+use App\ApplicantExperience;
+use App\ApplicantReference;
+use App\ApplicantFamilyMember;
+use App\ApplicantDependent;
 use Validator;
 use Excel;
 use Mail;
@@ -70,7 +75,7 @@ class ApplicantController extends Controller
 													$row->cnt_id = $index + 1;
 												});	
 
-		$branches = db::table('branches')
+		$branches = DB::table('branches')
 												->orderBy('id', 'ASC')
 												->get();
 
@@ -78,7 +83,7 @@ class ApplicantController extends Controller
 	}
 
 	public function submit_application(Request $req){
-		
+		// return $req;
 		try{
 			$applicant_lastname 	= $req->get('lastname');
 			$applicant_firstname  = $req->get('firstname');
@@ -91,7 +96,7 @@ class ApplicantController extends Controller
 													 ->where('middlename', '=', $applicant_middlename)
 													 ->where('jobvacancy_id', '=', $job)
 													 ->get();
-
+			
 			if($check_applicant->count() > 0){
 				return response()->json(['duplicate' => true, 'message' => 'Duplicate records']);
 			}else{
@@ -121,40 +126,79 @@ class ApplicantController extends Controller
 					// 'course.required' 		 => 'Course is required.',
 					// 'school_grad.required' => 'School graduated is required.',
 					'how_learn.required' 	  => 'This field is required.',
-					'file.required' 			  => 'File is required.'
+					'file.required' 			  => 'File is required.',
 				];
-	
-				$validator = Validator::make($req->all(),[
-					'lastname' 			=> 'required',
-					'firstname' 		=> 'required',
-					'middlename' 		=> 'required',
-					'address'				=> 'required',
-					'birthdate'			=> 'required',
-					'gender'		  	=> 'required',
-					'civil_status'	=> 'required',
-					'gender'     	 	=> 'required',
-					'contact_no' 		=> 'required|digits:11',
-					'email' 				=> 'required|email',
-					'educ_attain' 	=> 'required',
+
+				$valid_fields = [
+					'lastname' 								=> 'required',
+					'firstname' 							=> 'required',
+					'middlename' 							=> 'required',
+					'address'									=> 'required',
+					'birthdate'								=> 'required',
+					'gender'		  						=> 'required',
+					'civil_status'						=> 'required',
+					'gender'     	 						=> 'required',
+					'contact_no' 							=> 'required|digits:11',
+					'email' 									=> 'required|email',
+					'educ_attain' 						=> 'required',
 					// 'course' 				=> 'required',
 					// 'school_grad' 	=> 'required',
-					'how_learn' 		=> 'required',
-					'file'			  	=> 'required',
-					'religion'			=> 'required',
-					'citizenship'		=> 'required',
-					'weight'			  => 'required|numeric|between:1, 999999.99',
-					'height'			  => 'required|numeric|between:1, 999999.99',
-				], $rules);
-
-				$higher_level = ['College Undergraduate', 'College Graduate', 'Graduate School', 'Vocationl School'];
+					'how_learn' 							=> 'required',
+					'file'			  						=> 'required',
+					'religion'								=> 'required',
+					'citizenship'							=> 'required',
+					'weight'			  					=> 'required|numeric|between:0.00000001, 999999.99',
+					'height'			 	 					=> 'required|numeric|between:0.00000001, 999999.99',
+					'references.*.name' 			=> 'required',
+					'references.*.address' 		=> 'required',
+					'references.*.contact' 	=> 'required',
+				];
 
 				$educ_attain = $req->educ_attain;
+				$k_12_highschool = filter_var($req->k_12_highschool, FILTER_VALIDATE_BOOLEAN);
+				$post_hs_levels = ['Vocational School', 'College Graduate', 'College Undergraduate', 'Graduate School'];
 
-				if($educ_attain == 'Highschool Granduate' || (!$req->k_12_highschool && in_array($educ_attain, $higher_level)))
+				if($educ_attain == 'Highschool Graduate' || (!$k_12_highschool && in_array($educ_attain, $post_hs_levels)))
 				{
-					
+					$valid_fields['highschool.school'] = 'required';
+					$valid_fields['highschool.sy_attended'] = 'required';
 				}
-	
+
+				if($educ_attain == 'Junior Highschool Graduate' || $k_12_highschool)
+				{
+					$valid_fields['jr_highschool.school'] = 'required';
+					$valid_fields['jr_highschool.sy_attended'] = 'required';
+				}
+
+				if($educ_attain == 'Senior Highschool Graduate' || $k_12_highschool)
+				{
+					$valid_fields['sr_highschool.school'] = 'required';
+					$valid_fields['sr_highschool.sy_attended'] = 'required';
+				}
+
+				if($educ_attain == 'Vocational School')
+				{	
+					$valid_fields['vocational_school.school'] = 'required';
+					$valid_fields['vocational_school.course'] = 'required';
+					$valid_fields['vocational_school.sy_attended'] = 'required';
+				}
+
+				if(in_array($educ_attain, ['College Graduate', 'College Undergraduate', 'Graduate School']))
+				{
+					$valid_fields['college.school'] = 'required';
+					$valid_fields['college.course'] = 'required';
+					$valid_fields['college.sy_attended'] = 'required';
+				}
+
+				if($educ_attain == 'Graduate School')
+				{	
+					$valid_fields['graduate_school.school'] = 'required';
+					$valid_fields['graduate_school.course'] = 'required';
+					$valid_fields['graduate_school.sy_attended'] = 'required';
+				}
+				
+				$validator = Validator::make($req->all(), $valid_fields, $rules);
+				
 				if($validator->fails()){
 					return response()->json($validator->errors(), 200);
 				}
@@ -207,7 +251,139 @@ class ApplicantController extends Controller
 				$applicant->file 						= $file_name;
 				$applicant->status 					= 0;
 				$applicant->save();
-	
+
+				if($educ_attain == 'Highschool Graduate' || !$k_12_highschool)
+				{
+					$hs = $req->highschool;
+					ApplicantEducAttain::create(
+						[
+							'applicant_id' => $applicant->id,
+							'educ_level' => 'HighSchool',
+							'school' => $hs['school'],
+							'sy_attended' => $hs['sy_attended'],
+						]
+					);
+				}
+
+				if($educ_attain == 'Junior Highschool Graduate' || $k_12_highschool)
+				{
+					$hs = $req->jr_highschool;
+					ApplicantEducAttain::create(
+						[
+							'applicant_id' => $applicant->id,
+							'educ_level' => 'Junior HighSchool',
+							'school' => $hs['school'],
+							'sy_attended' => $hs['sy_attended'],
+						]
+					);
+				}
+
+				if($educ_attain == 'Senior Highschool Graduate' || $k_12_highschool)
+				{
+					$hs = $req->sr_highschool;
+					ApplicantEducAttain::create(
+						[
+							'applicant_id' => $applicant->id,
+							'educ_level' => 'Senior HighSchool',
+							'school' => $hs['school'],
+							'sy_attended' => $hs['sy_attended'],
+						]
+					);
+				}
+
+				if($educ_attain == 'Vocational School')
+				{	
+					$voc = $req->voational_school;
+					ApplicantEducAttain::create(
+						[
+							'applicant_id' => $applicant->id,
+							'educ_level' => 'Vocational School',
+							'school' => $voc['school'],
+							'course' => $voc['course'],
+							'major' => $voc['major'],
+							'sy_attended' => $voc['sy_attended'],
+						]
+					);
+				}
+
+				if(in_array($educ_attain, ['College Graduate', 'College Undergraduate', 'Graduate School']))
+				{
+					$college = $req->college;
+					ApplicantEducAttain::create(
+						[
+							'applicant_id' => $applicant->id,
+							'educ_level' => 'College',
+							'school' => $college['school'],
+							'course' => $college['course'],
+							'major' => $college['major'],
+							'sy_attended' => $college['sy_attended'],
+						]
+					);
+				}
+
+				if($educ_attain == 'Graduate School')
+				{	
+					$grad = $req->graduate_school;
+					ApplicantEducAttain::create([
+						'applicant_id' => $applicant->id,
+						'educ_level' => 'Graduate School',
+						'school' => $grad['school'],
+						'course' => $grad['course'],
+						'major' => $grad['major'],
+						'sy_attended' => $grad['sy_attended'],
+					]);
+				}
+
+				foreach ($req->experiences as $value) {
+					ApplicantExperience::create([
+						'applicant_id' => $applicant->id,
+						'employer' => $value['company'],
+						'position' => $value['position'],
+						'salary' => $value['salary'],
+						'date_of_service' => $value['date_of_service'],
+						'job_description' => $value['job_description'],
+					]);
+				}
+
+				foreach ($req->references as $value) {
+					ApplicantReference::create([
+						'applicant_id' => $applicant->id,
+						'name' => $value['name'],
+						'address' => $value['address'],
+						'contact' => $value['contact'],
+						'company' => $value['company'],
+						'position' => $value['position'],
+					]);
+				}
+
+				
+				foreach ($req->dependents as $value) {
+					ApplicantDependent::create([
+						'applicant_id' => $applicant->id,
+						'name' => $value['name'],
+						'relationship' => $value['relationship'],
+						'age' => $value['age'],
+						'address' => $value['address'],
+						'occupation' => $value['occupation'],
+					]);
+				}
+
+				$fam_members = ['father', 'mother', 'spouse', 'guardian'];
+
+				foreach ($fam_members as $fam) {
+
+					${$fam} = $req[$fam];
+
+					ApplicantFamilyMember::create([
+						'applicant_id' => $applicant->id,
+						'relationship' => $fam,
+						'name' => ${$fam}['name'],
+						'age' => ${$fam}['age'],
+						'address' => ${$fam}['address'],
+						'contact' => ${$fam}['contact'],
+						'occupation' => ${$fam}['occupation'],
+					]);
+				}
 	
 				$email_name = $req->get('email');
 	
@@ -296,7 +472,7 @@ class ApplicantController extends Controller
 
 	public function view_applicants_new($id){
 
-		$job_applicants = DB::table('job_vacancies')
+		$applicant = DB::table('job_vacancies')
 												->join('applicants', 'applicants.jobvacancy_id', '=', 'job_vacancies.id')
 												->join('positions', 'positions.id', '=', 'job_vacancies.position_id')
 												->join('branches', 'branches.id', '=', 'applicants.branch_id')
@@ -319,9 +495,22 @@ class ApplicantController extends Controller
 																 'applicants.status'
 																)
 												->where('applicants.id', $id)					
-												->get();			
-
-		return response()->json(['success' => true, 'resp' => $job_applicants]);
+												->get()->first();
+		$educ_attains = ApplicantEducAttain::where('applicant_id', $id)->get();
+		$experiences = ApplicantExperience::where('applicant_id', $id)->get();
+		$references = ApplicantReference::where('applicant_id', $id)->get();
+		$fam_members = ApplicantFamilyMember::where('applicant_id', $id)->get();
+		$dependents = ApplicantDependent::where('applicant_id', $id)->get();
+			
+		return response()->json([
+			'success' => true, 
+			'educ_attains' => $educ_attains,
+			'applicant' => $applicant,
+			'experiences' => $experiences,
+			'references' => $references,
+			'fam_members' => $fam_members,
+			'dependents' => $dependents,
+		]);
 	}
 
 	public function export_applicants(Request $req){

@@ -1321,7 +1321,7 @@
                           <v-text-field
                             class="ma-0 pa-0"
                             label="Date of Service"
-                            v-model="item.date_service"
+                            v-model="item.date_of_service"
                           ></v-text-field>
                         </v-col>
                         <v-col 
@@ -1377,8 +1377,11 @@
                         >
                           <v-text-field
                             class="ma-0 pa-0"
-                            label="Name"
+                            label="Name *"
                             v-model="item.name"
+                            :error-messages="referencesError[i].name"
+                            @input="validateReference(i, 'name') + validateFields_form1()"
+                            @blur="validateReference(i, 'name') + validateFields_form1()"
                           ></v-text-field>
                         </v-col>
                         <v-col 
@@ -1391,8 +1394,11 @@
                         >
                           <v-text-field
                             class="ma-0 pa-0"
-                            label="Address"
+                            label="Address *"
                             v-model="item.address"
+                            :error-messages="referencesError[i].address"
+                            @input="validateReference(i, 'address') + validateFields_form1()"
+                            @blur="validateReference(i, 'address') + validateFields_form1()"
                           ></v-text-field>
                         </v-col>
                         <v-col 
@@ -1405,8 +1411,11 @@
                         >
                           <v-text-field
                             class="ma-0 pa-0"
-                            label="Contact"
+                            label="Contact *"
                             v-model="item.contact"
+                            :error-messages="referencesError[i].contact"
+                            @input="validateReference(i, 'contact') + validateFields_form1()"
+                            @blur="validateReference(i, 'contact') + validateFields_form1() "
                           ></v-text-field>
                         </v-col>
                         <v-col 
@@ -1444,92 +1453,355 @@
                         </v-col>
                       </v-row>
                     </template>
-                    <template v-for="(item, i) in fam_members">
-                      <v-row>
-                        <v-col>
-                          <span class="text-h6">
-                            <strong>{{ item.relation.charAt(0).toUpperCase() + item.relation.slice(1) }}</strong> 
-                          </span>
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
+                    <v-row>
+                      <v-col>
+                        <span class="text-h6">
+                          <strong>Father</strong> 
+                        </span>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Name"
+                          v-model="father.name"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field-integer
+                          class="mt-0 pa-0"
+                          v-model="father.age"
+                          label="Age"
+                          v-bind:properties="{
+                            name: 'age  ',
+                            placeholder: '0',
+                            dense: true,
+                            
+                          }"  
                         >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Name"
-                            v-model="[item].name"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
+                        </v-text-field-integer>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Address"
+                          v-model="father.address"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Contact"
+                          v-model="father.contact"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Occupation"
+                          v-model="father.occupation"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
+                        <span class="text-h6">
+                          <strong>Mother</strong> 
+                        </span>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Name"
+                          v-model="mother.name"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field-integer
+                          class="ma-0 pa-0 mb-0"
+                          v-model="mother.age"
+                          label="Age"
+                          v-bind:properties="{
+                            name: 'age  ',
+                            placeholder: '0',
+                            dense: true,
+                            
+                          }"  
                         >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Age"
-                            v-model="[item].age"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
+                        </v-text-field-integer>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Address"
+                          v-model="mother.address"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Contact"
+                          v-model="mother.contact"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Occupation"
+                          v-model="mother.occupation"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
+                        <span class="text-h6">
+                          <strong>Spouse</strong> 
+                        </span>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Name"
+                          v-model="spouse.name"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field-integer
+                          class="ma-0 pa-0 mb-0"
+                          v-model="spouse.age"
+                          label="Age"
+                          v-bind:properties="{
+                            name: 'age  ',
+                            placeholder: '0',
+                            dense: true,
+                            
+                          }"  
                         >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Address"
-                            v-model="[item].address"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
+                        </v-text-field-integer>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Address"
+                          v-model="spouse.address"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Contact"
+                          v-model="spouse.contact"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Occupation"
+                          v-model="spouse.occupation"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
+                        <span class="text-h6">
+                          <strong>Guardian</strong> 
+                        </span>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Name"
+                          v-model="guardian.name"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field-integer
+                          class="ma-0 pa-0 mb-0"
+                          v-model="guardian.age"
+                          label="Age"
+                          v-bind:properties="{
+                            name: 'age  ',
+                            placeholder: '0',
+                            dense: true,
+                            
+                          }"  
                         >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Contact"
-                            v-model="[item].contact"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Occupation"
-                            v-model="item.occupation"
-                          ></v-text-field>
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col class="my-2 py-0">
-                          <v-divider class="my-0"></v-divider>
-                        </v-col>
-                      </v-row>
-                    </template>
+                        </v-text-field-integer>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Address"
+                          v-model="guardian.address"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Contact"
+                          v-model="guardian.contact"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col 
+                        class="my-2 py-0"
+                        cols="12"
+                        xs="12"
+                        sm="6"
+                        md="6"
+                        lg="4"
+                      >
+                        <v-text-field
+                          class="ma-0 pa-0"
+                          label="Occupation"
+                          v-model="guardian.occupation"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col class="my-2 py-0">
+                        <v-divider class="my-0"></v-divider>
+                      </v-col>
+                    </v-row>
                     <template v-for="(item, i) in dependents">
                       <v-row>
                         <v-col>
@@ -1575,11 +1847,17 @@
                           md="6"
                           lg="4"
                         >
-                          <v-text-field
+                          <v-text-field-integer
                             class="ma-0 pa-0"
-                            label="Age"
                             v-model="item.age"
-                          ></v-text-field>
+                            label="Age"
+                            v-bind:properties="{
+                              name: 'age  ',
+                              placeholder: '0',
+                              dense: true,
+                            }"  
+                          >
+                          </v-text-field-integer>
                         </v-col>
                         <v-col 
                           class="my-2 py-0"
@@ -2165,7 +2443,7 @@ export default {
       saving_loader_text: false,
       loader_dialog: false,
       dialog_apply_now: false,
-      dialog_submit_now: true,
+      dialog_submit_now: false,
       submit_dialog: false,
       stepper: 1,
       checkbox: false,
@@ -2233,21 +2511,20 @@ export default {
         { text: 'Vocational School', value: 7 },
       ],
       work_experiences: [
-        { company: "", position: "", salary: "", date_service: "", job_description: "" },
+        { company: "", position: "", salary: "", date_of_service: "", job_description: "" },
       ],
       references: [
-        { name: "", address: "", contact: "", company: "", job_description: "" },
-        { name: "", address: "", contact: "", company: "", job_description: "" },
-        { name: "", address: "", contact: "", company: "", job_description: "" },
+        { name: "", address: "", contact: "", company: "", position: "" },
+        { name: "", address: "", contact: "", company: "", position: "" },
+        { name: "", address: "", contact: "", company: "", position: "" },
       ],
 
-      fam_members: [
-        { relation: 'father' },
-        { relation: 'mother' },
-        { relation: 'spouse' },
-        { relation: 'guardian' },
+      referencesError: [
+        { name: "", address: "", contact: "" },
+        { name: "", address: "", contact: "" },
+        { name: "", address: "", contact: "" },
       ],
-     
+
       father: { name: "", age: "", address: "", contact: "", occupation: "", },
       mother: { name: "", age: "", address: "", contact: "", occupation: "", },
       spouse: { name: "", age: "", address: "", contact: "", occupation: "", },
@@ -2307,6 +2584,10 @@ export default {
         how_learn: [],
         file: []
       },
+      
+      referenceError: {
+
+      },
 
       branch_job_vacancies: [],
       get_job_vacancy_lists: [],
@@ -2353,7 +2634,10 @@ export default {
         'Employee Referral',
         'Customer Referral',
         'Others'
-      ]
+      ],
+
+      edutAttainHasError: false,
+      referencesHasError: false,
     }
   },
 
@@ -2445,6 +2729,8 @@ export default {
 
       this.stepper = 1;
       this.loader_dialog = false;
+      this.educAttainHasError = false;
+      this.referencesHasError = false;
     },
 
     isUnauthorized(error) {
@@ -2585,8 +2871,8 @@ export default {
 
     submit_application(){
 
-      // this.loader_dialog = true;
-      // this.saving_loader_text = true;
+      this.loader_dialog = true;
+      this.saving_loader_text = true;
       
       this.applicantError = {
         lastname: [],
@@ -2626,8 +2912,9 @@ export default {
       formData.append('lastname', this.applicant.lastname);
       formData.append('firstname', this.applicant.firstname);
       formData.append('middlename', this.applicant.middlename);
-      formData.append('address', this.applicant.address2);
-      formData.append('address', this.applicant.birth_place);
+      formData.append('address', this.applicant.address);
+      formData.append('address2', this.applicant.address2);
+      formData.append('birth_place', this.applicant.birth_place);
       formData.append('birthdate', this.applicant.birthdate);
       formData.append('age', this.applicant.age);
       formData.append('gender', this.applicant.gender);
@@ -2635,6 +2922,10 @@ export default {
       formData.append('contact_no', this.applicant.contact_no);
       formData.append('email', this.applicant.email);
       formData.append('educ_attain', educ_attain);
+      formData.append('religion', this.applicant.religion);
+      formData.append('citizenship', this.applicant.citizenship);
+      formData.append('height', this.applicant.height);
+      formData.append('weight', this.applicant.weight);
       formData.append('k_12_highschool', this.k_12_checkbox);
       // formData.append('course', this.applicant.course);
       // formData.append('school_grad', this.applicant.school_grad);
@@ -2674,8 +2965,24 @@ export default {
       voc_fieldnames.forEach(value => {
         formData.append('vocational_shcool['+value+']', this.vocational_school[value]);
       });
+  
+      this.work_experiences.forEach((value, i) => {
+        let field_names = Object.keys(value)
+        
+        field_names.forEach(field => {
+          formData.append('experiences['+i+']['+field+']', value[field]);
+        });
+        
+      });
 
-      formData.append('references[]', this.references);
+      this.references.forEach((value, i) => {
+        let field_names = Object.keys(value)
+
+        field_names.forEach(field => {
+          formData.append('references['+i+']['+field+']', value[field]);
+        });
+        
+      });
       
       let father_fieldnames = Object.keys(this.father)
       father_fieldnames.forEach(value => {
@@ -2697,7 +3004,15 @@ export default {
         formData.append('guardian['+value+']', this.guardian[value]);
       });
 
-      formData.append('dependents', this.dependents);
+      this.dependents.forEach((value, i) => {
+        let field_names = Object.keys(value)
+
+        field_names.forEach(field => {
+          formData.append('dependents['+i+']['+field+']', value[field]);
+        });
+        
+      });
+
       formData.append('file', this.applicant.myFileInput);
 
       axios.post("/api/public_api/submit_application", formData, {
@@ -2706,7 +3021,8 @@ export default {
         }
       }).then(
         (response) => {
-          console.log(response.data)
+          console.log(response.data);
+          this.disabled  = false;
           if(response.data.success){
 
             // send data to Sockot.IO Server
@@ -2751,7 +3067,7 @@ export default {
     },
 
     addExperience() {
-      this.work_experiences.push({ company: "", position: "", salary: "", date_service: "", job_description: "" });
+      this.work_experiences.push({ company: "", position: "", salary: "", date_of_service: "", job_description: "" });
     },
 
     removeExperience(index) {
@@ -2785,7 +3101,8 @@ export default {
 
     validateFields_form1(){
       let fieldnames = Object.keys(this.applicant);
-
+      this.referencesHasError = false;
+      this.educAttainHasError = false;
       this.continue_1 = true;
 
       fieldnames.forEach(value => {
@@ -2805,9 +3122,26 @@ export default {
         }
   
       });
-
+9
       this.validateEducAttain();
-     
+
+      // validate References
+      this.references.forEach((value, i) => {
+        let fieldnames = Object.keys(value);
+        
+        fieldnames.forEach(field => {
+          if(!['position', 'company'].includes(field))
+          {
+            if(!value[field])
+            {
+              this.referencesHasError = true;
+            }
+          }
+        });
+      });
+
+      this.continue_1 = this.educAttainHasError || this.referencesHasError ? false : true;
+  
     },
 
     validateEducAttain(){
@@ -2817,14 +3151,12 @@ export default {
       let college_fields = Object.keys(this.college);
       let grad_fields = Object.keys(this.graduate_school);
       let voc_fields = Object.keys(this.vocational_school);
-    
-      this.continue_1 = true;
-
+      let hasError = false;
       if(this.HSIsRequired)
       {
         hs_fields.forEach(value => {
           if(!this.highschool[value] && value != 'honors'){
-            this.continue_1 = false;
+            hasError = true;
           }
         });
       }
@@ -2833,7 +3165,7 @@ export default {
       {
         jhs_fields.forEach(value => {
           if(!this.jr_highschool[value] && value != 'honors'){
-            this.continue_1 = false;
+            hasError = true;
           }
         });
       }
@@ -2842,7 +3174,7 @@ export default {
       {
         shs_fields.forEach(value => {
           if(!this.sr_highschool[value] && value != 'honors'){
-            this.continue_1 = false;
+            hasError = true;
           }
         });
       }
@@ -2851,7 +3183,7 @@ export default {
       {
         college_fields.forEach(value => {
           if(!this.college[value] && !['honors', 'major'].includes(value)){
-            this.continue_1 = false;
+            hasError = true;
           }
         });
       }
@@ -2860,7 +3192,7 @@ export default {
       {
         grad_fields.forEach(value => {
           if(!this.graduate_school[value] && !['honors', 'major'].includes(value)){
-            this.continue_1 = false;
+            hasError = true;
           }
         });
       }
@@ -2869,11 +3201,24 @@ export default {
       {
         voc_fields.forEach(value => {
           if(!this.vocational_school[value] && !['honors', 'major'].includes(value)){
-            this.continue_1 = false;
+            hasError = true;
           }
         });
       }
+      
+      this.educAttainHasError = hasError;
 
+    },
+
+    validateReference(i, field)
+    {
+      this.referencesHasError = false;
+      this.referencesError[i][field] = "";
+      if(!this.references[i][field]){
+        this.continue_1 = false;
+        this.referencesError[i][field] = 'This field is required';
+      }
+      
     },
 
     validateFile(){
@@ -3214,7 +3559,8 @@ export default {
 
     vocSchoolIsRequired() {
       return this.applicant.educ_attain === 7;
-    }
+    },
+    
   },
   created(){
     AOS.init();
