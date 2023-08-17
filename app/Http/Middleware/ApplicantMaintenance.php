@@ -66,6 +66,12 @@ class ApplicantMaintenance
 				}
 			}
 
+			if($request->is('api/job_applicant/file/download')){
+				if($user->can('jobapplicants-file-download')){
+					return $next($request);
+				}
+			}
+
       return abort(401, 'Unauthorized');
     }
 }

@@ -12,12 +12,15 @@ use App\ApplicantExperience;
 use App\ApplicantReference;
 use App\ApplicantFamilyMember;
 use App\ApplicantDependent;
+use App\ApplicantFile;
+use App\Position;
 use Validator;
 use Excel;
 use Mail;
 use File;
 use DB;
 use Auth;
+use Carbon\Carbon;
 
 class ApplicantController extends Controller
 {
@@ -79,7 +82,9 @@ class ApplicantController extends Controller
 												->orderBy('id', 'ASC')
 												->get();
 
-		return response()->json(['job_applicants' => $job_applicants, 'branches' => $branches], 200);										
+		$positions = Position::orderBy('name', 'Asc')->get();
+
+		return response()->json(['job_applicants' => $job_applicants, 'branches' => $branches, 'positions' => $positions], 200);										
 	}
 
 	public function submit_application(Request $req){
@@ -103,7 +108,7 @@ class ApplicantController extends Controller
 				$rules = [
 					'lastname.required' 	  => 'Last name is required.',
 					'firstname.required' 	  => 'First name is required.',
-					'middlename.required'   => 'Middle name is required.',
+					// 'middlename.required'   => 'Middle name is required.',
 					'address.required' 		  => 'Address is required.',
 					'birth_place.required'  => 'Birth place is required',
 					'birthdate.required' 	  => 'Birthday is required.',
@@ -122,7 +127,7 @@ class ApplicantController extends Controller
 					'height.required'		    => 'Enter a valid value',
           'height.numeric' 				=> 'Enter a valid value',
           'height.between'	 			=> 'Enter a valid value',
-					'educ_attain.required' => 'Educational attainment is required.',
+					'educ_attain.required' 	=> 'Educational attainment is required.',
 					// 'course.required' 		 => 'Course is required.',
 					// 'school_grad.required' => 'School graduated is required.',
 					'how_learn.required' 	  => 'This field is required.',
@@ -132,7 +137,7 @@ class ApplicantController extends Controller
 				$valid_fields = [
 					'lastname' 								=> 'required',
 					'firstname' 							=> 'required',
-					'middlename' 							=> 'required',
+					// 'middlename' 							=> 'required',
 					'address'									=> 'required',
 					'birthdate'								=> 'required',
 					'gender'		  						=> 'required',
@@ -151,7 +156,7 @@ class ApplicantController extends Controller
 					'height'			 	 					=> 'required|numeric|between:0.00000001, 999999.99',
 					'references.*.name' 			=> 'required',
 					'references.*.address' 		=> 'required',
-					'references.*.contact' 	=> 'required',
+					'references.*.contact' 		=> 'required',
 				];
 
 				$educ_attain = $req->educ_attain;
@@ -203,25 +208,25 @@ class ApplicantController extends Controller
 					return response()->json($validator->errors(), 200);
 				}
 	
-				$resume_file = $req->file('file');
+				// $resume_file = $req->file('file');
 
-				$random_string_1 = Str::random(6);
-				$random_string_2 = Str::random(4);
+				// $random_string_1 = Str::random(6);
+				// $random_string_2 = Str::random(4);
 
-				$random_string = $random_string_1 . $random_string_2;
+				// $random_string = $random_string_1 . $random_string_2;
 
-				if(Applicant::where('file', $random_string )->exists()) {
-					$random_string_1 = Str::random(4);
-					$random_string_2 = Str::random(6);
+				// if(Applicant::where('file', $random_string )->exists()) {
+				// 	$random_string_1 = Str::random(4);
+				// 	$random_string_2 = Str::random(6);
 		
-					$random_string = $random_string_1 . $random_string_2;
-				}
+				// 	$random_string = $random_string_1 . $random_string_2;
+				// }
 	
-				$file_name = $random_string . '.' . $resume_file->getClientOriginalExtension();
+				// $file_name = $random_string . '.' . $resume_file->getClientOriginalExtension();
 	
-				//Move to file directory.
-				$resume_file->move(public_path() . '/wysiwyg' . '/resume_files' . '/', $file_name);
-				
+				// //Move to file directory.
+				// $resume_file->move(public_path() . '/wysiwyg' . '/resume_files' . '/', $file_name);		
+
 				$applicant  								= new Applicant();
 				$applicant->jobvacancy_id		= $req->get('jobvacancy_id');
 				$applicant->branch_id				= $req->get('branch_id');
@@ -248,9 +253,30 @@ class ApplicantController extends Controller
 				$applicant->pagibig_no 			= $req->get('pagibig_no');
 				$applicant->tin_no 					= $req->get('tin_no');
 				$applicant->how_learn 			= $req->get('how_learn');
-				$applicant->file 						= $file_name;
+				// $applicant->file 						= $file_name;
 				$applicant->status 					= 0;
 				$applicant->save();
+				
+
+				$file_extension = '';
+				if($req->file('file'))
+				{   
+						$file_extension = $req->file('file')->getClientOriginalExtension();
+				}
+				$file_date = Carbon::now()->format('Y-m-d');
+				$uploadedFile = $req->file('file');
+				$file_name = time().$uploadedFile->getClientOriginalName();
+				$file_path = '/wysiwyg/applicant_files/' . $file_date;
+
+				$uploadedFile->move(public_path() . $file_path, $file_name);
+				
+				$applicant_file = new ApplicantFile();
+				$applicant_file->applicant_id = $applicant->id;
+				$applicant_file->file_name = $file_name;
+				$applicant_file->file_path = $file_path;
+				$applicant_file->file_type = $file_extension;
+				$applicant_file->title = "Resume";
+				$applicant_file->save();
 
 				if($educ_attain == 'Highschool Graduate' || !$k_12_highschool)
 				{
@@ -496,12 +522,14 @@ class ApplicantController extends Controller
 																)
 												->where('applicants.id', $id)					
 												->get()->first();
+												
 		$educ_attains = ApplicantEducAttain::where('applicant_id', $id)->get();
 		$experiences = ApplicantExperience::where('applicant_id', $id)->get();
 		$references = ApplicantReference::where('applicant_id', $id)->get();
 		$fam_members = ApplicantFamilyMember::where('applicant_id', $id)->get();
 		$dependents = ApplicantDependent::where('applicant_id', $id)->get();
-			
+		$applicant_files = ApplicantFile::where('applicant_id', $id)->get();
+
 		return response()->json([
 			'success' => true, 
 			'educ_attains' => $educ_attains,
@@ -510,6 +538,7 @@ class ApplicantController extends Controller
 			'references' => $references,
 			'fam_members' => $fam_members,
 			'dependents' => $dependents,
+			'applicant_files' => $applicant_files,
 		]);
 	}
 
@@ -653,4 +682,27 @@ class ApplicantController extends Controller
 
 		return response()->json(['success' => true, 'resp' => 'Updated status successfully.', 'applicant' => $applicant]);
 	}
+
+	public function download_file(Request $req)
+	{
+		try {
+
+				$file = ApplicantFile::find($req->file_id);
+
+				$title = $file->title; 
+				$file_path = $file->file_path;    
+				$file_name = $file->file_name;
+				$file_type = $file->file_type;
+
+				$file = public_path() . $file_path . "/" . $file_name;
+				$headers = array('Content-Type: application/' . $file_type,);
+
+				return response()->download($file, $title . '.' . $file_type, $headers);
+
+		} catch (\Exception $e) {
+				
+				return response()->json(['error' => $e->getMessage()], 200);
+		}
+	}
+	
 }

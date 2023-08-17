@@ -19,8 +19,8 @@ class CreateApplicantReferencesTable extends Migration
             $table->string('name');
             $table->string('address');
             $table->string('contact');
-            $table->string('company');
-            $table->string('position');
+            $table->string('company')->nullable();
+            $table->string('position')->nullable();
             $table->timestamps();
         });
     }

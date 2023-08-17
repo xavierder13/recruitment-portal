@@ -46,7 +46,8 @@ class PermissionController extends Controller
         $permission->save();
 
         // Administrator Role
-        $role = Role::find(1);
+        // $role = Role::find(1);
+        $role = Role::where('name', 'Administrator')->first();
 
         $permissions = Permission::pluck('id','id')->all();
 

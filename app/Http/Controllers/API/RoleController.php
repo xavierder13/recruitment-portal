@@ -95,9 +95,11 @@ class RoleController extends Controller
         {
             return response()->json($validator->errors(), 200);
         }
+        
+        $role = Role::find($roleid);
 
         // Administrator Role
-        if($roleid == 1)
+        if($role->name == 'Administrator')
         {   
             return abort(403, 'Forbidden');
             // return response()->json(['error' => "You can't update role Admin"], 200);

@@ -34,4 +34,17 @@ class Applicant extends Model
                          'pagibig_no',
                          'tin_no',
                         ];
+
+  public function applicant_files()
+  {
+      return $this->hasMany('App\ApplicantFile', 'applicant_id', 'id');
+      //                 ( <Model>, <id_of_specified_Model>, <id_of_this_model> )
+  }
+
+  public function applicant()
+  {
+      return $this->hasOne('App\Branch', 'id', 'applicant_id');
+      //                 ( <Model>, <id_of_specified_Model>, <id_of_this_model> )
+  }
+
 }

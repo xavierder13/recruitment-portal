@@ -78,15 +78,15 @@
                               label="Permissions"
                               multiple
                               chips
-                              :readonly="role.id == 1 ? true : false"
-                              :clearable="role.id != 1 ? true : false"
+                              :readonly="role.name == 'Administrator' ? true : false"
+                              :clearable="role.name != 'Administrator' ? true : false"
                             >
                               <template v-slot:selection="data">
                                 <v-chip
                                   color="secondary"
                                   v-bind="data.attrs"
                                   :input-value="data.selected"
-                                  :close="role.id != 1 ? true : false"
+                                  :close="role.name != 'Administrator' ? true : false"
                                   @click="data.select"
                                   @click:close="removePermission(data.item)"
                                 >
@@ -109,7 +109,7 @@
                         @click="save"
                         class="mb-4 mr-4"
                         :disabled="disabled"
-                        v-if="role.id != 1"
+                        v-if="role.name != 'Administrator'"
                       >
                         Save
                       </v-btn>

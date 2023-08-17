@@ -426,18 +426,14 @@
                       >
                         <v-text-field
                           label="Middle name"
-                          hint="Note: Just put asterisk (*) if you have no middlename."
                           persistent-hint
                           v-model="applicant.middlename"
-                          :error-messages="middlenameErrors + applicantError.middlename"
-                          @input="$v.applicant.middlename.$touch() + (applicantError.middlename = []) + (validateFields_form1())"
-                          @blur="$v.applicant.middlename.$touch() + (applicantError.middlename = [])"
                         ></v-text-field>
                       </v-col>
                     </v-row>
                     <v-row>
                       <v-col 
-                        cols="12"
+                        cols="12" 
                         xs="12"
                         sm="4"
                         md="4"
@@ -628,44 +624,24 @@
                         lg="4"
                         class="mb-0 pb-0"
                       >
-                        <v-text-field-money
-                          class="pa-0"
+                        <v-text-field
                           label="Height (cm) *"
                           v-model="applicant.height"
-                          v-bind:properties="{
-                            placeholder: '0',
-                            error: heightErrors.length || applicantError.height.length ? true : false,
-                            messages: heightErrors + applicantError.height
-                          }"
-                          v-bind:options="{
-                            length: 11,
-                            precision: 2,
-                            empty: null,
-                          }"
-                           @input="$v.applicant.height.$touch() + (applicantError.height = []) + (validateFields_form1())"
+                          :error-messages="heightErrors + applicantError.height"
+                          @input="$v.applicant.height.$touch() + (applicantError.height = []) + (validateFields_form1())"
                           @blur="$v.applicant.height.$touch() + (applicantError.height = [])"
-                        >
-                        </v-text-field-money>
+                          @keypress="decNumValFilter()"
+                        ></v-text-field>
                       </v-col>
                       <v-col class="mb-0 pb-0">
-                        <v-text-field-money
-                          class="pa-0"
+                        <v-text-field
                           label="Weight (kg) *"
                           v-model="applicant.weight"
-                          v-bind:properties="{
-                            placeholder: '0',
-                            error: weightErrors.length || applicantError.weight.length ? true : false,
-                            messages: weightErrors + applicantError.weight
-                          }"
-                          v-bind:options="{
-                            length: 11,
-                            precision: 2,
-                            empty: null,
-                          }"
+                          :error-messages="weightErrors + applicantError.weight"
                           @input="$v.applicant.weight.$touch() + (applicantError.weight = []) + (validateFields_form1())"
                           @blur="$v.applicant.weight.$touch() + (applicantError.weight = [])"
-                        >
-                        </v-text-field-money>
+                          @keypress="decNumValFilter()"
+                        ></v-text-field>
                       </v-col>
                     </v-row>
                     <v-row>
@@ -1482,19 +1458,13 @@
                         sm="6"
                         md="6"
                         lg="4"
-                      >
-                        <v-text-field-integer
-                          class="mt-0 pa-0"
-                          v-model="father.age"
+                      > 
+                        <v-text-field
+                          class="ma-0 pa-0"
                           label="Age"
-                          v-bind:properties="{
-                            name: 'age  ',
-                            placeholder: '0',
-                            dense: true,
-                            
-                          }"  
-                        >
-                        </v-text-field-integer>
+                          v-model="father.age"
+                          @keypress="intNumValFilter()"
+                        ></v-text-field>
                       </v-col>
                       <v-col 
                         class="my-2 py-0"
@@ -1569,18 +1539,12 @@
                         md="6"
                         lg="4"
                       >
-                        <v-text-field-integer
-                          class="ma-0 pa-0 mb-0"
-                          v-model="mother.age"
+                        <v-text-field
+                          class="ma-0 pa-0"
                           label="Age"
-                          v-bind:properties="{
-                            name: 'age  ',
-                            placeholder: '0',
-                            dense: true,
-                            
-                          }"  
-                        >
-                        </v-text-field-integer>
+                          v-model="mother.age"
+                          @keypress="intNumValFilter()"
+                        ></v-text-field>
                       </v-col>
                       <v-col 
                         class="my-2 py-0"
@@ -1655,18 +1619,12 @@
                         md="6"
                         lg="4"
                       >
-                        <v-text-field-integer
-                          class="ma-0 pa-0 mb-0"
-                          v-model="spouse.age"
+                        <v-text-field
+                          class="ma-0 pa-0"
                           label="Age"
-                          v-bind:properties="{
-                            name: 'age  ',
-                            placeholder: '0',
-                            dense: true,
-                            
-                          }"  
-                        >
-                        </v-text-field-integer>
+                          v-model="spouse.age"
+                          @keypress="intNumValFilter()"
+                        ></v-text-field>
                       </v-col>
                       <v-col 
                         class="my-2 py-0"
@@ -1741,18 +1699,12 @@
                         md="6"
                         lg="4"
                       >
-                        <v-text-field-integer
-                          class="ma-0 pa-0 mb-0"
-                          v-model="guardian.age"
+                        <v-text-field
+                          class="ma-0 pa-0"
                           label="Age"
-                          v-bind:properties="{
-                            name: 'age  ',
-                            placeholder: '0',
-                            dense: true,
-                            
-                          }"  
-                        >
-                        </v-text-field-integer>
+                          v-model="guardian.age"
+                          @keypress="intNumValFilter()"
+                        ></v-text-field>
                       </v-col>
                       <v-col 
                         class="my-2 py-0"
@@ -1847,17 +1799,12 @@
                           md="6"
                           lg="4"
                         >
-                          <v-text-field-integer
-                            class="ma-0 pa-0"
-                            v-model="item.age"
-                            label="Age"
-                            v-bind:properties="{
-                              name: 'age  ',
-                              placeholder: '0',
-                              dense: true,
-                            }"  
-                          >
-                          </v-text-field-integer>
+                          <v-text-field
+                          class="ma-0 pa-0"
+                          label="Age"
+                          v-model="item.age"
+                          @keypress="intNumValFilter()"
+                        ></v-text-field>
                         </v-col>
                         <v-col 
                           class="my-2 py-0"
@@ -2531,9 +2478,9 @@ export default {
       guardian: { name: "", age: "", address: "", contact: "", occupation: "", },
         
       dependents: [
-        { name: "", relation: "", age: "", address: "", occupation: "" },
-        { name: "", relation: "", age: "", address: "", occupation: "" },
-        { name: "", relation: "", age: "", address: "", occupation: "" },
+        { name: "", relationship: "", age: "", address: "", occupation: "" },
+        { name: "", relationship: "", age: "", address: "", occupation: "" },
+        { name: "", relationship: "", age: "", address: "", occupation: "" },
       ],
     
       applicant: {
@@ -2731,6 +2678,33 @@ export default {
       this.loader_dialog = false;
       this.educAttainHasError = false;
       this.referencesHasError = false;
+
+      this.work_experiences = [
+        { company: "", position: "", salary: "", date_of_service: "", job_description: "" },
+      ];
+
+      this.references = [
+        { name: "", address: "", contact: "", company: "", position: "" },
+        { name: "", address: "", contact: "", company: "", position: "" },
+        { name: "", address: "", contact: "", company: "", position: "" },
+      ];
+
+      this.referencesError = [
+        { name: "", address: "", contact: "" },
+        { name: "", address: "", contact: "" },
+        { name: "", address: "", contact: "" },
+      ];
+
+      this.father = { name: "", age: "", address: "", contact: "", occupation: "", };
+      this.mother = { name: "", age: "", address: "", contact: "", occupation: "", };
+      this.spouse = { name: "", age: "", address: "", contact: "", occupation: "", };
+      this.guardian = { name: "", age: "", address: "", contact: "", occupation: "", };
+        
+      this.dependents = [
+        { name: "", relationship: "", age: "", address: "", occupation: "" },
+        { name: "", relationship: "", age: "", address: "", occupation: "" },
+        { name: "", relationship: "", age: "", address: "", occupation: "" },
+      ];
     },
 
     isUnauthorized(error) {
@@ -3032,14 +3006,14 @@ export default {
               timeout: 2000
             });
 
-            // this.reset();
+            this.reset();
           }else if(response.data.duplicate){
 
             this.$toaster.error('You have already applied to this position, please select another position to apply.', {
               timeout: 7000
             });
 
-            // this.reset();
+            this.reset();
           }else{
 
             this.stepper = 1;
@@ -3106,7 +3080,7 @@ export default {
       this.continue_1 = true;
 
       fieldnames.forEach(value => {
-        if(value != 'myFileInput'){
+        if(!['middlename', 'myFileInput'].includes(value)){
           if(!this.applicant[value]){
             this.continue_1 = false;
           }
@@ -3233,6 +3207,45 @@ export default {
 
     bdate_value_change(){
       this.bdate_value = this.applicant.birthdate;
+    },
+
+    decNumValFilter(evt) {
+      evt = (evt) ? evt : window.event;
+      let value = evt.target.value.toString() + evt.key.toString();
+
+      if (!/^[-+]?[0-9]*\.?[0-9]*$/.test(value)) {
+        evt.preventDefault();
+      }
+      else if(value.indexOf(".") > -1)
+      {
+        let split_val = value.split('.');
+        let whole_num = split_val[0];
+        let decimal_places = split_val[1];
+        let whole_num_length = whole_num.length  
+        let decimal_length = decimal_places.length;
+  
+        // if(decimal_length > 2) //decimal places limit 2
+        // {
+        //   evt.preventDefault();
+        // }
+
+      } else {
+
+        return true;
+      }
+    },
+
+    intNumValFilter(evt) {
+      evt = (evt) ? evt : window.event;
+      let value = evt.target.value.toString() + evt.key.toString();
+
+      if (!/^[-+]?[0-9]*?[0-9]*$/.test(value)) {
+        evt.preventDefault();
+      }
+      else {
+
+        return true;
+      }
     }
   },
 
@@ -3559,6 +3572,10 @@ export default {
 
     vocSchoolIsRequired() {
       return this.applicant.educ_attain === 7;
+    },
+
+    progressStatus() {
+
     },
     
   },

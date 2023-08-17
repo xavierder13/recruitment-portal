@@ -197,6 +197,7 @@ Route::group(['prefix' => 'position', 'middleware' => ['auth:api', 'position.mai
       'uses' => 'API\PositionController@delete',
       'as' => 'position.delete',
   ]);
+  
 });
 
 //Activity Logs
@@ -261,20 +262,25 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
 		'as' => 'job_applicant.delete_application'
 	]);
 
-  Route::post('/export_applicants', [
-      'uses' => 'API\ApplicantController@export_applicants',
-      'as' => 'job_applicant.export_applicants',
-  ]);
+    Route::post('/export_applicants', [
+        'uses' => 'API\ApplicantController@export_applicants',
+        'as' => 'job_applicant.export_applicants',
+    ]);
 
-  Route::post('/export_applicants_new', [
-    'uses' => 'API\ApplicantController@export_applicants_new',
-    'as' => 'job_applicant.export_applicants_new',
-  ]);
+    Route::post('/export_applicants_new', [
+        'uses' => 'API\ApplicantController@export_applicants_new',
+        'as' => 'job_applicant.export_applicants_new',
+    ]);
 
 	Route::post('/update_status', [
 		'uses' => 'API\ApplicantController@update_status',
 		'as' => 'job_applicant.update_status',
 	]);
+
+    Route::post('/file/download', [
+        'uses' => 'API\ApplicantController@download_file',
+        'as' => 'applicant.file.download',
+    ]);
 });
 
 // Public API
@@ -318,6 +324,7 @@ Route::group(['prefix' => 'public_api'], function(){
 		'uses' => 'API\JobVacancyController@test',
 		'as' => 'public_api.test',
 	]);
+
 });
 
 

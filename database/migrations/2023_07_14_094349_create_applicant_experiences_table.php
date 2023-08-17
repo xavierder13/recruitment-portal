@@ -16,11 +16,11 @@ class CreateApplicantExperiencesTable extends Migration
         Schema::create('applicant_experiences', function (Blueprint $table) {
             $table->id();
             $table->integer('applicant_id');
-            $table->string('employer');
-            $table->string('position');
-            $table->string('salary');
-            $table->string('date_of_service');
-            $table->string('job_description');
+            $table->string('employer')->nullable();
+            $table->string('position')->nullable();
+            $table->string('salary')->nullable();
+            $table->string('date_of_service')->nullable();
+            $table->string('job_description')->nullable();
             $table->timestamps();
         });
     }

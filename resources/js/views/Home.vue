@@ -73,18 +73,15 @@
         </v-list-item>
       </v-list>
 
-      <<v-list>
+      <v-list expand>
         <v-list-group
           no-action
           v-if="
             hasPermission('user-list') || 
             hasPermission('user-create') ||
-
             hasPermission('jobvacancies-create') || 
             hasPermission('jobvacancies-list') ||
-
             hasPermission('jobapplicants-list')
-            
           "
         >
           <!-- List Group Icon-->
