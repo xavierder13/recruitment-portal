@@ -383,11 +383,11 @@
                       <div class="d-flex justify-center mb-6 bg-surface-variant">
                         <v-spacer></v-spacer>
                         <template v-for="(progress, i) in progressItems" v-if="!view_applicant_loading">
+                          <v-divider :class="'mt-4 thick-divider ' + progress.color" v-if="i != 0"></v-divider>
                           <v-chip class="ma-0" :color="progress.color" @click> 
                             <v-icon class="mr-1"> {{ progress.icon }} </v-icon> 
                             {{ progress.text }}
                           </v-chip>
-                          <v-divider class="mt-4 thick-divider" v-if="progressItems.length - 1 != i "></v-divider>
                         </template>
                         <!-- <v-chip class="ma-0" :color="progressStatus('Screening', applicant.status).color" @click> 
                           <v-icon class="mr-1"> {{ progressStatus('Screening', applicant.status).icon }} </v-icon> 
@@ -985,11 +985,11 @@
                     <v-divider vertical></v-divider>
                     <v-col cols="4" class="mt-4 px-6">
                       <v-card>
-                        <v-toolbar color="success" dense>
+                        <v-toolbar color="cyan darken-3" dense>
                           <v-row>
-                            <v-col  class="white--text d-flex justify-space-around">
+                            <v-col class="white--text d-flex justify-space-around">
                               <v-toolbar-title>
-                                For Screening
+                                <v-chip dark :color="applicationProgress.color">{{ applicationProgress.progress }}</v-chip>
                               </v-toolbar-title>
                             </v-col>
                           </v-row>
@@ -1351,7 +1351,17 @@ export default {
       },
       positions: [],
       view_applicant_loading: false,
-      
+      screening_status_items: [ 
+        { value: 0, status: 'On Process' },
+        { value: 1, status: 'Qualified' },
+        { value: 2, status: 'Not Qualified' },
+      ],
+      status_items: [ 
+        { value: 0, status: 'On Process' },
+        { value: 1, status: 'Passed' },
+        { value: 2, status: 'Failed' },
+        { value: 3, status: 'Did not Comply' },
+      ],
     };
   },
   methods: {
@@ -1747,7 +1757,7 @@ export default {
       let applicant = this.applicant;
 
       let progress = "For Screening";
-      let color = "";
+      let color = "warning";
       let status = applicant.status;
       let initial_interview_status = applicant.initial_interview_status;
       let iq_test_status = applicant.iq_test_status;
@@ -1807,6 +1817,8 @@ export default {
         progress = "Not Qualified";
         color = "red";
       }
+
+      return { progress: progress, color: color };
 
     },
 
