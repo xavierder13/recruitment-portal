@@ -382,9 +382,16 @@
                     <v-col class="mt-8">
                       <div class="d-flex justify-center mb-6 bg-surface-variant">
                         <v-spacer></v-spacer>
-                        <v-chip class="ma-0" :color="applicant.status == 1 ? 'success' : applicant.status == 2 ? 'error' : ''"> 
-                          <v-icon class="mr-1">{{ applicant.status == 2 ? 'mdi-close-circle' : 'mdi-check-circle' }}</v-icon> 
-                          Screening
+                        <template v-for="(progress, i) in progressItems" v-if="!view_applicant_loading">
+                          <v-chip class="ma-0" :color="progress.color" @click> 
+                            <v-icon class="mr-1"> {{ progress.icon }} </v-icon> 
+                            {{ progress.text }}
+                          </v-chip>
+                          <v-divider class="mt-4 thick-divider" v-if="progressItems.length - 1 != i "></v-divider>
+                        </template>
+                        <!-- <v-chip class="ma-0" :color="progressStatus('Screening', applicant.status).color" @click> 
+                          <v-icon class="mr-1"> {{ progressStatus('Screening', applicant.status).icon }} </v-icon> 
+                          {{ progressStatus('Screening', applicant.status).text }}
                         </v-chip>
                         <v-divider class="mt-4 thick-divider"></v-divider>
                         <v-chip>
@@ -405,7 +412,7 @@
                         <v-chip>
                           <v-icon class="mr-1">mdi-check-circle</v-icon> 
                           Hiring Interview
-                        </v-chip>
+                        </v-chip> -->
                         <v-spacer></v-spacer>
                       </div>
                     </v-col>
@@ -1343,20 +1350,8 @@ export default {
         signing_of_contract_date: [],
       },
       positions: [],
-      files: [
-        {
-          color: 'blue',
-          icon: 'mdi-clipboard-text',
-          subtitle: 'Jan 20, 2014',
-          title: 'Vacation itinerary',
-        },
-        {
-          color: 'amber',
-          icon: 'mdi-gesture-tap-button',
-          subtitle: 'Jan 10, 2014',
-          title: 'Kitchen remodel',
-        },
-      ],
+      view_applicant_loading: false,
+      
     };
   },
   methods: {
@@ -1401,13 +1396,14 @@ export default {
 
     view_applicant(id){
       
+      this.view_applicant_loading = true;
       this.view_dialog = true;
       this.applicant_id = id;
 
       const url = `/api/job_applicant/view_applicants_new/${id}`;
       axios.get(url).then(
         (response) => {
-
+          this.view_applicant_loading = false;
           if (response.data.success) {
             const data = response.data;
             this.applicant = data.applicant;
@@ -1690,6 +1686,30 @@ export default {
       if (index >= 0) this.applicant.branch_pref.splice(index, 1);
     },
 
+    progressStatus(text, status) { 
+      let color = '';
+      let icon = 'mdi-check-circle';
+
+      if(status == 0) // if on process
+      {
+        color = 'warning';
+        icon = '';
+        text = '... ' + text;
+      }
+      else if(status == 1) // if qualified or passed
+      {
+        color = 'success';
+        icon = 'mdi-check-circle';
+      }
+      else if(status == 2) // if not qualified, failed or did not comply
+      {
+        color = 'error';
+        icon = 'mdi-close-circle';
+      }
+
+      return { color: color, icon: icon, text: text };
+    },
+
     websocket() {
       // Socket.IO fetch data
       this.$options.sockets.sendData = (data) => {
@@ -1721,42 +1741,9 @@ export default {
         errors.push("Please select a branch.");
       return errors;
     },
-    applicantStatus() {
-      
-      let status_code = this.applicant.status;
-      let status = { color: "", status: "" }
-
-      if(status_code === 0)
-      {
-        status.status = "On Process";
-      }
-      else if(status_code === 1)
-      { 
-        status.color = "orange";
-        status.status = "Qualified"
-      }
-      else if(status_code === 2)
-      { 
-        status.color = "#37474f";
-        status.status = "Not Qualified"
-      }
-      else if(status_code === 3)
-      { 
-        status.color = "#009688";
-        status.status = "Hired"
-      }
-      else if(status_code === 4)
-      { 
-        status.color = "#f44336";
-        status.status = "Failed"
-      }
-
-      return status
-    },
 
     applicationProgress() {
       
-
       let applicant = this.applicant;
 
       let progress = "For Screening";
@@ -1821,6 +1808,18 @@ export default {
         color = "red";
       }
 
+    },
+
+    progressItems() {
+      let progress_items = [
+        this.progressStatus('Screening', this.applicant.status),
+        this.progressStatus('Initial Interview', this.applicant.initial_interview_status),
+        this.progressStatus('IQ Test', this.applicant.iq_test_status),
+        this.progressStatus('Background Investigation', this.applicant.bi_status),
+        this.progressStatus('Hiring Interview', this.applicant.final_interview_status),
+      ];
+
+      return progress_items;
     },
 
     ...mapState("userRolesPermissions", ["userRoles", "userPermissions"]),
