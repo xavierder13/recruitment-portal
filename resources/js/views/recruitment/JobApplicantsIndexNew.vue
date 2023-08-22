@@ -1932,7 +1932,7 @@ export default {
 
       fields.forEach(field => {
         let field_value = this.applicant[field];
-        console.log(field);
+        
         if(['initial_interview_date', 'final_interview_date', 'signing_of_contract_date', 'orientation_date'].includes(field))
         {
           let split_date_val = field_value.split('-');
