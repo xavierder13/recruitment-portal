@@ -262,11 +262,15 @@
                       <div class="d-flex justify-center mb-6 bg-surface-variant">
                         <v-spacer></v-spacer>
                         <template v-for="(progress, i) in progressItems" v-if="!view_applicant_loading">
-                          <v-chip class="ma-0" :color="progress.color" @click> 
+                          <v-chip 
+                            class="ma-0" 
+                            :color="progress.color" 
+                            @click="!progress.disabled ? clickProgress(progress) : ''" 
+                          > 
                             <v-icon class="mr-1"> {{ progress.icon }} </v-icon> 
                             {{ progress.text }}
                           </v-chip>
-                          <v-divider class="mt-4 thick-divider" v-if="progressItems.length - 1 != i "></v-divider>
+                          <v-divider :class="'mt-4 thick-divider ' + progress.border_color" v-if="progressItems.length - 1 > i "></v-divider>
                         </template>
                         <!-- <v-chip class="ma-0" :color="progressStatus('Screening', applicant.status).color" @click> 
                           <v-icon class="mr-1"> {{ progressStatus('Screening', applicant.status).icon }} </v-icon> 
@@ -864,11 +868,11 @@
                     <v-divider vertical></v-divider>
                     <v-col cols="4" class="mt-4 px-6">
                       <v-card>
-                        <v-toolbar color="success" dense>
+                        <v-toolbar :color="applicationProgress.color" dense>
                           <v-row>
-                            <v-col class="white--text d-flex justify-space-around">
+                            <v-col  class="white--text d-flex justify-space-around">
                               <v-toolbar-title>
-                                For Screening
+                                {{ applicationProgress.progress }}
                               </v-toolbar-title>
                             </v-col>
                           </v-row>
@@ -1449,6 +1453,49 @@ export default {
       },
       positions: [],
       view_applicant_loading: false,
+      step: null,
+      application_status_dialog: false,
+      
+      progress: {
+        status: null,
+        date: null,
+      },
+
+      progressFormTitle: "",
+
+      editedItem: {
+        status: "",
+        initial_interview_status: "",
+        iq_status: "",
+        bi_status: "",
+        initial_interview_date: "",
+        position_preference: [],
+        branch_preference: [],
+        final_interview_date: "",
+        final_interview_status: "",
+        employment_position: "",
+        employment_branch: "",
+        orientation_date: "",
+        hired_date: "",
+      },
+
+      defaultItem: {
+        status: "",
+        initial_interview_status: "",
+        iq_status: "",
+        bi_status: "",
+        final_interview_status: "",
+        initial_interview_date: "",
+        position_preference: [],
+        branch_preference: [],
+        final_interview_date: "",
+        final_interview_status: "",
+        employment_position: "",
+        employment_branch: "",
+        orientation_date: "",
+        hired_date: "",
+      },
+      disabled: false,
       
     };
   },
@@ -1941,9 +1988,9 @@ export default {
     applicationProgress() {
       
       let applicant = this.applicant;
-
-      let progress = "For Screening";
-      let color = "";
+      let text = "On Process";
+      let progress = "Screening " + text;
+      let color = "warning";
       let status = applicant.status;
       let initial_interview_status = applicant.initial_interview_status;
       let iq_status = applicant.iq_status;
