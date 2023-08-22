@@ -502,12 +502,14 @@ class ApplicantController extends Controller
 												->join('applicants', 'applicants.jobvacancy_id', '=', 'job_vacancies.id')
 												->join('positions', 'positions.id', '=', 'job_vacancies.position_id')
 												->join('branches', 'branches.id', '=', 'applicants.branch_id')
-												->select('positions.name AS position_name',
+												->select('positions.id AS position_id',
+																 'positions.name AS position_name',
+																 'branches.id AS branch_id',
 																 'branches.name AS branch_name',
 																 'applicants.id', 
-												 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', applicants.middlename) AS name"),
+												 				 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', applicants.middlename) AS name"),
 																 'applicants.address',
-												 DB::raw('DATE_FORMAT(applicants.birthdate, "%m-%d-%Y") as birthdate'),
+												 				 DB::raw('DATE_FORMAT(applicants.birthdate, "%m-%d-%Y") as birthdate'),
 																 'applicants.age',
 																 'applicants.gender',
 																 'applicants.civil_status',
@@ -518,7 +520,19 @@ class ApplicantController extends Controller
 																 'applicants.school_grad',
 																 'applicants.how_learn',
 																 'applicants.file',
-																 'applicants.status'
+																 'applicants.status',
+																 DB::raw('DATE_FORMAT(applicants.initial_interview_date, "%m-%d-%Y") as initial_interview_date'),
+																 'applicants.initial_interview_status',
+																 'applicants.position_preference',
+																 'applicants.branch_preference',
+																 'applicants.iq_status',
+																 'applicants.bi_status',
+																 DB::raw('DATE_FORMAT(applicants.final_interview_date, "%m-%d-%Y") as final_interview_date'),
+																 'applicants.final_interview_status',
+																 'applicants.employment_position',
+																 'applicants.employment_branch',
+																 DB::raw('DATE_FORMAT(applicants.orientation_date, "%m-%d-%Y") as orientation_date'),
+																 DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%m-%d-%Y") as signing_of_contract_date'),
 																)
 												->where('applicants.id', $id)					
 												->get()->first();
@@ -657,13 +671,84 @@ class ApplicantController extends Controller
 	}
 
 	public function update_status(Request $req){
-
+		// return $req;
+		$req->initial_interview_date;
 		$id = $req->applicant_id;
-		$status_value = $req->status_value;
 
-		$result = Applicant::where('id', $id)->update([
-														'status' => $status_value,
-													]);	
+		$applicant = Applicant::find($id);	
+					
+		$step = $req->step;
+
+		if($step == 0) //screening
+		{
+			$applicant->status = $req->status;
+			$applicant->initial_interview_date = $req->initial_interview_date;
+			$applicant->initial_interview_status = $req->initial_interview_status;
+			
+			if(in_array($req->status, [0, 2]))
+			{
+				$applicant->initial_interview_status = 0; // initial interview on process
+				$applicant->initial_interview_date = null;
+				$applicant->initial_interview_status = null;
+			}
+			
+		}
+		else if($step == 1) //inital interview
+		{
+			$applicant->initial_interview_status = $req->initial_interview_status;
+			$applicant->position_preference = $req->position_preference;
+			$applicant->branch_preference = $req->branch_preference;
+			$applicant->iq_status = $req->iq_status; //iq test on process
+
+			if(in_array($req->initial_interview_status, [0, 2]))
+			{
+				$applicant->iq_status = 0; // iq test on process
+			}
+		}
+		else if($step == 2) //iq test
+		{
+			$applicant->iq_status = $req->iq_status;
+
+			if(in_array($req->bi_status, [0, 2]))
+			{
+				$applicant->bi_status = 0; //background investiation on process
+			}
+			
+		}
+		else if($step == 3) //background investigation
+		{
+			$applicant->bi_status = $req->bi_status;
+
+			if(in_array($req->bi_status, [0, 2]))
+			{
+				$applicant->final_interview_status = 0; // iq test on process
+				$applicant->final_interview_date = null;
+				$applicant->final_interview_status = null;
+				$applicant->employment_position = null;
+				$applicant->employment_branch = null;
+				$applicant->orientation_date = null;
+				$applicant->signing_of_contract_date = null;
+			}
+		}
+		else if($step == 4) //final interview
+		{
+			$applicant->final_interview_date = $req->final_interview_date;
+			$applicant->final_interview_status = $req->final_interview_status;
+			$applicant->employment_position = $req->employment_position;
+			$applicant->employment_branch = $req->employment_branch;
+			$applicant->orientation_date = $req->orientation_date;
+			$applicant->signing_of_contract_date = $req->signing_of_contract_date;
+
+			if(in_array($req->final_interview_status, [0, 2]))
+			{
+				$applicant->employment_position = null;
+				$applicant->employment_branch = null;
+				$applicant->orientation_date = null;
+				$applicant->signing_of_contract_date = null;
+			}
+		}
+
+		$applicant->save();
 
 		$applicant = DB::table('job_vacancies')
 								   ->join('applicants', 'applicants.jobvacancy_id', '=', 'job_vacancies.id')
