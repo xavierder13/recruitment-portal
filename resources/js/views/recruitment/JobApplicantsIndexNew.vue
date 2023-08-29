@@ -43,11 +43,12 @@
             <template v-slot:item.status="{ item }">
               <v-chip
                 small
-                v-if="item.status === 0"
+                dark
+                :color="applicationProgress(item).color"
               >  
-                On process
+                {{ applicationProgress(item).progress }}
               </v-chip>
-              <v-chip
+              <!-- <v-chip
                 color="orange"
                 dark
                 small
@@ -78,7 +79,7 @@
                 v-if="item.status === 4"
               >  
                 Failed
-              </v-chip>
+              </v-chip> -->
             </template>
             <template v-slot:item.actions="{ item }">
               <!-- <v-icon
@@ -272,30 +273,6 @@
                           </v-chip>
                           <v-divider :class="'mt-4 thick-divider ' + progress.border_color" v-if="progressItems.length - 1 > i "></v-divider>
                         </template>
-                        <!-- <v-chip class="ma-0" :color="progressStatus('Screening', applicant.status).color" @click> 
-                          <v-icon class="mr-1"> {{ progressStatus('Screening', applicant.status).icon }} </v-icon> 
-                          {{ progressStatus('Screening', applicant.status).text }}
-                        </v-chip>
-                        <v-divider class="mt-4 thick-divider"></v-divider>
-                        <v-chip>
-                          <v-icon class="mr-1">mdi-check-circle</v-icon> 
-                          Initial Interview
-                        </v-chip>
-                        <v-divider class="mt-4 thick-divider"></v-divider>
-                        <v-chip>
-                          <v-icon class="mr-1">mdi-check-circle</v-icon> 
-                          IQ test
-                        </v-chip>
-                        <v-divider class="mt-4 thick-divider"></v-divider>
-                        <v-chip>
-                          <v-icon class="mr-1">mdi-check-circle</v-icon> 
-                          Background Investigation
-                        </v-chip>
-                        <v-divider class="mt-4 thick-divider"></v-divider>
-                        <v-chip>
-                          <v-icon class="mr-1">mdi-check-circle</v-icon> 
-                          Hiring Interview
-                        </v-chip> -->
                         <v-spacer></v-spacer>
                       </div>
                     </v-col>
@@ -868,11 +845,11 @@
                     <v-divider vertical></v-divider>
                     <v-col cols="4" class="mt-4 px-6">
                       <v-card>
-                        <v-toolbar :color="applicationProgress.color" dense>
+                        <v-toolbar :color="applicationProgress(applicant).color" dense>
                           <v-row>
                             <v-col  class="white--text d-flex justify-space-around">
                               <v-toolbar-title>
-                                {{ applicationProgress.progress }}
+                                {{ applicationProgress(applicant).progress }}
                               </v-toolbar-title>
                             </v-col>
                           </v-row>
@@ -946,10 +923,20 @@
                                 label="Branch Preference"
                                 multiple
                                 chips
-                                clearable
                                 readonly
                               >
                               </v-autocomplete>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Branch Complied"
+                                v-model="applicant.branch_id_complied"
+                                readonly
+                              >
+                              </v-text-field>
                             </v-col>
                           </v-row>
                           <v-row>
@@ -1136,7 +1123,7 @@
                           :input-value="data.selected"
                           close
                           @click="data.select"
-                          @click:close="removePositionPref(data.item)"
+                          @click:close="removePositionPref(data.item.id)"
                         >
                           {{ data.item.name }}
                         </v-chip>
@@ -1164,7 +1151,7 @@
                           :input-value="data.selected"
                           close
                           @click="data.select"
-                          @click:close="removePositionPref(data.item)"
+                          @click:close="removeBranchPref(data.item.id)"
                         >
                           {{ data.item.name }}
                         </v-chip>
@@ -1174,6 +1161,18 @@
                 </v-row>
               </template>
               <template v-if="step == 2">
+                <v-row>
+                  <v-col class="my-0 py-0">
+                    <v-autocomplete
+                      v-model="editedItem.branch_id_complied"
+                      :items="branches"
+                      item-text="name"
+                      item-value="id"
+                      label="Branch Complied"
+                      :readonly="hasRole('Branch Manager')"
+                    ></v-autocomplete>
+                  </v-col>
+                </v-row>
                 <v-row>
                   <v-col class="my-0 py-0">
                     <v-autocomplete
@@ -1283,7 +1282,7 @@
               </v-btn>
               <v-btn
                 color="primary"
-                @click="saveStatus()"
+                @click="showConfirmAlert()"
                 class="mb-3 mr-4"
                 :disabled="disabled"
               >
@@ -1413,6 +1412,8 @@ export default {
         branch_name: "",
         status: "",
         initial_interview_status: "",
+        branch_id_complied: "",
+        branch_complied: "",
         iq_status: "",
         bi_status: "",
         final_interview_status: "",
@@ -1466,6 +1467,8 @@ export default {
       editedItem: {
         status: "",
         initial_interview_status: "",
+        branch_id_complied: "",
+        branch_complied: "",   
         iq_status: "",
         bi_status: "",
         initial_interview_date: "",
@@ -1482,6 +1485,8 @@ export default {
       defaultItem: {
         status: "",
         initial_interview_status: "",
+        branch_id_complied: "",
+        branch_complied: "",
         iq_status: "",
         bi_status: "",
         final_interview_status: "",
@@ -1496,7 +1501,7 @@ export default {
         hired_date: "",
       },
       disabled: false,
-      
+      progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'Background Investigation', 'Final Interview'],
     };
   },
   methods: {
@@ -1549,8 +1554,10 @@ export default {
       axios.get(url).then(
         (response) => {
           this.view_applicant_loading = false;
+
           if (response.data.success) {
             const data = response.data;
+            console.log(data);
             this.applicant = data.applicant;
             this.educ_attains = data.educ_attains;
             this.experiences = data.experiences;
@@ -1559,10 +1566,13 @@ export default {
             this.dependents = data.dependents;
             this.applicant_files = data.applicant_files;
             this.download_file = data.file;
+
             let position_preference = this.applicant.position_preference;
+            
             if(position_preference)
             {
-              let positions = position_preference.split(',');
+              let positionsIdArr = position_preference.split(',');
+              let positions = positionsIdArr.map(Number);
               this.applicant.position_preference = positions;
             }
             else
@@ -1571,16 +1581,18 @@ export default {
             }
 
             let branch_preference = this.applicant.branch_preference;
-            if(position_preference)
+
+            if(branch_preference)
             {
-              let branches = branch_preference.split(',');
+              let branchesIdArr = branch_preference.split(',');
+              let branches = branchesIdArr.map(Number);
               this.applicant.branch_preference = branches;
             }
             else
             {
               this.applicant.branch_preference = [];
             }
-  
+
           }
         },
         (error) => {
@@ -1668,6 +1680,8 @@ export default {
         formData.append('date_from', date_from);
         formData.append('date_to', date_to);
         formData.append('branch_id', branch_id);
+        // formData.append('progress', this.progress_items[this.step]); // progress_items index 3 (Final Interview)
+        // formData.append('step', this.step); // step 3 (Final Interview)
 
         axios.post("/api/job_applicant/export_applicants_new", formData, {
           headers: {
@@ -1869,6 +1883,8 @@ export default {
             }
 
             this.applicant_id = "";
+
+            this.getApplicants();
           }else{
             // this.status_dialog = false;
             
@@ -1894,100 +1910,8 @@ export default {
       if (index >= 0) this.editedItem.branch_preference.splice(index, 1);
     },
 
-    progressStatus(text, status) { 
-      let color = '';
-      let border_color = '';
-      let icon = 'mdi-check-circle';
-      let disabled = status >= 0 && status !== null? false : true; // if status is null then disable progress item (v-chip)
-      if(status == 0) // if on process
-      {
-        color = 'warning';
-        icon = '';
-        text = '... ' + text;
-      }
-      else if(status == 1) // if qualified or passed
-      {
-        color = 'success';
-        border_color = 'success';
-        icon = 'mdi-check-circle';
-      }
-      else if(status == 2) // if not qualified, failed or did not comply
-      {
-        color = 'error';
-        icon = 'mdi-close-circle';
-      }
-
-      return { color: color, border_color: border_color, icon: icon, text: text, status: status, disabled: disabled };
-    },
-
-    clickProgress(progress) {
-
-      let index = this.progressItems.indexOf(progress);
-      let progress_items = ['Screening', 'Initial Interview', 'IQ Test', 'Background Investigation', 'Hiring Interview'];
-      this.application_status_dialog = true;
-      this.step = index;
-      this.progressFormTitle = progress_items[index] + ' Status';
-
-      let fields = Object.keys(this.editedItem);
-
-      fields.forEach(field => {
-        let field_value = this.applicant[field];
-        
-        if(['initial_interview_date', 'final_interview_date', 'signing_of_contract_date', 'orientation_date'].includes(field) && field_value)
-        {
-          let split_date_val = field_value.split('-');
-          
-          let day = split_date_val[0];
-          let month = split_date_val[1];
-          let year = split_date_val[2];
-
-          field_value = `${year}-${month}-${day}`;
-        }
-        this.editedItem[field] = field_value;
-      });
-
-    },
-    
-    closeProgressDialog() {
-      this.editedItem = Object.assign({}, this.defaultItem);
-      this.application_status_dialog = false;
-    },
-
-    websocket() {
-      // Socket.IO fetch data
-      this.$options.sockets.sendData = (data) => {
-        let action = data.action;
-        if (action == "applicant-submit") {
-          this.getApplicants();
-        }
-      };
-    },
-  },
-  computed: {
-    dateRangeText () {
-      return this.dates.join(' ~ ')
-    },
-
-    // validations
-    datefieldErrors() {
-      const errors = [];
-      if (!this.$v.dateRangeText.$dirty) return errors;
-      !this.$v.dateRangeText.required &&
-        errors.push("Please select a date range.");
-      return errors;
-    },
-
-    branchIdErrors() {
-      const errors = [];
-      if (!this.$v.branch_id.$dirty) return errors;
-      !this.$v.branch_id.required &&
-        errors.push("Please select a branch.");
-      return errors;
-    },
-
-    applicationProgress() {
+    applicationProgress(applicant) {
       
-      let applicant = this.applicant;
       let text = "On Process";
       let progress = "Screening " + text;
       let color = "warning";
@@ -2000,14 +1924,16 @@ export default {
       if(status == 1)
       {
         progress = "Initial Interview " + text;
-
+        color = "purple";
         if(initial_interview_status == 1) // initial interview passed then set new progress
         {
           progress = "IQ Test " + text;
+          color = "teal";
 
           if(iq_status == 1)// IQ Test passed then set new progress
           {
             progress = "Background Investigation " + text;
+            color = "lime";
 
             if(bi_status == 1) // BI passed then set new progress
             {
@@ -2056,13 +1982,131 @@ export default {
 
     },
 
+    progressStatus(text, status) { 
+      let color = '';
+      let border_color = '';
+      let icon = 'mdi-check-circle';
+      let disabled = status >= 0 && status !== null? false : true; // if status is null then disable progress item (v-chip)
+      if(status == 0) // if on process
+      {
+        color = 'warning';
+        icon = '';
+        text = '... ' + text;
+      }
+      else if(status == 1) // if qualified or passed
+      {
+        color = 'success';
+        border_color = 'success';
+        icon = 'mdi-check-circle';
+      }
+      else if(status == 2) // if not qualified, failed or did not comply
+      {
+        color = 'error';
+        icon = 'mdi-close-circle';
+      }
+
+      return { color: color, border_color: border_color, icon: icon, text: text, status: status, disabled: true };
+    },
+
+    clickProgress(progress) {
+
+      let index = this.progressItems.indexOf(progress);
+      this.application_status_dialog = true;
+      this.step = index;
+      this.progressFormTitle = this.progress_items[index] + ' Status';
+
+      let fields = Object.keys(this.editedItem);
+
+      fields.forEach(field => {
+        let field_value = this.applicant[field];
+        
+        if(['initial_interview_date', 'final_interview_date', 'signing_of_contract_date', 'orientation_date'].includes(field) && field_value)
+        {
+          let split_date_val = field_value.split('-');
+          
+          let day = split_date_val[0];
+          let month = split_date_val[1];
+          let year = split_date_val[2];
+
+          field_value = `${year}-${month}-${day}`;
+        }
+        this.editedItem[field] = field_value;
+      });
+
+      if(!this.applicant.branch_id_complied)
+      {
+        this.editedItem.branch_id_complied = this.user.branch_id;
+      }
+
+    },
+    
+    closeProgressDialog() {
+      this.editedItem = Object.assign({}, this.defaultItem);
+      this.application_status_dialog = false;
+      this.step = null;
+    },
+
+    showConfirmAlert() {
+
+      let progress = this.progress_items[this.step];
+
+      this.$swal({
+        title: "Are you sure?",
+        text: `Update ${progress} Status`,
+        icon: "warning",
+        showCancelButton: true,
+        cancelButtonColor: "#6c757d",
+        confirmButtonColor: "#1976d2", 
+        confirmButtonText: "Save",
+      }).then((result) => {
+        // <--
+
+        if (result.value) {
+          this.saveStatus();
+        }
+      });
+    },
+
+    websocket() {
+      // Socket.IO fetch data
+      this.$options.sockets.sendData = (data) => {
+        let action = data.action;
+        if (action == "applicant-submit") {
+          this.getApplicants();
+        }
+      };
+    },
+  },
+  computed: {
+    dateRangeText () {
+      return this.dates.join(' ~ ')
+    },
+
+    // validations
+    datefieldErrors() {
+      const errors = [];
+      if (!this.$v.dateRangeText.$dirty) return errors;
+      !this.$v.dateRangeText.required &&
+        errors.push("Please select a date range.");
+      return errors;
+    },
+
+    branchIdErrors() {
+      const errors = [];
+      if (!this.$v.branch_id.$dirty) return errors;
+      !this.$v.branch_id.required &&
+        errors.push("Please select a branch.");
+      return errors;
+    },
+
+
     progressItems() {
       let progress_items = [
         this.progressStatus('Screening', this.applicant.status),
         this.progressStatus('Initial Interview', this.applicant.initial_interview_status),
         this.progressStatus('IQ Test', this.applicant.iq_status),
         this.progressStatus('Background Investigation', this.applicant.bi_status),
-        this.progressStatus('Hiring Interview', this.applicant.final_interview_status),
+        this.progressStatus('Final Interview', this.applicant.final_interview_status),
       ];
 
       return progress_items;
@@ -2128,11 +2172,11 @@ export default {
         }
 
         let branch_preference = this.applicant.branch_preference;
-
+        
         if(branch_preference.length)
         { 
           branch_preference.forEach(val => {
-            this.editedItem.position_preference.push(val);
+            this.editedItem.branch_preference.push(val);
           });
         }
         else

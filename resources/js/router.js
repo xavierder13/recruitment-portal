@@ -8,6 +8,11 @@ import JobVacanciesIndex from './views/recruitment/JobVacanciesIndex.vue';
 import JobApplicantsIndex from './views/recruitment/JobApplicantsIndex.vue';
 import JobApplicantsIndexNew from './views/recruitment/JobApplicantsIndexNew.vue';
 import JobApplicantsView from './views/recruitment/JobApplicantsView.vue';
+import ScreeningList from './views/recruitment/ScreeningList.vue';
+import InitialInterviewList from './views/recruitment/InitialInterviewList.vue';
+import IQTestList from './views/recruitment/IQTestList.vue';
+import BIList from './views/recruitment/BIList.vue';
+import FinalInterviewList from './views/recruitment/FinalInterviewList.vue';
 import UserIndex from './views/user/UserIndex.vue';
 import UserCreate from './views/user/UserCreate.vue';
 import UserProfile from './views/user/UserProfile.vue';
@@ -28,6 +33,11 @@ const routes = [
     component: Home,
     children: [
       {
+        path: '/dashboard',
+        name: 'dashboard',
+        component: Dashboard
+      },
+      {
         path: '/jobvacancies/index',
         name: 'jobvacancies.index',
         component: JobVacanciesIndex
@@ -46,6 +56,31 @@ const routes = [
         path: '/jobapplicants/view/:id',
         name: 'jobapplicants.view',
         component: JobApplicantsView
+      },
+      {
+        path: '/jobapplicants/screening-list',
+        name: 'jobapplicants.screening.list',
+        component: ScreeningList
+      },
+      {
+        path: '/jobapplicants/initial-interview-list',
+        name: 'jobapplicants.initial.interview.list',
+        component: InitialInterviewList
+      },
+      {
+        path: '/jobapplicants/iq-test-list',
+        name: 'jobapplicants.iq.test.list',
+        component: IQTestList
+      },
+      {
+        path: '/jobapplicants/bi-list',
+        name: 'jobapplicants.bi.list',
+        component: BIList
+      },
+      {
+        path: '/jobapplicants/final-interview-list',
+        name: 'jobapplicants.final.interview.list',
+        component: FinalInterviewList
       },
       {
         path: '/user/index',

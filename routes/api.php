@@ -281,6 +281,42 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
         'uses' => 'API\ApplicantController@download_file',
         'as' => 'applicant.file.download',
     ]);
+
+    Route::get('/applicants_today_list', [
+        'uses' => 'API\ApplicantController@applicants_today_list',
+        'as' => 'job_applicant.applicants_today_list',
+    ]);
+
+    Route::get('/screening_list', [
+        'uses' => 'API\ApplicantController@screening_list',
+        'as' => 'job_applicant.screening_list',
+    ]);
+
+    Route::get('/initial_interview_list', [
+        'uses' => 'API\ApplicantController@initial_interview_list',
+        'as' => 'job_applicant.initial_interview_list',
+    ]);
+
+    Route::get('/iq_test_list', [
+        'uses' => 'API\ApplicantController@iq_test_list',
+        'as' => 'job_applicant.iq_test_list',
+    ]);
+
+    Route::get('/bi_list', [
+        'uses' => 'API\ApplicantController@bi_list',
+        'as' => 'job_applicant.bi_list',
+    ]);
+
+    Route::get('/final_interview_list', [
+        'uses' => 'API\ApplicantController@final_interview_list',
+        'as' => 'job_applicant.final_interview_list',
+    ]);
+
+    Route::get('/get_all_status_count', [
+        'uses' => 'API\ApplicantController@get_all_status_count',
+        'as' => 'job_applicant.get_all_status_count',
+    ]);
+
 });
 
 // Public API

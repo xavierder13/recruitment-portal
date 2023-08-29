@@ -10,9 +10,48 @@
         ></v-progress-circular>
       </v-overlay>
       <v-main>
-        <v-card>
-          <v-card-title> Dashboard </v-card-title>
-        </v-card>
+        <v-subheader class="py-0 d-flex justify-space-between rounded-lg">
+          <h3>Dashboard</h3>
+          <v-btn color="info" link to="/jobapplicants/index-new">
+              View All Applicants
+          </v-btn>
+        </v-subheader>
+        <br>
+        <v-row>
+          <v-col>
+            <v-row>
+              <template v-for="item in dashboardCardList">
+                <v-col cols="4" v-if="item.hasPermission">
+                  <v-card elevation="2" class="rounded-lg">
+                    <v-card-text class="d-flex justify-space-between align-center">
+                      <div>
+                        <strong>{{ item.text }}</strong> <br>
+                        <v-btn small color="info" class="mt-2" link :to="item.link">View </v-btn>
+                      </div>
+                      <v-avatar size="60" :color="item.color">
+                        <span style="color: white">{{ item.count }}</span>
+                      </v-avatar>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+              </template>
+              <!-- <v-col cols="4" v-if="hasPermission('jobapplicants-today-list')">
+                <v-card elevation="2" class="rounded-lg">
+                  <v-card-text class="d-flex justify-space-between align-center">
+                    <div>
+                      <strong>Total Applicants Today</strong> <br>
+                      <v-btn small color="info" class="mt-2">View </v-btn>
+                    </div>
+                    <v-avatar size="60" color="cyan accent-3">
+                      <span style="color: white">999</span>
+                    </v-avatar>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+               -->
+            </v-row>
+          </v-col>
+        </v-row>
       </v-main>
     </div>
   </div>
@@ -21,7 +60,7 @@
 
 import axios from "axios";
 import { validationMixin } from "vuelidate";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 
 export default {
 
@@ -34,11 +73,35 @@ export default {
       overlay: false,
       search: "",
       loading: true,
-      loading_endorse_history: true,
+      screening_ctr: 0,
+      initial_interview_ctr: 0,
+      iq_test_ctr: 0,
+      bi_ctr: 0,
+      final_interview_ctr: 0,
     };
   },
 
   methods: {
+    getApplicantsCount() {
+      this.v_table = false;
+      this.loading = true;
+      this.table_loader = true;
+      axios.get("/api/job_applicant/get_all_status_count").then(
+        (response) => {
+          let data = response.data
+
+          this.screening_ctr = data.screening_ctr;
+          this.initial_interview_ctr = data.initial_interview_ctr;
+          this.iq_test_ctr = data.iq_test_ctr;
+          this.bi_ctr = data.bi_ctr;
+          this.final_interview_ctr = data.final_interview_ctr;
+          
+        },
+        (error) => {
+          this.isUnauthorized(error);
+        }
+      );
+    },
     showAlert() {
       this.$swal({
         position: "center",
@@ -95,11 +158,61 @@ export default {
     },
   },
   computed: {
+    dashboardCardList() {
+      let list = [
+        // { 
+        //   text: 'Total Applicants Today', 
+        //   color: 'cyan accent-3', 
+        //   hasPermission: this.hasPermission('jobapplicants-today-list'), 
+        //   count: 999, 
+        //   link: '/jobapplicants/screening-list'
+        // },
+        { 
+          text: 'Screening', 
+          color: 'warning', 
+          hasPermission: this.hasPermission('jobapplicants-screening-list'), 
+          count: this.screening_ctr, 
+          link: '/jobapplicants/screening-list'
+        },
+        { 
+          text: 'Initial Interview', 
+          color: 'purple', 
+          hasPermission: this.hasPermission('jobapplicants-initial-interview-list'), 
+          count: this.initial_interview_ctr, 
+          link: '/jobapplicants/initial-interview-list'
+        },
+        { 
+          text: 'IQ Test', 
+          color: 'teal', 
+          hasPermission: this.hasPermission('jobapplicants-iq-test-list'), 
+          count: this.iq_test_ctr, 
+          link: '/jobapplicants/iq-test-list'
+        },
+        { 
+          text: 'Background Investigation', 
+          color: 'lime', 
+          hasPermission: this.hasPermission('jobapplicants-bi-list'), 
+          count: this.bi_ctr, 
+          link: '/jobapplicants/bi-list'
+        },
+        { 
+          text: 'Final Interview', 
+          color: 'success', 
+          hasPermission: this.hasPermission('jobapplicants-final-interview-list'), 
+          count: this.final_interview_ctr, 
+          link: '/jobapplicants/final-interview-list'
+        },
+       ];
+
+       return list;
+    },
     ...mapState("userRolesPermissions", ["userRoles", "userPermissions"]),
+    ...mapGetters("userRolesPermissions", ["hasRole", "hasPermission"]),
   },
   mounted() {
     axios.defaults.headers.common["Authorization"] = "Bearer " + localStorage.getItem("access_token");
     // this.websocket();
+    this.getApplicantsCount();
   },
 };
 </script>

@@ -51,32 +51,53 @@ class ApplicantController extends Controller
     return response()->json(['job_applicants' => $job_applicants], 200);
   }
 
-  public function get_applicants_new(){
-
+	public function all_job_applicants()
+	{
 		$job_applicants = DB::table('job_vacancies')
 												->join('applicants', 'applicants.jobvacancy_id', '=', 'job_vacancies.id')
 												->join('positions', 'positions.id', '=', 'job_vacancies.position_id')
 												->join('branches', 'branches.id', '=', 'applicants.branch_id')
+												->leftJoin(DB::raw('branches as tbranches'), 'tbranches.id', '=', 'applicants.branch_complied')
 												->select('applicants.id AS id',
 																 'positions.name AS position_name',
 																 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', applicants.middlename) AS name"),
 																 DB::raw("DATE_FORMAT(applicants.created_at, '%M %d, %Y') AS created_at"),
 																 'branches.name AS branch_name',
-																 'applicants.status'
+																 'applicants.status',
+																 DB::raw('DATE_FORMAT(applicants.initial_interview_date, "%m-%d-%Y") as initial_interview_date'),
+																 'applicants.initial_interview_status',
+																 'applicants.position_preference',
+																 'applicants.branch_preference',
+																 DB::raw('tbranches.id as branch_id_complied'),
+																 DB::raw('tbranches.name as branch_complied'),
+																 'applicants.iq_status',
+																 'applicants.bi_status',
+																 DB::raw('DATE_FORMAT(applicants.final_interview_date, "%m-%d-%Y") as final_interview_date'),
+																 'applicants.final_interview_status',
+																 'applicants.employment_position',
+																 'applicants.employment_branch',
+																 DB::raw('DATE_FORMAT(applicants.orientation_date, "%m-%d-%Y") as orientation_date'),
+																 DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%m-%d-%Y") as signing_of_contract_date'),
 																)
 												->where(function($query) {
 														$user = Auth::user();
 														if($user->hasRole('Branch Manager'))
 														{
-															$query->where('applicants.status', 1)
+															$query->where('applicants.initial_interview_status', '>', 0)
 																		->where('applicants.branch_id', $user->branch_id);
 														}
-												})
-												->orderBy('applicants.created_at', 'DESC')
-												->get()
-												->each(function ($row, $index) {
-													$row->cnt_id = $index + 1;
 												});	
+
+		return $job_applicants;
+	}
+
+  public function get_applicants_new(){
+
+		$job_applicants = $this->all_job_applicants()->orderBy('applicants.created_at', 'DESC')
+																								->get()
+																								->each(function ($row, $index) {
+																									$row->cnt_id = $index + 1;
+																								});
 
 		$branches = DB::table('branches')
 												->orderBy('id', 'ASC')
@@ -502,6 +523,7 @@ class ApplicantController extends Controller
 												->join('applicants', 'applicants.jobvacancy_id', '=', 'job_vacancies.id')
 												->join('positions', 'positions.id', '=', 'job_vacancies.position_id')
 												->join('branches', 'branches.id', '=', 'applicants.branch_id')
+												->leftJoin(DB::raw('branches as tbranches'), 'tbranches.id', '=', 'applicants.branch_complied')
 												->select('positions.id AS position_id',
 																 'positions.name AS position_name',
 																 'branches.id AS branch_id',
@@ -525,6 +547,8 @@ class ApplicantController extends Controller
 																 'applicants.initial_interview_status',
 																 'applicants.position_preference',
 																 'applicants.branch_preference',
+																 DB::raw('tbranches.id as branch_id_complied'),
+																 DB::raw('tbranches.name as branch_complied'),
 																 'applicants.iq_status',
 																 'applicants.bi_status',
 																 DB::raw('DATE_FORMAT(applicants.final_interview_date, "%m-%d-%Y") as final_interview_date'),
@@ -561,7 +585,9 @@ class ApplicantController extends Controller
 		$branch_id = $req->branch_id;
 		$date_from = $req->date_from;
 		$date_to = $req->date_to;
-
+		$fields = ['status', 'initial_interview_status', 'iq_status', 'bi_status', 'final_interview_status'];
+		$step = $req->step;
+		$field = $fields[$step];
 		// id: 1000 - Admin
 		// else branch - branches
 
@@ -599,10 +625,16 @@ class ApplicantController extends Controller
 												$result->whereDate('applicants.created_at', '<=', $date_to);
 											}
 										})
+										->where(function($result) use ($step, $field) {
+											if(isset($step))
+											{
+												$result->whereIn($field, [0, 2]);
+											}
+										})
 										->get();
 		
 
-		if(!$applicants->isEmpty()){
+		if($applicants->isEmpty()){
 			return response()->json(['success' => true, 'resp' => $applicants, 'branch_id' => $branch_id]);
 		}else{
 			return response()->json(['success' => false, 'resp' => "No records found."]);
@@ -614,6 +646,9 @@ class ApplicantController extends Controller
 		$branch_id = $req->branch_id;
 		$date_from = $req->date_from;
 		$date_to = $req->date_to;
+		$fields = ['status', 'initial_interview_status', 'iq_status', 'bi_status', 'final_interview_status'];
+		$step = $req->step;
+		$field = $fields[$step];
 
 		// id: 1000 - Admin
 		// else branch - branches
@@ -640,13 +675,14 @@ class ApplicantController extends Controller
 														         'applicants.course',
 																		 'applicants.school_grad',
 														         'applicants.how_learn',
-														DB::raw("(CASE WHEN applicants.status = 0 THEN ('On-Progress') 
-																 					 WHEN applicants.status = 1 THEN ('Qualified') 
-																					 WHEN applicants.status = 2 THEN ('Not-Qualified')
-																					 WHEN applicants.status = 3 THEN ('Hired')
-																					 WHEN applicants.status = 4 THEN ('Failed')
-																				ELSE 'None' 
-																			END) AS status")
+														 DB::raw("'".$req->progress . "' as progress_status"),
+														// DB::raw("(CASE WHEN applicants.status = 0 THEN ('On-Progress') 
+														// 		 					 WHEN applicants.status = 1 THEN ('Qualified') 
+														// 							 WHEN applicants.status = 2 THEN ('Not-Qualified')
+														// 							 WHEN applicants.status = 3 THEN ('Hired')
+														// 							 WHEN applicants.status = 4 THEN ('Failed')
+														// 						ELSE 'None' 
+														// 					END) AS status")
 														)
 										->where(function($result) use ($branch_id, $date_from, $date_to){
 											if($branch_id === "1000"){
@@ -658,12 +694,15 @@ class ApplicantController extends Controller
 												$result->whereDate('applicants.created_at', '<=', $date_to);
 											}
 										})
-										->get()
-										->each(function ($row, $index) {
-											$row->cnt_id = $index + 1;
-										});	
+										->where(function($result) use ($step, $field) {
+											if(isset($step))
+											{
+												$result->whereIn('bi_status', [0, 2]);
+											}
+										})
+										->get();	
 
-		if(!$applicants->isEmpty()){
+		if($applicants->count()){
 			return response()->json(['success' => true, 'resp' => $applicants, 'branch_id' => $branch_id]);
 		}else{
 			return response()->json(['success' => false, 'resp' => "No records found."]);
@@ -683,11 +722,10 @@ class ApplicantController extends Controller
 		{
 			$applicant->status = $req->status;
 			$applicant->initial_interview_date = $req->initial_interview_date;
-			$applicant->initial_interview_status = $req->initial_interview_status;
+			$applicant->initial_interview_status = 0;
 			
 			if(in_array($req->status, [0, 2]))
 			{
-				$applicant->initial_interview_status = 0; // initial interview on process
 				$applicant->initial_interview_date = null;
 				$applicant->initial_interview_status = null;
 			}
@@ -698,20 +736,24 @@ class ApplicantController extends Controller
 			$applicant->initial_interview_status = $req->initial_interview_status;
 			$applicant->position_preference = $req->position_preference;
 			$applicant->branch_preference = $req->branch_preference;
-			$applicant->iq_status = $req->iq_status; //iq test on process
+			$applicant->iq_status = 0; //iq test on process
 
 			if(in_array($req->initial_interview_status, [0, 2]))
 			{
-				$applicant->iq_status = 0; // iq test on process
+				$applicant->iq_status = null; // iq test on process
+				$applicant->position_preference = null;
+				$applicant->branch_preference = null;
 			}
 		}
 		else if($step == 2) //iq test
 		{
 			$applicant->iq_status = $req->iq_status;
-
-			if(in_array($req->bi_status, [0, 2]))
+			$applicant->branch_complied = $req->branch_id_complied;
+			$applicant->bi_status = 0;
+			
+			if(in_array($req->iq_status, [0, 2]))
 			{
-				$applicant->bi_status = 0; //background investiation on process
+				$applicant->bi_status = null; //background investiation on process
 			}
 			
 		}
@@ -721,7 +763,7 @@ class ApplicantController extends Controller
 
 			if(in_array($req->bi_status, [0, 2]))
 			{
-				$applicant->final_interview_status = 0; // iq test on process
+				$applicant->final_interview_status = null; // iq test on process
 				$applicant->final_interview_date = null;
 				$applicant->final_interview_status = null;
 				$applicant->employment_position = null;
@@ -788,6 +830,259 @@ class ApplicantController extends Controller
 				
 				return response()->json(['error' => $e->getMessage()], 200);
 		}
+	}
+
+	public function get_all_status_count()
+	{
+
+		$screening_ctr = count($this->get_screening_list());
+		$initial_interview_ctr = count($this->get_initial_interview_list());
+		$iq_test_ctr = count($this->get_iq_test_list());
+		$bi_ctr = count($this->get_bi_list());
+		$final_interview_ctr = count($this->get_final_interview_list());
+
+		return response()->json([
+			'screening_ctr' => $screening_ctr,
+			'initial_interview_ctr' => $initial_interview_ctr,
+			'iq_test_ctr' => $iq_test_ctr,
+			'bi_ctr' => $bi_ctr,
+			'final_interview_ctr' => $final_interview_ctr,
+		]);
+	}
+
+	public function get_applicants_today_list() 
+	{
+		$applicants = Applicant::where('created_at', now()->day)
+											     ->where('status', 0)
+												   ->get();
+		
+		return response()->json(['applicants' => $applicants], 200);
+	}
+
+	public function get_screening_list() 
+	{
+		$job_applicants = $this->all_job_applicants()->whereIn('applicants.status', [0, 2])// where status 0 or 2 (on process or failed)
+																								->orderBy('applicants.created_at', 'DESC')
+																								->get()
+																								->each(function ($row, $index) {
+																										$row->cnt_id = $index + 1;
+																								}); 
+		return $job_applicants;
+	}
+
+	public function get_initial_interview_list() 
+	{
+		$job_applicants = $this->all_job_applicants()->whereIn('initial_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
+																									->orderBy('applicants.created_at', 'DESC')
+																									->get()
+																									->each(function ($row, $index) {
+																											$row->cnt_id = $index + 1;
+																									});
+
+		return $job_applicants;
+	}
+
+	public function get_iq_test_list() 
+	{
+		$applicants = $this->all_job_applicants()->whereIn('iq_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
+																						->orderBy('applicants.created_at', 'DESC')
+																						->get()
+																						->each(function ($row, $index) {
+																								$row->cnt_id = $index + 1;
+																						});
+		$applicantsArr = [];
+		$user = Auth::user();
+
+		foreach ($applicants as $applicant) {
+			
+			$branch_preference = $applicant->branch_preference;
+
+			if($user->hasRole('Branch Manager'))
+			{
+				if($branch_preference)
+				{
+					$branch_ids = explode(',', $branch_preference);
+
+					if(in_array($user->branch_id, $branch_ids))
+					{
+						$applicantsArr[] = $applicant;
+					}
+				}
+			}
+			else
+			{
+				$applicantsArr[] = $applicant;
+			}
+
+		}
+
+		return $applicantsArr;
+	}
+
+	public function get_bi_list() 
+	{
+		$job_applicants = $this->all_job_applicants()->whereIn('bi_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
+																						->orderBy('applicants.created_at', 'DESC')
+																						->get()
+																						->each(function ($row, $index) {
+																								$row->cnt_id = $index + 1;
+																						});
+
+		return $job_applicants;
+	}
+
+	public function get_final_interview_list() 
+	{
+		$job_applicants = $this->all_job_applicants()->whereIn('final_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
+																						->orderBy('applicants.created_at', 'DESC')
+																						->get()
+																						->each(function ($row, $index) {
+																								$row->cnt_id = $index + 1;
+																						});
+
+		return $job_applicants;
+	}
+
+
+	public function screening_list() 
+	{
+		$job_applicants = $this->get_screening_list(); 
+
+		$branches = DB::table('branches')
+												->orderBy('id', 'ASC')
+												->get();
+
+		$positions = Position::orderBy('name', 'Asc')->get();
+
+		return response()->json(['job_applicants' => $job_applicants, 'branches' => $branches, 'positions' => $positions], 200);
+	}
+
+	public function initial_interview_list() 
+	{
+		$job_applicants = $this->get_initial_interview_list();
+
+		$branches = DB::table('branches')
+												->orderBy('id', 'ASC')
+												->get();
+
+		$positions = Position::orderBy('name', 'Asc')->get();
+
+		return response()->json(['job_applicants' => $job_applicants, 'branches' => $branches, 'positions' => $positions], 200);
+	}
+
+	public function iq_test_list() 
+	{
+		$job_applicants = $this->get_iq_test_list();
+		
+		$branches = DB::table('branches')
+		->orderBy('id', 'ASC')
+		->get();
+
+		$positions = Position::orderBy('name', 'Asc')->get();
+
+		return response()->json(['job_applicants' => $job_applicants, 'branches' => $branches, 'positions' => $positions], 200);
+	}
+
+	public function bi_list() 
+	{
+		$job_applicants = $this->get_bi_list();
+
+		$branches = DB::table('branches')
+		->orderBy('id', 'ASC')
+		->get();
+
+		$positions = Position::orderBy('name', 'Asc')->get();
+
+		return response()->json(['job_applicants' => $job_applicants, 'branches' => $branches, 'positions' => $positions], 200);
+	}
+
+	public function final_interview_list() 
+	{
+		$job_applicants = $this->get_final_interview_list();
+
+		$branches = DB::table('branches')
+		->orderBy('id', 'ASC')
+		->get();
+
+		$positions = Position::orderBy('name', 'Asc')->get();
+
+		return response()->json(['job_applicants' => $job_applicants, 'branches' => $branches, 'positions' => $positions], 200);
+	}
+
+	public function cancel_status(Request $req) 
+	{
+		$applicant = Applicant::find($req->applicant_id);
+
+		$step = $req->step;
+
+		if($step == 0) //screening
+		{
+			$applicant->status = 0;
+			$applicant->initial_interview_date = null;
+			$applicant->initial_interview_status = null;
+			
+			if(in_array($req->status, [0, 2]))
+			{
+				$applicant->initial_interview_status = 0; // initial interview on process
+				$applicant->initial_interview_date = null;			}
+			
+		}
+		else if($step == 1) //inital interview
+		{
+			$applicant->initial_interview_status = $req->initial_interview_status;
+			$applicant->position_preference = $req->position_preference;
+			$applicant->branch_preference = $req->branch_preference;
+			$applicant->iq_status = $req->iq_status ? $req->iq_status : 0; //iq test on process
+
+			if(in_array($req->initial_interview_status, [0, 2]))
+			{
+				$applicant->iq_status = 0; // iq test on process
+			}
+		}
+		else if($step == 2) //iq test
+		{
+			$applicant->iq_status = $req->iq_status;
+
+			if(in_array($req->bi_status, [0, 2]))
+			{
+				$applicant->bi_status = 0; //background investiation on process
+			}
+			
+		}
+		else if($step == 3) //background investigation
+		{
+			$applicant->bi_status = $req->bi_status;
+
+			if(in_array($req->bi_status, [0, 2]))
+			{
+				$applicant->final_interview_status = 0; // iq test on process
+				$applicant->final_interview_date = null;
+				$applicant->final_interview_status = null;
+				$applicant->employment_position = null;
+				$applicant->employment_branch = null;
+				$applicant->orientation_date = null;
+				$applicant->signing_of_contract_date = null;
+			}
+		}
+		else if($step == 4) //final interview
+		{
+			$applicant->final_interview_date = $req->final_interview_date;
+			$applicant->final_interview_status = $req->final_interview_status;
+			$applicant->employment_position = $req->employment_position;
+			$applicant->employment_branch = $req->employment_branch;
+			$applicant->orientation_date = $req->orientation_date;
+			$applicant->signing_of_contract_date = $req->signing_of_contract_date;
+
+			if(in_array($req->final_interview_status, [0, 2]))
+			{
+				$applicant->employment_position = null;
+				$applicant->employment_branch = null;
+				$applicant->orientation_date = null;
+				$applicant->signing_of_contract_date = null;
+			}
+		}
+
+		$applicant->save();
 	}
 	
 }

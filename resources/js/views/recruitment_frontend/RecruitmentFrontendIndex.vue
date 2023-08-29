@@ -475,6 +475,9 @@
                           hint="St./Brgy, Municipality, Province"
                           persistent-hint
                           v-model="applicant.birth_place"
+                          :error-messages="birthPlaceErrors + applicantError.birth_place"
+                          @input="$v.applicant.birth_place.$touch() + (applicantError.birth_place = []) + (validateFields_form1())"
+                          @blur="$v.applicant.birth_place.$touch() + (applicantError.birth_place = [])"
                         ></v-text-field>
                       </v-col>
                     </v-row>
@@ -2316,6 +2319,7 @@ export default {
       middlename: { required },
       address: { required },
       birthdate: { required },
+      birth_place: { required },
       gender: { required },
       civil_status: { required },
       contact_no: { required, minLength: minLength(11) },
@@ -2517,6 +2521,7 @@ export default {
         middlename: [],
         address: [],
         birthdate: [],
+        birth_place: [],
         gender: [],
         civil_status: [],
         contact_no: [],
@@ -2640,6 +2645,7 @@ export default {
       this.applicant.firstname = "";
       this.applicant.middlename = "";
       this.applicant.address = "";
+      this.applicant.address2 = "";
       this.applicant.birth_place = "";
       this.applicant.birthdate = "";
       this.applicant.age = "";
@@ -2678,6 +2684,46 @@ export default {
       this.loader_dialog = false;
       this.educAttainHasError = false;
       this.referencesHasError = false;
+
+      this.highschool = {
+        school: "",
+        sy_attended: "",
+        honors: "",
+      };
+      this.jr_highschool = {
+        school: "",
+        sy_attended: "",
+        honors: "",
+      };
+      this.sr_highschool = {
+        school: "",
+        sy_attended: "",
+        honors: "",
+      };
+      this.college = {
+        school: "",
+        course: "",
+        major: "",
+        sy_attended: "",
+        honors: "",
+      };
+      this.graduate_school = {
+        school: "",
+        course: "",
+        major: "",
+        sy_attended: "",
+        honors: "",
+      };
+      this.vocational_school = {
+        school: "",
+        course: "",
+        major: "",
+        sy_attended: "",
+        honors: "",
+      };
+
+      this.k_12_checkbox = false,
+    
 
       this.work_experiences = [
         { company: "", position: "", salary: "", date_of_service: "", job_description: "" },
@@ -3302,6 +3348,14 @@ export default {
       if (!this.$v.applicant.birthdate.$dirty) return errors;
       !this.$v.applicant.birthdate.required &&
         errors.push("Birthday is required.");
+      return errors;
+    },
+
+    birthPlaceErrors() {
+      const errors = [];
+      if (!this.$v.applicant.birth_place.$dirty) return errors;
+      !this.$v.applicant.birth_place.required &&
+        errors.push("Birth Place is required.");
       return errors;
     },
 

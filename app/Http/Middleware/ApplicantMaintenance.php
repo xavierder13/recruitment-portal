@@ -66,10 +66,41 @@ class ApplicantMaintenance
 				}
 			}
 
-			if($request->is('api/job_applicant/file/download')){
-				if($user->can('jobapplicants-file-download')){
+			if($request->is('api/job_applicant/screening_list')){
+				if($user->can('jobapplicants-screening-list')){
 					return $next($request);
 				}
+			}
+
+			if($request->is('api/job_applicant/initial_interview_list')){
+				if($user->can('jobapplicants-initial-interview-list')){
+					return $next($request);
+				}
+			}
+
+			if($request->is('api/job_applicant/iq_test_list')){
+				if($user->can('jobapplicants-iq-test-list')){
+					return $next($request);
+				}
+			}
+
+			if($request->is('api/job_applicant/bi_list')){
+				if($user->can('jobapplicants-bi-list')){
+					return $next($request);
+				}
+			}
+
+			if($request->is('api/job_applicant/final_interview_list')){
+				if($user->can('jobapplicants-final-interview-list')){
+					return $next($request);
+				}
+			}
+
+			if($request->is('api/job_applicant/get_all_status_count')){
+				if($user->can('jobapplicants-list')){
+					return $next($request);
+				}
+				
 			}
 
       return abort(401, 'Unauthorized');

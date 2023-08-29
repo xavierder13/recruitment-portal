@@ -74,6 +74,12 @@
       </v-list>
 
       <v-list expand>
+        <v-list-item link to="/dashboard">
+          <v-list-item-icon>
+            <v-icon>mdi-view-dashboard</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>Dashboard</v-list-item-title>
+        </v-list-item>
         <v-list-group
           no-action
           v-if="
