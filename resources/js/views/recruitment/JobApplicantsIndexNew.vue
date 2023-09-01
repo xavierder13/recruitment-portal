@@ -26,7 +26,7 @@
                 dark
                 class="mb-2"
                 @click="(dialog = true)"
-                v-if="userPermissions.jobapplicants_export"
+                v-if="hasPermission('jobapplicants-export')"
               >
                 <v-icon>mdi-file-excel</v-icon>
               </v-btn>
@@ -37,8 +37,6 @@
             :items="job_applicants"
             :search="search"
             :loading="loading"
-           
-            v-if="userPermissions.jobapplicants_list"
           >
             <template v-slot:item.status="{ item }">
               <v-chip
@@ -99,7 +97,7 @@
               <v-icon
                 small
                 color="red"
-                v-if="userPermissions.jobapplicants_delete"
+                v-if="hasPermission('jobapplicants-delete')"
                 @click="deleteApplicant(item.id)"
               >
                 mdi-delete
@@ -215,7 +213,7 @@
                   <v-btn
                     icon
                     dark
-                    @click="view_dialog = false"
+                    @click="closeApplicantDialog()"
                   >
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
@@ -806,39 +804,11 @@
                           </v-card>
                         </v-tab-item>
                         <v-tab-item>
-                          <v-card class="ma-2">
-                            <v-card-text>
-                              <v-row>
-                                <!-- <v-col cols="3" class="my-2 py-0">
-                                  <v-text-field
-                                    v-model="applicant.file"
-                                    label="Resume file"
-                                    append-icon="mdi-download"
-                                    hint="(click to download file)"
-                                    persistent-hint
-                                    readonly
-                                    @click="downloadfile(applicant.file)"
-                                  >
-                                  </v-text-field>
-                                </v-col> -->
-                                <v-col cols="" class="my-2 py-0" v-for="file in applicant_files" :key="file.title">
-                                  <v-text-field
-                                    v-model="file.title"
-                                    :label="file.title"
-                                    hint="(click to download file)"
-                                    persistent-hint
-                                    readonly
-                                  >
-                                    <template v-slot:append>
-                                      <v-btn icon color="primary" @click="downloadfile(file)">
-                                        <v-icon color="primary"> mdi-download</v-icon>
-                                      </v-btn> 
-                                    </template>
-                                  </v-text-field>
-                                </v-col>
-                              </v-row>
-                            </v-card-text>
-                          </v-card>
+                          <ApplicantFiles
+                            :applicant="applicant"
+                            :applicant_files="applicant_files"
+                            @deleteFile="deleteFile"
+                          />
                         </v-tab-item>
                       </v-tabs-items>
                     </v-col>
@@ -1307,9 +1277,12 @@ import axios from "axios";
 import { validationMixin } from "vuelidate";
 import { required, requiredIf, maxLength, email } from "vuelidate/lib/validators";
 import { mapState, mapGetters } from "vuex";
+import ApplicantFiles from './components/ApplicantFiles.vue';
 
 export default {
-
+  components: {
+    ApplicantFiles
+  },
   mixins: [validationMixin],
 
   validations: {
@@ -1602,6 +1575,13 @@ export default {
       );
     },
 
+    closeApplicantDialog()
+    {
+      this.view_dialog = false;
+      this.tab = null;
+
+    },
+
     deleteApplicant(id){
 
      this.$swal({
@@ -1642,6 +1622,10 @@ export default {
             });
         }  
       });  
+    },
+
+    deleteFile(index) {
+      this.applicant_files.splice(index, 1);
     },
 
     export_applications(){
@@ -1807,30 +1791,7 @@ export default {
       );
     },
 
-    downloadfile(file){
-      // const file = applicant_file;
-      
-      const data = { file_id: file.id };
-
-      axios.post('/api/job_applicant/file/download', data, { responseType: 'arraybuffer'})
-        .then((response) => {
-            var fileURL = window.URL.createObjectURL(new Blob([response.data]));
-            var fileLink = document.createElement('a');
-            fileLink.href = fileURL;
-            fileLink.setAttribute('download', file.title + '.' + file.file_type);
-            document.body.appendChild(fileLink);
-            fileLink.click();
-        }, (error) => {
-          console.log(error);
-        }
-      );
-
-      // let url = "http://localhost/api/wysiwyg/resume_files/" + file;
-
-      // let url = "https://recruitmentportal.addessa.com" + "/wysiwyg/resume_files/" + file;    
-      // window.open(url, 'Download');
-
-    },
+    
     
     clear_export(){
       this.generate_btn = true;

@@ -319,6 +319,25 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
 
 });
 
+// Jobapplicant File Routes
+Route::group(['prefix' => 'jobapplicant_file', 'middleware' => ['auth:api', 'applicant_file.maintenance']], function(){
+    Route::get('/index', [
+        'uses' => 'API\ApplicantFileController@index',
+        'as' => 'job_applicant_file.index',
+    ]);
+
+    Route::post('/store', [
+        'uses' => 'API\ApplicantFileController@store',
+        'as' => 'job_applicant_file.store',
+    ]);
+
+    Route::post('/delete', [
+        'uses' => 'API\ApplicantFileController@delete',
+        'as' => 'job_applicant_file.delete',
+    ]);
+    
+  });
+
 // Public API
 Route::group(['prefix' => 'public_api'], function(){
 	Route::get('/job_vacancy_public', [

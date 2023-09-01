@@ -80,5 +80,6 @@ class Kernel extends HttpKernel
 
         'jobvacancy.maintenance' => \App\Http\Middleware\JobVacancyMaintenance::class,
         'applicant.maintenance' => \App\Http\Middleware\ApplicantMaintenance::class,
+        'applicant_file.maintenance' => \App\Http\Middleware\ApplicantFileMaintenance::class,
     ];
 }
