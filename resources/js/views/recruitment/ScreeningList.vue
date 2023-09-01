@@ -713,39 +713,11 @@
                           </v-card>
                         </v-tab-item>
                         <v-tab-item>
-                          <v-card class="ma-2">
-                            <v-card-text>
-                              <v-row>
-                                <!-- <v-col cols="3" class="my-2 py-0">
-                                  <v-text-field
-                                    v-model="applicant.file"
-                                    label="Resume file"
-                                    append-icon="mdi-download"
-                                    hint="(click to download file)"
-                                    persistent-hint
-                                    readonly
-                                    @click="downloadfile(applicant.file)"
-                                  >
-                                  </v-text-field>
-                                </v-col> -->
-                                <v-col cols="" class="my-2 py-0" v-for="file in applicant_files" :key="file.title">
-                                  <v-text-field
-                                    v-model="file.title"
-                                    :label="file.title"
-                                    hint="(click to download file)"
-                                    persistent-hint
-                                    readonly
-                                  >
-                                    <template v-slot:append>
-                                      <v-btn icon color="primary" @click="downloadfile(file)">
-                                        <v-icon color="primary"> mdi-download</v-icon>
-                                      </v-btn> 
-                                    </template>
-                                  </v-text-field>
-                                </v-col>
-                              </v-row>
-                            </v-card-text>
-                          </v-card>
+                          <ApplicantFiles
+                            :applicant="applicant"
+                            :applicant_files="applicant_files"
+                            @deleteFile="deleteFile"
+                          />
                         </v-tab-item>
                       </v-tabs-items>
                     </v-col>
@@ -1218,9 +1190,12 @@ import axios from "axios";
 import { validationMixin } from "vuelidate";
 import { required, requiredIf, maxLength, email } from "vuelidate/lib/validators";
 import { mapState, mapGetters } from "vuex";
+import ApplicantFiles from './components/ApplicantFiles.vue';
 
 export default {
-
+  components: {
+    ApplicantFiles
+  },
   mixins: [validationMixin],
 
   validations: {
@@ -1424,18 +1399,7 @@ export default {
         this.$router.push({ name: "unauthorize" });
       }
     },
-
-    // getBranch() {
-    //   axios.get("/api/branch/index").then(
-    //     (response) => {
-    //       this.branches = response.data.branches;
-    //     },
-    //     (error) => {
-    //       this.isUnauthorized(error);
-    //     }
-    //   );
-    // },
-
+    
     getApplicants() {
       this.v_table = false;
       this.loading = true;
