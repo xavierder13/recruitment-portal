@@ -162,7 +162,6 @@ export default {
 
   name: "ApplicantFiles",
   props: [ 
-    'applicant_files',
     'applicant',
   ],
 
@@ -188,38 +187,22 @@ export default {
       file: [],
       loading: true,
       uploadDisabled: false,
+      applicant_files: [],
     }
-  },
-  computed:{
-    fileErrors() {
-      const errors = [];
-      if (!this.$v.file.$dirty) return errors;
-      !this.$v.file.required && errors.push("File is required.");
-      this.fileIsEmpty && errors.push("File is empty.");
-      return errors;
+  },methods:{
+    getApplicantFile() {
+      this.loading = true;
+      axios.get("/api/jobapplicant_file/get_applicant_files/" + this.applicant.id).then(
+        (response) => {
+          this.applicant_files = response.data.applicant_files;
+          this.loading = false;
+        },
+        (error) => {
+          this.isUnauthorized(error);
+        }
+      );
     },
-    selectedDocTypeErrors() {
-      const errors = [];
-      if (!this.$v.selected_doc_type.$dirty) return errors;
-      !this.$v.selected_doc_type.required && errors.push("Please select document type.");
-      return errors;
-    },
-    specifiedDocTypeErrors() {
-      const errors = [];
-      if (!this.$v.specified_doc_type.$dirty) return errors;
-      !this.$v.specified_doc_type.required && errors.push("Please specify document type.");
-      return errors;
-    },
-    specifiedFileTypeIsRequired() {
-      return this.selected_doc_type == 'Others';
-    },
-    hasPermissionToDelete() {
-      return this.hasPermission('jobapplicants-file-delete') && (this.applicant.final_interview_status != 1 || this.applicant.final_interview_status == null);
-    },
-    ...mapState("auth", ["user", "userIsLoaded"]),
-    ...mapGetters("userRolesPermissions", ["hasRole", "hasPermission"]),
-  },
-  methods:{
+
     uploadFile() {
       this.$v.$touch();
       this.fileIsEmpty = false;
@@ -246,19 +229,21 @@ export default {
           .then(
             (response) => {
               this.errors_array = [];
-              console.log(response.data)
-              if (response.data.success) {
-                this.file_upload_log_id = response.data.file_upload_log_id;
+              let data = response.data;
+              if (data.success) {
 
                 this.$swal({
                   position: "center",
                   icon: "success",
-                  title: "File has been uploaded",
+                  title: data.success,
                   showConfirmButton: false,
                   timer: 2500,
                 });
+
                 this.$v.$reset();
                 this.closeDialog();
+
+                this.applicant_files.push(data.applicant_file);
 
               }
               else
@@ -284,6 +269,7 @@ export default {
           );
       }
     },
+
     closeDialog() {
       this.dialog = false;
       this.file = [];
@@ -321,7 +307,8 @@ export default {
           console.log(response);
           if (response.data.success) {
 
-            this.$emit('deleteFile', index);
+            let index = this.applicant_files.indexOf(file);
+            this.applicant_files.splice(index, 1);
 
             this.$swal({
               position: "center",
@@ -370,11 +357,43 @@ export default {
       }
     },
   },
+  computed:{
+    fileErrors() {
+      const errors = [];
+      if (!this.$v.file.$dirty) return errors;
+      !this.$v.file.required && errors.push("File is required.");
+      this.fileIsEmpty && errors.push("File is empty.");
+      return errors;
+    },
+    selectedDocTypeErrors() {
+      const errors = [];
+      if (!this.$v.selected_doc_type.$dirty) return errors;
+      !this.$v.selected_doc_type.required && errors.push("Please select document type.");
+      return errors;
+    },
+    specifiedDocTypeErrors() {
+      const errors = [];
+      if (!this.$v.specified_doc_type.$dirty) return errors;
+      !this.$v.specified_doc_type.required && errors.push("Please specify document type.");
+      return errors;
+    },
+    specifiedFileTypeIsRequired() {
+      return this.selected_doc_type == 'Others';
+    },
+    hasPermissionToDelete() {
+      return this.hasPermission('jobapplicants-file-delete') && (this.applicant.final_interview_status != 1 || this.applicant.final_interview_status == null);
+    },
+    ...mapState("auth", ["user", "userIsLoaded"]),
+    ...mapGetters("userRolesPermissions", ["hasRole", "hasPermission"]),
+  },
   watch: {
     selected_doc_type() {
       this.specified_doc_type = "";
       this.$v.specified_doc_type.$reset();
     }
+  },
+  mounted(){
+    this.getApplicantFile();
   }
 }
 </script>

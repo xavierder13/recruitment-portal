@@ -10,9 +10,11 @@ use Carbon\Carbon;
 
 class ApplicantFileController extends Controller
 {
-    public function index()
-    {
+    public function get_applicant_files($applicant_id)
+    {   
+        $applicant_files = ApplicantFile::where('applicant_id', $applicant_id)->get();
 
+        return response()->json(['applicant_files' => $applicant_files], 200);
     }
 
     public function store(Request $request)
@@ -40,7 +42,7 @@ class ApplicantFileController extends Controller
             $applicant_file->title = $request->document_type;
             $applicant_file->save();
 
-            return response()->json(['success' => 'File has been uploaded'], 200);
+            return response()->json(['success' => 'File has been uploaded', 'applicant_file' => $applicant_file], 200);
 
         } catch (\Exception $e) {
                 

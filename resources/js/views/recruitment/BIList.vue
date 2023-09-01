@@ -717,7 +717,6 @@
                           <ApplicantFiles
                             :applicant="applicant"
                             :applicant_files="applicant_files"
-                            @deleteFile="deleteFile"
                           />
                         </v-tab-item>
                       </v-tabs-items>

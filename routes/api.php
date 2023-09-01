@@ -321,9 +321,9 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
 
 // Jobapplicant File Routes
 Route::group(['prefix' => 'jobapplicant_file', 'middleware' => ['auth:api', 'applicant_file.maintenance']], function(){
-    Route::get('/index', [
-        'uses' => 'API\ApplicantFileController@index',
-        'as' => 'job_applicant_file.index',
+    Route::get('/get_applicant_files/{id}', [
+        'uses' => 'API\ApplicantFileController@get_applicant_files',
+        'as' => 'job_applicant_file.get_applicant_files',
     ]);
 
     Route::post('/store', [

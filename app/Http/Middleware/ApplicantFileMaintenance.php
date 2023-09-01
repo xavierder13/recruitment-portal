@@ -13,7 +13,7 @@ class ApplicantFileMaintenance
         $user = Auth::user();
 
         //Applicant Record
-        if($request->is('api/jobapplicant_file/index')){
+        if($request->is('api/jobapplicant_file/get_applicant_files/*')){
             if($user->can('jobapplicants-file-list')){
                 return $next($request); 
             }

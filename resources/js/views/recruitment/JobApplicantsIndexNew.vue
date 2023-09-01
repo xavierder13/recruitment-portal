@@ -804,11 +804,7 @@
                           </v-card>
                         </v-tab-item>
                         <v-tab-item>
-                          <ApplicantFiles
-                            :applicant="applicant"
-                            :applicant_files="applicant_files"
-                            @deleteFile="deleteFile"
-                          />
+                          <ApplicantFiles :applicant="applicant"/>
                         </v-tab-item>
                       </v-tabs-items>
                     </v-col>
@@ -1622,10 +1618,6 @@ export default {
             });
         }  
       });  
-    },
-
-    deleteFile(index) {
-      this.applicant_files.splice(index, 1);
     },
 
     export_applications(){
