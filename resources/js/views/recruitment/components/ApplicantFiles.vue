@@ -33,7 +33,7 @@
                       
                       </v-btn>  -->
                   </td>
-                  <td align="right">
+                  <td>
                     <v-tooltip top>
                       <template v-slot:activator="{ on, attrs }">
                         <v-btn 

@@ -760,7 +760,7 @@ class ApplicantController extends Controller
 		else if($step == 3) //background investigation
 		{
 			$applicant->bi_status = $req->bi_status;
-
+			$applicant->final_interview_status = 0;
 			if(in_array($req->bi_status, [0, 2]))
 			{
 				$applicant->final_interview_status = null; // iq test on process
