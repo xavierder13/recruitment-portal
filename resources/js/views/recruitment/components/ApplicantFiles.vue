@@ -1,38 +1,77 @@
 <template>
   <v-card class="ma-2">
     <v-card-text>
-      <v-simple-table class="elevation-1 file_table">
-        <template v-slot:default>
-          <thead class="grey lighten-3 font-weight-bold">
-            <tr>
-              <th width="10px"> # </th>
-              <th> 
-                Applicant's Files 
-                <v-btn x-small color="primary" class="ml-2" @click="dialog = true"> 
-                  <v-icon small class="mr-1"> mdi-plus </v-icon> Add
-                </v-btn>  
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(file, i) in applicant_files" :key="file.id">
-              <td>{{ i + 1 }}</td>
-              <td> 
-                <v-btn class="ma-0" 
-                  small icon color="error" 
-                  @click="confirmDelete(file)" 
-                  v-if="hasPermission('jobapplicants-file-delete') && (applicant.final_interview_status != 1 || applicant.final_interview_status == null)"
-                >
-                  <v-icon> mdi-close-circle </v-icon>
-                </v-btn>
-                <v-btn x-small text class="blue--text text--darken-2 ma-0" @click="downloadfile(file)">
-                  {{ file.title.length > 50 ? file.title.substr(0, 40) + "..." : file.title }}
-                </v-btn> 
-              </td>
-            </tr>
-          </tbody>
-        </template>
-      </v-simple-table>
+      <v-row>
+        <v-col cols="6">
+          <v-simple-table class="elevation-1 file_table">
+            <template v-slot:default>
+              <thead class="grey lighten-3 font-weight-bold">
+                <tr>
+                  <th width="10px"> # </th>
+                  <th> 
+                    Applicant's Files 
+                    <v-btn x-small color="primary" class="ml-2" @click="dialog = true"> 
+                      <v-icon small class="mr-1"> mdi-plus </v-icon> Add
+                    </v-btn>  
+                  </th>
+                  <th width="90px">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(file, i) in applicant_files" :key="file.id">
+                  <td>{{ i + 1 }}</td>
+                  <td> 
+                     {{ file.title.length > 50 ? file.title.substr(0, 40) + "..." : file.title }}
+                      <!-- <v-btn class="ma-0" 
+                        small icon color="error" 
+                        @click="confirmDelete(file)" 
+                        v-if="hasPermissionToDelete && file.title != 'Resume'"
+                      >
+                        <v-icon> mdi-close-circle </v-icon>
+                      </v-btn>
+                      <v-btn x-small text class="blue--text text--darken-2 ma-0" @click="downloadfile(file)">
+                      
+                      </v-btn>  -->
+                  </td>
+                  <td align="right">
+                    <v-tooltip top>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn 
+                          class="ma-0" 
+                          icon 
+                          color="error"
+                          x-small 
+                          v-bind="attrs" v-on="on"
+                          @click="confirmDelete(file)" 
+                          v-if="hasPermissionToDelete && file.title != 'Resume'"
+                        >
+                          <v-icon> mdi-delete </v-icon>
+                        </v-btn>
+                      </template>
+                      <span>Delete</span>
+                    </v-tooltip>
+                    <v-tooltip top>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn 
+                          color="primary" 
+                          icon 
+                          x-small 
+                          class="blue--text text--darken-2 ma-0" 
+                          @click="downloadfile(file)"
+                          v-bind="attrs" v-on="on"
+                        >
+                          <v-icon>mdi-download</v-icon>
+                        </v-btn> 
+                      </template>
+                      <span>Download</span>
+                    </v-tooltip>
+                  </td>
+                </tr>
+              </tbody>
+            </template>
+          </v-simple-table>
+        </v-col>
+      </v-row>
       <v-dialog v-model="dialog" max-width="500px" persistent>
         <v-card>
           <v-card-title>
@@ -173,6 +212,9 @@ export default {
     },
     specifiedFileTypeIsRequired() {
       return this.selected_doc_type == 'Others';
+    },
+    hasPermissionToDelete() {
+      return this.hasPermission('jobapplicants-file-delete') && (this.applicant.final_interview_status != 1 || this.applicant.final_interview_status == null);
     },
     ...mapState("auth", ["user", "userIsLoaded"]),
     ...mapGetters("userRolesPermissions", ["hasRole", "hasPermission"]),
