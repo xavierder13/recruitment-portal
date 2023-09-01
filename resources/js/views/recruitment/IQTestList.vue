@@ -812,7 +812,7 @@
                               <v-text-field
                                 class="ma-0 pa-0"
                                 label="Branch Complied"
-                                v-model="applicant.branch_id_complied"
+                                v-model="applicant.branch_complied"
                                 readonly
                               >
                               </v-text-field>
