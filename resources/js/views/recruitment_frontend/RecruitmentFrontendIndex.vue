@@ -2983,7 +2983,7 @@ export default {
 
       let voc_fieldnames = Object.keys(this.vocational_school)
       voc_fieldnames.forEach(value => {
-        formData.append('vocational_shcool['+value+']', this.vocational_school[value]);
+        formData.append('vocational_school['+value+']', this.vocational_school[value]);
       });
   
       this.work_experiences.forEach((value, i) => {
