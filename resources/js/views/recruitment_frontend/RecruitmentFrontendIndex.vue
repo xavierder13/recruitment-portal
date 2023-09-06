@@ -2323,7 +2323,7 @@ export default {
       gender: { required },
       civil_status: { required },
       contact_no: { required, minLength: minLength(11) },
-      email: { required, email },
+      email: { email },
       educ_attain: { required },
       // course: { required },
       // school_grad: { required },
@@ -3388,8 +3388,8 @@ export default {
     emailErrors() {
       const errors = [];
       if (!this.$v.applicant.email.$dirty) return errors;
-      !this.$v.applicant.email.required &&
-        errors.push("Email is required.");
+      // !this.$v.applicant.email.required &&
+      //   errors.push("Email is required.");
 
       !this.$v.applicant.email.email &&
         errors.push("Must be valid e-mail.");
