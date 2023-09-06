@@ -25,7 +25,7 @@
                 fab
                 dark
                 class="mb-2"
-                @click="(dialog = true)"
+                @click="openExportDialog()"
                 v-if="hasPermission('jobapplicants-export')"
               >
                 <v-icon>mdi-file-excel</v-icon>
@@ -1618,6 +1618,19 @@ export default {
             });
         }  
       });  
+    },
+
+    openExportDialog() {
+      if(this.job_applicants.length)
+      {
+        this.dialog = true
+      }
+      else
+      {
+        this.$toaster.warning('No record found.', {
+          timeout: 2000
+        });
+      }
     },
 
     export_applications(){
