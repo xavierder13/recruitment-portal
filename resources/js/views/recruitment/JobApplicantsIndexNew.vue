@@ -218,7 +218,7 @@
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-toolbar-title> Applicant's Details </v-toolbar-title>
-                  <v-spacer></v-spacer>
+                  <!-- <v-spacer></v-spacer>
                   <v-toolbar-items>
                     <v-btn
                       dark
@@ -237,7 +237,7 @@
                       Deny
                     </v-btn>
 
-                    <!-- <v-btn
+                    <v-btn
                       dark
                       text
                       @click="updateStatus(status = 3)"
@@ -252,8 +252,8 @@
                       v-if="applicant.status === 1 && hasPermission('jobapplicants-hire')"
                     >
                       Failed
-                    </v-btn> -->
-                  </v-toolbar-items>
+                    </v-btn>
+                  </v-toolbar-items> -->
                 </v-toolbar>
                 <v-card-text>
                   <v-row>
