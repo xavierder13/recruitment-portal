@@ -543,7 +543,7 @@ class ApplicantController extends Controller
 																 'applicants.how_learn',
 																 'applicants.file',
 																 'applicants.status',
-																 DB::raw('DATE_FORMAT(applicants.initial_interview_date, "%m-%d-%Y") as initial_interview_date'),
+																 'applicants.initial_interview_date',
 																 'applicants.initial_interview_status',
 																 'applicants.position_preference',
 																 'applicants.branch_preference',
@@ -551,12 +551,12 @@ class ApplicantController extends Controller
 																 DB::raw('tbranches.name as branch_complied'),
 																 'applicants.iq_status',
 																 'applicants.bi_status',
-																 DB::raw('DATE_FORMAT(applicants.final_interview_date, "%m-%d-%Y") as final_interview_date'),
+																 'applicants.final_interview_date',
 																 'applicants.final_interview_status',
 																 'applicants.employment_position',
 																 'applicants.employment_branch',
-																 DB::raw('DATE_FORMAT(applicants.orientation_date, "%m-%d-%Y") as orientation_date'),
-																 DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%m-%d-%Y") as signing_of_contract_date'),
+																 'applicants.orientation_date',
+																 'applicants.signing_of_contract_date',
 																)
 												->where('applicants.id', $id)					
 												->get()->first();

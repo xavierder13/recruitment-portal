@@ -833,7 +833,7 @@
                             <v-col class="my-2 py-0">
                               <v-autocomplete
                                 class="ma-0 pa-0"
-                                :items="['Passed', 'Failed', 'Did not Comply']"
+                                :items="statusItems"
                                 label="IQ Examination Status"
                                 v-model="applicant.iq_status"
                                 readonly
@@ -842,7 +842,7 @@
                             <v-col class="my-2 py-0">
                               <v-autocomplete
                                 class="ma-0 pa-0"
-                                :items="['Passed', 'Failed', 'Did not Comply']"
+                                :items="statusItems"
                                 label="Backgroud Investigation Status"
                                 v-model="applicant.bi_status"
                                 readonly
@@ -863,7 +863,7 @@
                             <v-col class="my-2 py-0">
                               <v-autocomplete
                                 class="ma-0 pa-0"
-                                :items="['Hired', 'Failed', 'Did not Comply']"
+                                :items="statusItems"
                                 label="Final Interview Status"
                                 v-model="applicant.final_interview_status"
                                 readonly
