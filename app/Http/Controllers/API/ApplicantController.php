@@ -340,7 +340,7 @@ class ApplicantController extends Controller
 
 				if($educ_attain == 'Vocational School')
 				{	
-					$voc = $req->voational_school;
+					$voc = $req->vocational_school;
 					ApplicantEducAttain::create(
 						[
 							'applicant_id' => $applicant->id,
