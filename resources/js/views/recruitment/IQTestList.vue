@@ -861,7 +861,7 @@
                           <v-row>
                             <v-col class="my-0 py-0">
                               <v-autocomplete
-                                :items="branches"
+                                :items="positions"
                                 item-value="id"
                                 item-text="name"
                                 label="Employment Position"
