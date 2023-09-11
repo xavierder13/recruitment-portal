@@ -3126,9 +3126,10 @@ export default {
       this.continue_1 = true;
 
       fieldnames.forEach(value => {
-        if(!['middlename', 'myFileInput'].includes(value)){
+        if(!['middlename', 'myFileInput', 'email'].includes(value)){
           if(!this.applicant[value]){
             this.continue_1 = false;
+            
           }
           else
           {
@@ -3142,7 +3143,8 @@ export default {
         }
   
       });
-9
+
+
       this.validateEducAttain();
 
       // validate References
@@ -3160,7 +3162,7 @@ export default {
         });
       });
 
-      this.continue_1 = this.educAttainHasError || this.referencesHasError ? false : true;
+      this.continue_1 = this.educAttainHasError || this.referencesHasError ? false : this.continue_1;
   
     },
 
