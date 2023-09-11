@@ -2900,6 +2900,7 @@ export default {
         middlename: [],
         address: [],
         birthdate: [],
+        birth_place: [],
         gender: [],
         civil_status: [],
         contact_no: [],
