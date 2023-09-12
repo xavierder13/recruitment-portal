@@ -872,7 +872,6 @@
                                 item-value="id"
                                 label="Position Preference"
                                 multiple
-                                chips
                                 readonly
                               >
                               </v-autocomplete>
@@ -888,7 +887,6 @@
                                 item-value="id"
                                 label="Branch Preference"
                                 multiple
-                                chips
                                 readonly
                               >
                               </v-autocomplete>
