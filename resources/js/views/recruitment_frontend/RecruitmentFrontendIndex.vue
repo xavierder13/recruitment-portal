@@ -68,7 +68,6 @@
               hint="Branch name"
               persistent-hint
               outlined
-              color="red"
               v-on:keyup="search_branches()"
             >
               <template v-slot:prepend>
@@ -155,6 +154,7 @@
             :length="parseInt(this.page_length / 12)"
             circle
             @input="next"
+            v-if="paginated_branch.length"
           ></v-pagination>
         </v-col>
       </v-row>
@@ -376,7 +376,7 @@
                 </v-stepper-header>
                 <v-row>
                   <v-col class="px-9 mt-8">
-                    <span class="font-italic font-weight-bold">Note: All fields with asterisk(*) are required</span>
+                    <span class="font-italic font-weight-bold red--text">Note: All fields with asterisk(*) are required</span>
                   </v-col>
                 </v-row>
                 <v-stepper-items>
@@ -1846,6 +1846,11 @@
                     </template>
                     <v-row>
                       <v-col>
+                        <span class="font-italic font-weight-bold red--text">Note: All fields with asterisk(*) are required</span>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col>
                         <v-fade-transition mode="out-in">
                           <v-btn
                             color="primary"
@@ -2800,14 +2805,15 @@ export default {
 
       let formData = new FormData();
       formData.append('search_textfield', this.search_textfield);
-
+      
       axios.post("/api/public_api/search_branches", formData, {
         headers: {
           'Content-Type': 'multipart/form-data' 
         }
       }).then(
         (response) => {
-          this.branches = response.data.branch;
+      
+          this.paginated_branch = response.data.branch;
         },
         (error) => {
           console.log(error);
