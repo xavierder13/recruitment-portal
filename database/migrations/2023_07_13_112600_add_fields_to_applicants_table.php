@@ -14,6 +14,7 @@ class AddFieldsToApplicantsTable extends Migration
     public function up()
     {
         Schema::table('applicants', function (Blueprint $table) {
+            $table->string('address2');
             $table->string('birth_place');
             $table->string('citizenship');
             $table->string('religion');

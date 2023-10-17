@@ -188,40 +188,46 @@ class ApplicantController extends Controller
 				if($educ_attain == 'Highschool Graduate' || (!$k_12_highschool && in_array($educ_attain, $post_hs_levels)))
 				{
 					$valid_fields['highschool.school'] = 'required';
-					$valid_fields['highschool.sy_attended'] = 'required';
+					$valid_fields['highschool.sy_start'] = 'required';
+					$valid_fields['highschool.sy_end'] = 'required';
 				}
 
 				if($educ_attain == 'Junior Highschool Graduate' || $k_12_highschool)
 				{
 					$valid_fields['jr_highschool.school'] = 'required';
-					$valid_fields['jr_highschool.sy_attended'] = 'required';
+					$valid_fields['jr_highschool.sy_start'] = 'required';
+					$valid_fields['jr_highschool.sy_end'] = 'required';
 				}
 
 				if($educ_attain == 'Senior Highschool Graduate' || $k_12_highschool)
 				{
 					$valid_fields['sr_highschool.school'] = 'required';
-					$valid_fields['sr_highschool.sy_attended'] = 'required';
+					$valid_fields['sr_highschool.sy_start'] = 'required';
+					$valid_fields['sr_highschool.sy_end'] = 'required';
 				}
 
 				if($educ_attain == 'Vocational School')
 				{	
 					$valid_fields['vocational_school.school'] = 'required';
 					$valid_fields['vocational_school.course'] = 'required';
-					$valid_fields['vocational_school.sy_attended'] = 'required';
+					$valid_fields['vocational_school.sy_start'] = 'required';
+					$valid_fields['vocational_school.sy_end'] = 'required';
 				}
 
 				if(in_array($educ_attain, ['College Graduate', 'College Undergraduate', 'Graduate School']))
 				{
 					$valid_fields['college.school'] = 'required';
 					$valid_fields['college.course'] = 'required';
-					$valid_fields['college.sy_attended'] = 'required';
+					$valid_fields['college.sy_start'] = 'required';
+					$valid_fields['college.sy_end'] = 'required';
 				}
 
 				if($educ_attain == 'Graduate School')
 				{	
 					$valid_fields['graduate_school.school'] = 'required';
 					$valid_fields['graduate_school.course'] = 'required';
-					$valid_fields['graduate_school.sy_attended'] = 'required';
+					$valid_fields['graduate_school.sy_start'] = 'required';
+					$valid_fields['graduate_school.sy_start'] = 'required';
 				}
 				
 				$validator = Validator::make($req->all(), $valid_fields, $rules);
@@ -256,6 +262,7 @@ class ApplicantController extends Controller
 				$applicant->firstname 			= $req->get('firstname');
 				$applicant->middlename 			= $req->get('middlename');
 				$applicant->address 				= $req->get('address');
+				$applicant->address2 				= $req->get('address2');
 				$applicant->birth_place 		= $req->get('birth_place');
 				$applicant->birthdate 			= $req->get('birthdate');
 				$applicant->age 						= $req->get('age');
@@ -279,7 +286,6 @@ class ApplicantController extends Controller
 				$applicant->status 					= 0;
 				$applicant->save();
 				
-
 				$file_extension = '';
 				if($req->file('file'))
 				{   
@@ -308,7 +314,7 @@ class ApplicantController extends Controller
 							'applicant_id' => $applicant->id,
 							'educ_level' => 'HighSchool',
 							'school' => $hs['school'],
-							'sy_attended' => $hs['sy_attended'],
+							'sy_attended' => $hs['sy_start'] . ' to ' . $hs['sy_end'],
 						]
 					);
 				}
@@ -321,7 +327,7 @@ class ApplicantController extends Controller
 							'applicant_id' => $applicant->id,
 							'educ_level' => 'Junior HighSchool',
 							'school' => $hs['school'],
-							'sy_attended' => $hs['sy_attended'],
+							'sy_attended' => $hs['sy_start'] . ' to ' . $hs['sy_end'],
 						]
 					);
 				}
@@ -349,7 +355,7 @@ class ApplicantController extends Controller
 							'school' => $voc['school'],
 							'course' => $voc['course'],
 							'major' => $voc['major'],
-							'sy_attended' => $voc['sy_attended'],
+							'sy_attended' => $voc['sy_start'] . ' to ' . $voc['sy_end'],
 						]
 					);
 				}
@@ -364,7 +370,7 @@ class ApplicantController extends Controller
 							'school' => $college['school'],
 							'course' => $college['course'],
 							'major' => $college['major'],
-							'sy_attended' => $college['sy_attended'],
+							'sy_attended' => $college['sy_start'] . ' to ' . $college['sy_end'],
 						]
 					);
 				}
@@ -378,7 +384,7 @@ class ApplicantController extends Controller
 						'school' => $grad['school'],
 						'course' => $grad['course'],
 						'major' => $grad['major'],
-						'sy_attended' => $grad['sy_attended'],
+						'sy_attended' => $grad['sy_start'] . ' to ' . $grad['sy_end'],
 					]);
 				}
 
@@ -388,7 +394,7 @@ class ApplicantController extends Controller
 						'employer' => $value['company'],
 						'position' => $value['position'],
 						'salary' => $value['salary'],
-						'date_of_service' => $value['date_of_service'],
+						'date_of_service' => $value['service_start'] . ' to ' . $value['service_end'],
 						'job_description' => $value['job_description'],
 					]);
 				}
@@ -535,7 +541,7 @@ class ApplicantController extends Controller
 																 'applicants.id', 
 												 				 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', applicants.middlename) AS name"),
 																 'applicants.address',
-												 				 DB::raw('DATE_FORMAT(applicants.birthdate, "%m-%d-%Y") as birthdate'),
+												 				 DB::raw('DATE_FORMAT(applicants.birthdate, "%m/%d/%Y") as birthdate'),
 																 'applicants.age',
 																 'applicants.gender',
 																 'applicants.civil_status',

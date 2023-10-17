@@ -322,6 +322,105 @@
                           </v-card>
                           <v-card class="mt-2 mx-2">
                             <v-card-title class="justify-center mb-0 pb-0">
+                              <strong>Educational Background</strong>
+                            </v-card-title>
+                            <v-divider class="mb-0"></v-divider>
+                            <v-card-text>
+                              <template v-for="(item, i) in educ_attains">
+                                <v-row>
+                                  <v-col>
+                                    <span class="text-h6">
+                                      <strong>{{ item.educ_level.charAt(0).toUpperCase() + item.educ_level.slice(1) }}</strong> 
+                                    </span>
+                                  </v-col>
+                                </v-row>
+                                <v-row>
+                                  <v-col 
+                                    class="my-2 py-0"
+                                    cols="12"
+                                    xs="12"
+                                    sm="6"
+                                    md="6"
+                                    lg="4"
+                                  >
+                                    <v-text-field
+                                      class="ma-0 pa-0"
+                                      label="School"
+                                      v-model="item.school"
+                                      readonly
+                                    ></v-text-field>
+                                  </v-col>
+                                  <v-col 
+                                    class="my-2 py-0"
+                                    cols="12"
+                                    xs="12"
+                                    sm="6"
+                                    md="6"
+                                    lg="4"
+                                  >
+                                    <v-text-field
+                                      class="ma-0 pa-0"
+                                      label="Course/Specialization"
+                                      v-model="item.course"
+                                      readonly
+                                    ></v-text-field>
+                                  </v-col>
+                                  <v-col 
+                                    class="my-2 py-0"
+                                    cols="12"
+                                    xs="12"
+                                    sm="6"
+                                    md="6"
+                                    lg="4"
+                                  >
+                                    <v-text-field
+                                      class="ma-0 pa-0"
+                                      :label=" item.educ_level == 'Senior HighSchool' ? 'Strand' : 'Major'"
+                                      v-model="item.major"
+                                      readonly
+                                    ></v-text-field>
+                                  </v-col>
+                                  <v-col 
+                                    class="my-2 py-0"
+                                    cols="12"
+                                    xs="12"
+                                    sm="6"
+                                    md="6"
+                                    lg="4"
+                                  >
+                                    <v-text-field
+                                      class="ma-0 pa-0"
+                                      label="S.Y Attended"
+                                      v-model="item.sy_attended"
+                                      readonly
+                                    ></v-text-field>
+                                  </v-col>
+                                  <v-col 
+                                    class="my-2 py-0"
+                                    cols="12"
+                                    xs="12"
+                                    sm="6"
+                                    md="6"
+                                    lg="4"
+                                  >
+                                    <v-text-field
+                                      class="ma-0 pa-0"
+                                      label="Honors Received"
+                                      v-model="item.honors"
+                                      readonly
+                                    ></v-text-field>
+                                  </v-col>
+                                </v-row>
+                                <v-row>
+                                  <v-col class="my-2 py-0">
+                                    <v-divider v-if="educ_attains.length > i + 1" class="my-0"></v-divider>
+                                  </v-col>
+                                </v-row>
+                              </template>
+                            </v-card-text>
+                          </v-card>
+                          <v-card class="mt-2 mx-2">
+                            <v-card-title class="justify-center mb-0 pb-0">
                               <strong>Parents/Guardian/Spouse</strong>
                             </v-card-title>
                             <v-divider class="mb-0"></v-divider>
@@ -714,10 +813,7 @@
                           </v-card>
                         </v-tab-item>
                         <v-tab-item>
-                          <ApplicantFiles
-                            :applicant="applicant"
-                            :applicant_files="applicant_files"
-                          />
+                          <ApplicantFiles :applicant="applicant"/>
                         </v-tab-item>
                       </v-tabs-items>
                     </v-col>
@@ -1434,20 +1530,45 @@ export default {
       axios.get(url).then(
         (response) => {
           this.view_applicant_loading = false;
-          console.log(response.data);
+
           if (response.data.success) {
             const data = response.data;
+            // console.log(data);
             this.applicant = data.applicant;
-            this.educ_attains = data.educ_attains;
-            this.experiences = data.experiences;
+            // this.educ_attains = data.educ_attains;
+            // this.experiences = data.experiences;
             this.references = data.references;
             this.fam_members = data.fam_members;
             this.dependents = data.dependents;
             this.applicant_files = data.applicant_files;
             this.download_file = data.file;
+             
+            data.educ_attains.forEach(value => {
+              let sy_attended = value.sy_attended;
+              let [start, end] = sy_attended.split(' to ');
+              let sy_start = new Date(start);
+              let sy_end = new Date(end);
 
+              sy_attended = sy_attended ? sy_start.toLocaleDateString("en-US") + ' to ' +  sy_end.toLocaleDateString("en-US") : null;
+
+              this.educ_attains.push(Object.assign(value, { sy_attended: sy_attended }));
+              
+            });
+
+            data.experiences.forEach(value => {
+              let date_of_service = value.date_of_service;
+              let [start, end] = date_of_service.split(' to ');
+              let service_start = new Date(start);
+              let service_end = new Date(end);
+
+              date_of_service = date_of_service ? service_start.toLocaleDateString("en-US") + ' to ' +  service_end.toLocaleDateString("en-US") : null;
+
+              this.experiences.push(Object.assign(value, { date_of_service: date_of_service }));
+              
+            });  
+            
             let position_preference = this.applicant.position_preference;
-
+            
             if(position_preference)
             {
               let positionsIdArr = position_preference.split(',');
