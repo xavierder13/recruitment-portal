@@ -1441,7 +1441,7 @@
                       <v-divider></v-divider>
                       <v-card-text>
                         <template v-for="(item, i) in work_experiences">
-                          <v-row>
+                          <v-row v-if="work_experiences.length > 1">
                             <v-col>
                               <span class="text-h6">
                                 <strong>Work Experience {{ work_experiences.length > 1 ? i + 1 : ''}}</strong> 
