@@ -374,852 +374,1315 @@
                     Submit
                   </v-stepper-step>
                 </v-stepper-header>
-                <v-row>
-                  <v-col class="px-9 mt-8">
-                    <span class="font-italic font-weight-bold red--text">Note: All fields with asterisk(*) are required</span>
-                  </v-col>
-                </v-row>
                 <v-stepper-items>
-                  <v-stepper-content step="1">
+                  <v-stepper-content step="1" class="px-0">
                     <v-row>
-                      <v-col 
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Last name *"
-                          persistent-hint
-                          v-model="applicant.lastname"
-                          :error-messages="lastnameErrors + applicantError.lastname"
-                          @input="$v.applicant.lastname.$touch() + (applicantError.lastname = []) + (validateFields_form1())"
-                          @blur="$v.applicant.lastname.$touch() + (applicantError.lastname = [])"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="First name *"
-                          persistent-hint
-                          v-model="applicant.firstname"
-                          :error-messages="firstnameErrors + applicantError.firstname"
-                          @input="$v.applicant.firstname.$touch() + (applicantError.firstname = []) + (validateFields_form1())"
-                          @blur="$v.applicant.firstname.$touch() + (applicantError.firstname = [])"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Middle name"
-                          persistent-hint
-                          v-model="applicant.middlename"
-                        ></v-text-field>
+                      <v-col class="px-9 mb-6">
+                        <span class="font-italic font-weight-bold red--text">Note: All fields with asterisk(*) are required</span>
                       </v-col>
                     </v-row>
-                    <v-row>
-                      <v-col 
-                        cols="12" 
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Present Address *"
-                          hint="St./Brgy, Municipality, Province"
-                          persistent-hint
-                          v-model="applicant.address"
-                          :error-messages="addressErrors + applicantError.address"
-                          @input="$v.applicant.address.$touch() + (validateFields_form1())"
-                          @blur="$v.applicant.address.$touch()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Home Address *"
-                          hint="St./Brgy, Municipality, Province"
-                          persistent-hint
-                          v-model="applicant.address2"
-                          :error-messages="address2Errors + applicantError.address2"
-                          @input="$v.applicant.address2.$touch() + (applicantError.address2 = []) + (validateFields_form1())"
-                          @blur="$v.applicant.address2.$touch() + (applicantError.address2 = [])"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Place of Birth *"
-                          hint="St./Brgy, Municipality, Province"
-                          persistent-hint
-                          v-model="applicant.birth_place"
-                          :error-messages="birthPlaceErrors + applicantError.birth_place"
-                          @input="$v.applicant.birth_place.$touch() + (applicantError.birth_place = []) + (validateFields_form1())"
-                          @blur="$v.applicant.birth_place.$touch() + (applicantError.birth_place = [])"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Birthday *"
-                          type="date"
-                          prepend-icon="mdi-calendar"
-                          v-model="applicant.birthdate"
-                          :error-messages="birthdateErrors + applicantError.birthdate"
-                          @input="birthdateInput()"
-                          @blur="$v.applicant.birthdate.$touch() + (applicantError.birthdate = [])"
-                        ></v-text-field>
-                      </v-col>
-                      <!-- <v-col
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="6"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Age"
-                          v-model="applicant.age"
-                          readonly
-                        ></v-text-field>
-                      </v-col> -->
-                    
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-autocomplete
-                          v-model="applicant.gender"
-                          :items="['Male', 'Female']"
-                          label="Gender *"
-                          :error-messages="genderErrors + applicantError.gender"
-                          @input="$v.applicant.gender.$touch() + (applicantError.gender = []) + (validateFields_form1())"
-                          @blur="$v.applicant.gender.$touch() + (applicantError.gender = [])"
-                        ></v-autocomplete>
-                      </v-col>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-autocomplete
-                          v-model="applicant.civil_status"
-                          :items="['Single', 'Married', 'Widow', 'Domestic Partnership']"
-                          label="Civil Status *"
-                          :error-messages="civilStatusErrors + applicantError.civil_status"
-                          @input="$v.applicant.civil_status.$touch() + (applicantError.civil_status = []) + (validateFields_form1())"
-                          @blur="$v.applicant.civil_status.$touch() + (applicantError.civil_status = [])"
-                        ></v-autocomplete>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Contact No. *"
-                          v-model="applicant.contact_no"
-                          :rules="rules"
-                          counter="11"
-                          :error-messages="contactNoErrors + applicantError.contact_no"
-                          @input="$v.applicant.contact_no.$touch() + (applicantError.contact_no = []) + (validateFields_form1())"
-                          @blur="$v.applicant.contact_no.$touch() + (applicantError.contact_no = [])"
-                          @keypress="intNumValFilter()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Email"
-                          v-model="applicant.email"
-                          :error-messages="emailErrors + applicantError.email"
-                          @input="$v.applicant.email.$touch() + (applicantError.email = []) + (validateFields_form1())"
-                          @blur="$v.applicant.email.$touch() + (applicantError.email = [])"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Citizenship *"
-                          v-model="applicant.citizenship"
-                          :error-messages="citizenshipErrors + applicantError.citizenship"
-                          @input="$v.applicant.citizenship.$touch() + (applicantError.citizenship = []) + (validateFields_form1())"
-                          @blur="$v.applicant.citizenship.$touch() + (applicantError.citizenship = [])"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Religion *"
-                          v-model="applicant.religion"
-                          :error-messages="religionErrors + applicantError.religion"
-                          @input="$v.applicant.religion.$touch() + (applicantError.religion = []) + (validateFields_form1())"
-                          @blur="$v.applicant.religion.$touch() + (applicantError.religion = [])"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="Height (cm) *"
-                          v-model="applicant.height"
-                          :error-messages="heightErrors + applicantError.height"
-                          @input="$v.applicant.height.$touch() + (applicantError.height = []) + (validateFields_form1())"
-                          @blur="$v.applicant.height.$touch() + (applicantError.height = [])"
-                          @keypress="decNumValFilter()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col class="mb-0 pb-0">
-                        <v-text-field
-                          label="Weight (kg) *"
-                          v-model="applicant.weight"
-                          :error-messages="weightErrors + applicantError.weight"
-                          @input="$v.applicant.weight.$touch() + (applicantError.weight = []) + (validateFields_form1())"
-                          @blur="$v.applicant.weight.$touch() + (applicantError.weight = [])"
-                          @keypress="decNumValFilter()"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="SSS #"
-                          v-model="applicant.sss_no"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="PHILHEALTH #"
-                          v-model="applicant.philhealth_no"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="PAGIBIG #"
-                          v-model="applicant.pagibig_no"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-text-field
-                          label="TIN #"
-                          v-model="applicant.tin_no"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                      >
-                        <v-autocomplete
-                          v-model="applicant.how_learn"
-                          :items="how_learn"
-                          label="How did you learn about job vacancy? *"
-                          :error-messages="howLearnErrors + applicantError.how_learn"
-                          @input="$v.applicant.how_learn.$touch() + (applicantError.how_learn = []) + (validateFields_form1())"
-                          @blur="$v.applicant.how_learn.$touch() + (applicantError.how_learn = [])"
-                          @change="handleChange"
-                        ></v-autocomplete>
-                      </v-col>
-                      <v-col 
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        class="mb-0 pb-0"
-                        v-if="applicant.how_learn == 'Others'"
-                      >
-                        <v-text-field
-                          label="(Please specify here.) *"
-                          v-model="applicant.how_learn_2"
-                          :error-messages="howLearn2Errors"
-                          @input="$v.applicant.how_learn_2.$touch() + (validateFields_form1())"
-                          @blur="$v.applicant.how_learn_2.$touch()"
-                        ></v-text-field>
-                      </v-col>
-                      <!-- <v-col 
-                        class="mb-0 pb-0"
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                      >
-                        <v-autocomplete
-                          v-model="applicant.educ_attain"
-                          :items="educ_attains"
-                          item-text="text"
-                          item-value="value"
-                          label="Educational Attainment *"
-                          :error-messages="educAttainErrors + applicantError.educ_attain"
-                          @input="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = []) + (validateEducAttain())"
-                          @blur="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = [])"
-                        ></v-autocomplete>
-                      </v-col> -->
-                    </v-row>
-                    <v-row>
+                    <v-card class="mt-2">
+                      <v-card-title class="justify-center mb-0 pb-0">
+                        <strong>Personal Information</strong>  
+                      </v-card-title>
+                      <v-divider></v-divider>
+                      <v-card-text>
+                        <v-row>
+                          <v-col 
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Last name *"
+                              persistent-hint
+                              v-model="applicant.lastname"
+                              :error-messages="lastnameErrors + applicantError.lastname"
+                              @input="$v.applicant.lastname.$touch() + (applicantError.lastname = []) + (validateFields_form1())"
+                              @blur="$v.applicant.lastname.$touch() + (applicantError.lastname = [])"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="First name *"
+                              persistent-hint
+                              v-model="applicant.firstname"
+                              :error-messages="firstnameErrors + applicantError.firstname"
+                              @input="$v.applicant.firstname.$touch() + (applicantError.firstname = []) + (validateFields_form1())"
+                              @blur="$v.applicant.firstname.$touch() + (applicantError.firstname = [])"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Middle name"
+                              persistent-hint
+                              v-model="applicant.middlename"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col 
+                            cols="12" 
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Present Address *"
+                              hint="St./Brgy, Municipality, Province"
+                              persistent-hint
+                              v-model="applicant.address"
+                              :error-messages="addressErrors + applicantError.address"
+                              @input="$v.applicant.address.$touch() + (validateFields_form1())"
+                              @blur="$v.applicant.address.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Home Address *"
+                              hint="St./Brgy, Municipality, Province"
+                              persistent-hint
+                              v-model="applicant.address2"
+                              :error-messages="address2Errors + applicantError.address2"
+                              @input="$v.applicant.address2.$touch() + (applicantError.address2 = []) + (validateFields_form1())"
+                              @blur="$v.applicant.address2.$touch() + (applicantError.address2 = [])"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Place of Birth *"
+                              hint="St./Brgy, Municipality, Province"
+                              persistent-hint
+                              v-model="applicant.birth_place"
+                              :error-messages="birthPlaceErrors + applicantError.birth_place"
+                              @input="$v.applicant.birth_place.$touch() + (applicantError.birth_place = []) + (validateFields_form1())"
+                              @blur="$v.applicant.birth_place.$touch() + (applicantError.birth_place = [])"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Birthday *"
+                              type="date"
+                              prepend-icon="mdi-calendar"
+                              v-model="applicant.birthdate"
+                              :error-messages="birthdateErrors + applicantError.birthdate"
+                              @input="birthdateInput()"
+                              @blur="$v.applicant.birthdate.$touch() + (applicantError.birthdate = [])"
+                            ></v-text-field>
+                          </v-col>
+                          <!-- <v-col
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="6"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Age"
+                              v-model="applicant.age"
+                              readonly
+                            ></v-text-field>
+                          </v-col> -->
+                        
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-autocomplete
+                              v-model="applicant.gender"
+                              :items="['Male', 'Female']"
+                              label="Gender *"
+                              :error-messages="genderErrors + applicantError.gender"
+                              @input="$v.applicant.gender.$touch() + (applicantError.gender = []) + (validateFields_form1())"
+                              @blur="$v.applicant.gender.$touch() + (applicantError.gender = [])"
+                            ></v-autocomplete>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-autocomplete
+                              v-model="applicant.civil_status"
+                              :items="['Single', 'Married', 'Widow', 'Domestic Partnership']"
+                              label="Civil Status *"
+                              :error-messages="civilStatusErrors + applicantError.civil_status"
+                              @input="$v.applicant.civil_status.$touch() + (applicantError.civil_status = []) + (validateFields_form1())"
+                              @blur="$v.applicant.civil_status.$touch() + (applicantError.civil_status = [])"
+                            ></v-autocomplete>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Contact No. *"
+                              v-model="applicant.contact_no"
+                              :rules="rules"
+                              counter="11"
+                              :error-messages="contactNoErrors + applicantError.contact_no"
+                              @input="$v.applicant.contact_no.$touch() + (applicantError.contact_no = []) + (validateFields_form1())"
+                              @blur="$v.applicant.contact_no.$touch() + (applicantError.contact_no = [])"
+                              @keypress="intNumValFilter()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Email"
+                              v-model="applicant.email"
+                              :error-messages="emailErrors + applicantError.email"
+                              @input="$v.applicant.email.$touch() + (applicantError.email = []) + (validateFields_form1())"
+                              @blur="$v.applicant.email.$touch() + (applicantError.email = [])"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Citizenship *"
+                              v-model="applicant.citizenship"
+                              :error-messages="citizenshipErrors + applicantError.citizenship"
+                              @input="$v.applicant.citizenship.$touch() + (applicantError.citizenship = []) + (validateFields_form1())"
+                              @blur="$v.applicant.citizenship.$touch() + (applicantError.citizenship = [])"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Religion *"
+                              v-model="applicant.religion"
+                              :error-messages="religionErrors + applicantError.religion"
+                              @input="$v.applicant.religion.$touch() + (applicantError.religion = []) + (validateFields_form1())"
+                              @blur="$v.applicant.religion.$touch() + (applicantError.religion = [])"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="Height (cm) *"
+                              v-model="applicant.height"
+                              :error-messages="heightErrors + applicantError.height"
+                              @input="$v.applicant.height.$touch() + (applicantError.height = []) + (validateFields_form1())"
+                              @blur="$v.applicant.height.$touch() + (applicantError.height = [])"
+                              @keypress="decNumValFilter()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col class="mb-0 pb-0">
+                            <v-text-field
+                              label="Weight (kg) *"
+                              v-model="applicant.weight"
+                              :error-messages="weightErrors + applicantError.weight"
+                              @input="$v.applicant.weight.$touch() + (applicantError.weight = []) + (validateFields_form1())"
+                              @blur="$v.applicant.weight.$touch() + (applicantError.weight = [])"
+                              @keypress="decNumValFilter()"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="SSS #"
+                              v-model="applicant.sss_no"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="PHILHEALTH #"
+                              v-model="applicant.philhealth_no"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="PAGIBIG #"
+                              v-model="applicant.pagibig_no"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-text-field
+                              label="TIN #"
+                              v-model="applicant.tin_no"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                          >
+                            <v-autocomplete
+                              v-model="applicant.how_learn"
+                              :items="how_learn"
+                              label="How did you learn about job vacancy? *"
+                              :error-messages="howLearnErrors + applicantError.how_learn"
+                              @input="$v.applicant.how_learn.$touch() + (applicantError.how_learn = []) + (validateFields_form1())"
+                              @blur="$v.applicant.how_learn.$touch() + (applicantError.how_learn = [])"
+                              @change="handleChange"
+                            ></v-autocomplete>
+                          </v-col>
+                          <v-col 
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                            class="mb-0 pb-0"
+                            v-if="applicant.how_learn == 'Others'"
+                          >
+                            <v-text-field
+                              label="(Please specify here.) *"
+                              v-model="applicant.how_learn_2"
+                              :error-messages="howLearn2Errors"
+                              @input="$v.applicant.how_learn_2.$touch() + (validateFields_form1())"
+                              @blur="$v.applicant.how_learn_2.$touch()"
+                            ></v-text-field>
+                          </v-col>
+                          <!-- <v-col 
+                            class="mb-0 pb-0"
+                            cols="12"
+                            xs="12"
+                            sm="4"
+                            md="4"
+                            lg="4"
+                          >
+                            <v-autocomplete
+                              v-model="applicant.educ_attain"
+                              :items="educ_attains"
+                              item-text="text"
+                              item-value="value"
+                              label="Educational Attainment *"
+                              :error-messages="educAttainErrors + applicantError.educ_attain"
+                              @input="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = []) + (validateEducAttain())"
+                              @blur="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = [])"
+                            ></v-autocomplete>
+                          </v-col> -->
+                        </v-row>
+                      </v-card-text>
+                    </v-card>
+                    <!-- <v-row>
                      <v-col>
                       <v-divider  class="mb-0"></v-divider>
                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col 
-                        class="mt-2 mb-0"
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                      >
-                        <v-autocomplete
-                          class="ma-0 pa-0"
-                          v-model="applicant.educ_attain"
-                          :items="educ_attains"
-                          item-text="text"
-                          item-value="value"
-                          label="Educational Attainment *"
-                          :error-messages="educAttainErrors + applicantError.educ_attain"
-                          @input="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = []) + (validateFields_form1())"
-                          @blur="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = [])"
-                        ></v-autocomplete>
-                      </v-col>
-                      <v-col 
-                        class="mb-0"
-                        cols="12"
-                        xs="12"
-                        sm="4"
-                        md="4"
-                        lg="4"
-                        v-if="applicant.educ_attain > 3"
-                      >
-                        <div class="d-flex mb-0">
-                          <v-checkbox class="mt-2 mb-0 pa-0" v-model="k_12_checkbox">
-                            <template v-slot:label>
-                              <span class="mt-2">K-12 Highschool</span>
-                            </template>
-                          </v-checkbox>
-                        </div>
-                      </v-col>
-                    </v-row>
-                    <template v-if="applicant.educ_attain">
-                      <template v-if="!k_12_checkbox && ![2, 3].includes(applicant.educ_attain)">
-                        <v-row>
-                          <v-col class="mt-0">
-                            <span class="text-h6">
-                              <strong>High School</strong> 
-                            </span>
-                          </v-col>
-                        </v-row>
+                    </v-row> -->
+                    <v-card class="mt-2">
+                      <v-card-title class="justify-center mb-0 pb-0">
+                        <strong>Educational Background</strong>  
+                      </v-card-title>
+                      <v-divider></v-divider>
+                      <v-card-text>
                         <v-row>
                           <v-col 
+                            class="mt-2 mb-0"
                             cols="12"
                             xs="12"
                             sm="4"
                             md="4"
                             lg="4"
                           >
-                            <v-text-field
+                            <v-autocomplete
                               class="ma-0 pa-0"
-                              label="Name of School *"
-                              v-model="highschool.school"
-                              :error-messages="HSSchoolErrors"
-                              @input="$v.highschool.school.$touch() + (validateEducAttain())"
-                              @blur="$v.highschool.school.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="2"
-                            md="2"
-                            lg="2"
-                          > 
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y Start *"
-                              hint="MM/DD/YYYY"
-                              persistent-hint
-                              type="date"
-                              prepend-icon="mdi-calendar"
-                              v-model="highschool.sy_start"
-                              :error-messages="HSSYStartErrors"
-                              :max="highschool.sy_end ? highschool.sy_end : null"
-                              @input="$v.highschool.sy_start.$touch() + validateDate('highschool.sy_start') + validateFields_form1()"
-                              @blur="$v.highschool.sy_start.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="2"
-                            md="2"
-                            lg="2"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y End *"
-                              hint="MM/DD/YYYY"
-                              persistent-hint
-                              type="date"
-                              prepend-icon="mdi-calendar"
-                              v-model="highschool.sy_end"
-                              :error-messages="HSSYEndErrors"
-                              :min="highschool.sy_start ? highschool.sy_start : null"
-                              @input="$v.highschool.sy_end.$touch() + validateDate('highschool.sy_end') + validateFields_form1()"
-                              @blur="$v.highschool.sy_end.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="4"
-                            md="4"
-                            lg="4"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Honors Received"
-                              v-model="highschool.honors"
-                            ></v-text-field>
-                          </v-col>
-                        </v-row>
-                        <v-divider v-if="applicant.educ_attain > 1"></v-divider>
-                      </template>
-                      <template v-if="(k_12_checkbox && applicant.educ_attain > 3) || (applicant.educ_attain > 1 && applicant.educ_attain < 4)">
-                      <!-- <template v-if="applicant.educ_attain >= 1"> -->
-                        <v-row>
-                          <v-col>
-                            <span class="text-h6">
-                              <strong>Junior High School</strong> 
-                            </span>
-                          </v-col>
-                        </v-row>
-                        <v-row>
-                          <v-col 
-                            cols="12"
-                            xs="12"
-                            sm="4"
-                            md="4"
-                            lg="4"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Name of School *"
-                              v-model="jr_highschool.school"
-                              :error-messages="JRHSchoolErrors"
-                              @input="$v.jr_highschool.school.$touch() + (validateEducAttain())"
-                              @blur="$v.jr_highschool.school.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="2"
-                            md="2"
-                            lg="2"
-                          > 
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y Start *"
-                              hint="MM/DD/YYYY"
-                              persistent-hint
-                              type="date"
-                              prepend-icon="mdi-calendar"
-                              v-model="jr_highschool.sy_start"
-                              :error-messages="JRSYStartErrors"
-                              :max="jr_highschool.sy_end ? jr_highschool.sy_end : null"
-                              @input="$v.jr_highschool.sy_start.$touch() + validateDate('jr_highschool.sy_start') + validateFields_form1()"
-                              @blur="$v.jr_highschool.sy_start.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="2"
-                            md="2"
-                            lg="2"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y End *"
-                              hint="MM/DD/YYYY"
-                              persistent-hint
-                              type="date"
-                              prepend-icon="mdi-calendar"
-                              v-model="jr_highschool.sy_end"
-                              :error-messages="JRSYEndErrors"
-                              :min="jr_highschool.sy_start ? jr_highschool.sy_start : null"
-                              @input="$v.jr_highschool.sy_end.$touch() + validateDate('jr_highschool.sy_end') + validateFields_form1()"
-                              @blur="$v.jr_highschool.sy_end.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="4"
-                            md="4"
-                            lg="4"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Honors Received"
-                              v-model="jr_highschool.honors"
-                            ></v-text-field>
-                          </v-col>
-                        </v-row>
-                        <v-divider v-if="(k_12_checkbox && applicant.educ_attain > 2) || applicant.educ_attain == 3"></v-divider>
-                        <!-- <v-divider v-if="applicant.educ_attain > 1"></v-divider> -->
-                      </template>
-                      <template v-if="(k_12_checkbox && applicant.educ_attain > 2) || applicant.educ_attain == 3">
-                      <!-- <template v-if="applicant.educ_attain >= 2"> -->
-                        <v-row>
-                          <v-col>
-                            <span class="text-h6">
-                              <strong>Senior High School</strong> 
-                            </span>
-                          </v-col>
-                        </v-row>
-                        <v-row>
-                          <v-col 
-                            cols="12"
-                            xs="12"
-                            sm="4"
-                            md="4"
-                            lg="4"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Name of School *"
-                              v-model="sr_highschool.school"
-                              :error-messages="SRHSchoolErrors"
-                              @input="$v.sr_highschool.school.$touch() + (validateEducAttain())"
-                              @blur="$v.sr_highschool.school.$touch()"
-                            ></v-text-field>
+                              v-model="applicant.educ_attain"
+                              :items="educ_attains"
+                              item-text="text"
+                              item-value="value"
+                              label="Educational Attainment *"
+                              :error-messages="educAttainErrors + applicantError.educ_attain"
+                              @input="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = []) + (validateFields_form1())"
+                              @blur="$v.applicant.educ_attain.$touch() + (applicantError.educ_attain = [])"
+                            ></v-autocomplete>
                           </v-col>
                           <v-col 
+                            class="mb-0"
                             cols="12"
                             xs="12"
                             sm="4"
                             md="4"
                             lg="4"
+                            v-if="applicant.educ_attain > 3"
                           >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Strand *"
-                              v-model="sr_highschool.strand"
-                              :error-messages="SRHSStrandErrors"
-                              @input="$v.sr_highschool.strand.$touch() + (validateEducAttain())"
-                              @blur="$v.sr_highschool.strand.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="2"
-                            md="2"
-                            lg="2"
-                          > 
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y Start *"
-                              hint="MM/DD/YYYY"
-                              persistent-hint
-                              type="date"
-                              prepend-icon="mdi-calendar"
-                              v-model="sr_highschool.sy_start"
-                              :error-messages="SRSYStartErrors"
-                              :max="sr_highschool.sy_end ? sr_highschool.sy_end : null"
-                              @input="$v.sr_highschool.sy_start.$touch() + validateDate('sr_highschool.sy_start') + validateFields_form1()"
-                              @blur="$v.sr_highschool.sy_start.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="2"
-                            md="2"
-                            lg="2"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y End *"
-                              hint="MM/DD/YYYY"
-                              persistent-hint
-                              type="date"
-                              prepend-icon="mdi-calendar"
-                              v-model="sr_highschool.sy_end"
-                              :error-messages="SSYEndErrors"
-                              :min="sr_highschool.sy_start ? sr_highschool.sy_start : null"
-                              @input="$v.sr_highschool.sy_end.$touch() + validateDate('sr_highschool.sy_end') + validateFields_form1()"
-                              @blur="$v.sr_highschool.sy_end.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                        
-                          <!-- <v-col
-                            cols="12"
-                            xs="12"
-                            sm="4"
-                            md="4"
-                            lg="4"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y Attended *"
-                              v-model="sr_highschool.sy_attended"
-                              :error-messages="SRHSYErrors"
-                              @input="$v.sr_highschool.sy_attended.$touch() + (validateEducAttain())"
-                              @blur="$v.sr_highschool.sy_attended.$touch()"
-                            ></v-text-field>
-                          </v-col> -->
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="4"
-                            md="4"
-                            lg="4"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Honors Received"
-                              v-model="sr_highschool.honors"
-                            ></v-text-field>
+                            <div class="d-flex mb-0">
+                              <v-checkbox class="mt-2 mb-0 pa-0" v-model="k_12_checkbox">
+                                <template v-slot:label>
+                                  <span class="mt-2">K-12 Highschool</span>
+                                </template>
+                              </v-checkbox>
+                            </div>
                           </v-col>
                         </v-row>
-                        <!-- <v-divider v-if="k_12_checkbox"></v-divider> -->
-                        <v-divider v-if="applicant.educ_attain > 3"></v-divider>
-                      </template>
-                      <template v-if="[4, 5].includes(applicant.educ_attain)">
-                        <v-row>
-                          <v-col>
-                            <span class="text-h6">
-                              <strong>College</strong> 
-                            </span>
-                          </v-col>
-                        </v-row>
-                        <v-row>
-                          <v-col 
-                            class="my-2 py-0"
-                            cols="12"
-                            xs="12"
-                            sm="6"
-                            md="6"
-                            lg="3"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Name of School *"
-                              v-model="college.school"
-                              :error-messages="collegeSchoolErrors"
-                              @input="$v.college.school.$touch() + (validateEducAttain())"
-                              @blur="$v.college.school.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col 
-                            class="my-2 py-0"
-                            cols="12"
-                            xs="12"
-                            sm="6"
-                            md="6"
-                            lg="3"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Course/Specialization *"
-                              v-model="college.course"
-                              :error-messages="collegeCourseErrors"
-                              @input="$v.college.course.$touch() + (validateEducAttain())"
-                              @blur="$v.college.course.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="2"
-                            md="2"
-                            lg="2"
-                          > 
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y Start *"
-                              hint="MM/DD/YYYY"
-                              persistent-hint
-                              type="date"
-                              prepend-icon="mdi-calendar"
-                              v-model="college.sy_start"
-                              :error-messages="collegeSYStartErrors"
-                              :max="college.sy_end ? college.sy_end : null"
-                              @input="$v.college.sy_start.$touch() + validateDate('college.sy_start') + validateFields_form1()"
-                              @blur="$v.college.sy_start.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="2"
-                            md="2"
-                            lg="2"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y End *"
-                              hint="MM/DD/YYYY"
-                              persistent-hint
-                              type="date"
-                              prepend-icon="mdi-calendar"
-                              v-model="college.sy_end"
-                              :error-messages="collegeSYEndErrors"
-                              :min="college.sy_start ? college.sy_start : null"
-                              @input="$v.college.sy_end.$touch() + validateDate('college.sy_end') + validateFields_form1()"
-                              @blur="$v.college.sy_end.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <!-- <v-col
-                            class="my-2 py-0"
-                            cols="12"
-                            xs="12"
-                            sm="6"
-                            md="6"
-                            lg="3"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y Attended *"
-                              v-model="college.sy_attended"
-                              :error-messages="collegeSYErrors"
-                              @input="$v.college.sy_attended.$touch() + (validateEducAttain())"
-                              @blur="$v.college.sy_attended.$touch()"
-                            ></v-text-field>
-                          </v-col> -->
-                          <v-col
-                            class="my-2 py-0"
-                            cols="12"
-                            xs="12"
-                            sm="6"
-                            md="6"
-                            lg="3"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Honors Received"
-                              v-model="college.honors"
-                            ></v-text-field>
-                          </v-col>
-                        </v-row>
-                        <!-- <v-divider v-if="applicant.educ_attain === 4"></v-divider> -->
-                      </template>
+                        <template v-if="applicant.educ_attain">
+                          <template v-if="!k_12_checkbox && ![2, 3].includes(applicant.educ_attain)">
+                            <v-row>
+                              <v-col class="mt-0">
+                                <span class="text-h6">
+                                  <strong>High School</strong> 
+                                </span>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col 
+                                cols="12"
+                                xs="12"
+                                sm="4"
+                                md="4"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Name of School *"
+                                  v-model="highschool.school"
+                                  :error-messages="HSSchoolErrors"
+                                  @input="$v.highschool.school.$touch() + (validateEducAttain())"
+                                  @blur="$v.highschool.school.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="2"
+                                md="2"
+                                lg="2"
+                              > 
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y Start *"
+                                  hint="MM/DD/YYYY"
+                                  persistent-hint
+                                  type="date"
+                                  prepend-icon="mdi-calendar"
+                                  v-model="highschool.sy_start"
+                                  :error-messages="HSSYStartErrors"
+                                  :max="highschool.sy_end ? highschool.sy_end : null"
+                                  @input="$v.highschool.sy_start.$touch() + validateDate('highschool.sy_start') + validateFields_form1()"
+                                  @blur="$v.highschool.sy_start.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="2"
+                                md="2"
+                                lg="2"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y End *"
+                                  hint="MM/DD/YYYY"
+                                  persistent-hint
+                                  type="date"
+                                  prepend-icon="mdi-calendar"
+                                  v-model="highschool.sy_end"
+                                  :error-messages="HSSYEndErrors"
+                                  :min="highschool.sy_start ? highschool.sy_start : null"
+                                  @input="$v.highschool.sy_end.$touch() + validateDate('highschool.sy_end') + validateFields_form1()"
+                                  @blur="$v.highschool.sy_end.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="4"
+                                md="4"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Honors Received"
+                                  v-model="highschool.honors"
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                            <v-divider v-if="applicant.educ_attain > 1"></v-divider>
+                          </template>
+                          <template v-if="(k_12_checkbox && applicant.educ_attain > 3) || (applicant.educ_attain > 1 && applicant.educ_attain < 4)">
+                          <!-- <template v-if="applicant.educ_attain >= 1"> -->
+                            <v-row>
+                              <v-col>
+                                <span class="text-h6">
+                                  <strong>Junior High School</strong> 
+                                </span>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col 
+                                cols="12"
+                                xs="12"
+                                sm="4"
+                                md="4"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Name of School *"
+                                  v-model="jr_highschool.school"
+                                  :error-messages="JRHSchoolErrors"
+                                  @input="$v.jr_highschool.school.$touch() + (validateEducAttain())"
+                                  @blur="$v.jr_highschool.school.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="2"
+                                md="2"
+                                lg="2"
+                              > 
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y Start *"
+                                  hint="MM/DD/YYYY"
+                                  persistent-hint
+                                  type="date"
+                                  prepend-icon="mdi-calendar"
+                                  v-model="jr_highschool.sy_start"
+                                  :error-messages="JRSYStartErrors"
+                                  :max="jr_highschool.sy_end ? jr_highschool.sy_end : null"
+                                  @input="$v.jr_highschool.sy_start.$touch() + validateDate('jr_highschool.sy_start') + validateFields_form1()"
+                                  @blur="$v.jr_highschool.sy_start.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="2"
+                                md="2"
+                                lg="2"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y End *"
+                                  hint="MM/DD/YYYY"
+                                  persistent-hint
+                                  type="date"
+                                  prepend-icon="mdi-calendar"
+                                  v-model="jr_highschool.sy_end"
+                                  :error-messages="JRSYEndErrors"
+                                  :min="jr_highschool.sy_start ? jr_highschool.sy_start : null"
+                                  @input="$v.jr_highschool.sy_end.$touch() + validateDate('jr_highschool.sy_end') + validateFields_form1()"
+                                  @blur="$v.jr_highschool.sy_end.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="4"
+                                md="4"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Honors Received"
+                                  v-model="jr_highschool.honors"
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                            <v-divider v-if="(k_12_checkbox && applicant.educ_attain > 2) || applicant.educ_attain == 3"></v-divider>
+                            <!-- <v-divider v-if="applicant.educ_attain > 1"></v-divider> -->
+                          </template>
+                          <template v-if="(k_12_checkbox && applicant.educ_attain > 2) || applicant.educ_attain == 3">
+                          <!-- <template v-if="applicant.educ_attain >= 2"> -->
+                            <v-row>
+                              <v-col>
+                                <span class="text-h6">
+                                  <strong>Senior High School</strong> 
+                                </span>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col 
+                                cols="12"
+                                xs="12"
+                                sm="4"
+                                md="4"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Name of School *"
+                                  v-model="sr_highschool.school"
+                                  :error-messages="SRHSchoolErrors"
+                                  @input="$v.sr_highschool.school.$touch() + (validateEducAttain())"
+                                  @blur="$v.sr_highschool.school.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                cols="12"
+                                xs="12"
+                                sm="4"
+                                md="4"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Strand *"
+                                  v-model="sr_highschool.strand"
+                                  :error-messages="SRHSStrandErrors"
+                                  @input="$v.sr_highschool.strand.$touch() + (validateEducAttain())"
+                                  @blur="$v.sr_highschool.strand.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="2"
+                                md="2"
+                                lg="2"
+                              > 
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y Start *"
+                                  hint="MM/DD/YYYY"
+                                  persistent-hint
+                                  type="date"
+                                  prepend-icon="mdi-calendar"
+                                  v-model="sr_highschool.sy_start"
+                                  :error-messages="SRSYStartErrors"
+                                  :max="sr_highschool.sy_end ? sr_highschool.sy_end : null"
+                                  @input="$v.sr_highschool.sy_start.$touch() + validateDate('sr_highschool.sy_start') + validateFields_form1()"
+                                  @blur="$v.sr_highschool.sy_start.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="2"
+                                md="2"
+                                lg="2"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y End *"
+                                  hint="MM/DD/YYYY"
+                                  persistent-hint
+                                  type="date"
+                                  prepend-icon="mdi-calendar"
+                                  v-model="sr_highschool.sy_end"
+                                  :error-messages="SSYEndErrors"
+                                  :min="sr_highschool.sy_start ? sr_highschool.sy_start : null"
+                                  @input="$v.sr_highschool.sy_end.$touch() + validateDate('sr_highschool.sy_end') + validateFields_form1()"
+                                  @blur="$v.sr_highschool.sy_end.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                            
+                              <!-- <v-col
+                                cols="12"
+                                xs="12"
+                                sm="4"
+                                md="4"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y Attended *"
+                                  v-model="sr_highschool.sy_attended"
+                                  :error-messages="SRHSYErrors"
+                                  @input="$v.sr_highschool.sy_attended.$touch() + (validateEducAttain())"
+                                  @blur="$v.sr_highschool.sy_attended.$touch()"
+                                ></v-text-field>
+                              </v-col> -->
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="4"
+                                md="4"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Honors Received"
+                                  v-model="sr_highschool.honors"
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                            <!-- <v-divider v-if="k_12_checkbox"></v-divider> -->
+                            <v-divider v-if="applicant.educ_attain > 3"></v-divider>
+                          </template>
+                          <template v-if="[4, 5].includes(applicant.educ_attain)">
+                            <v-row>
+                              <v-col>
+                                <span class="text-h6">
+                                  <strong>College</strong> 
+                                </span>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Name of School *"
+                                  v-model="college.school"
+                                  :error-messages="collegeSchoolErrors"
+                                  @input="$v.college.school.$touch() + (validateEducAttain())"
+                                  @blur="$v.college.school.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Course/Specialization *"
+                                  v-model="college.course"
+                                  :error-messages="collegeCourseErrors"
+                                  @input="$v.college.course.$touch() + (validateEducAttain())"
+                                  @blur="$v.college.course.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="2"
+                                md="2"
+                                lg="2"
+                              > 
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y Start *"
+                                  hint="MM/DD/YYYY"
+                                  persistent-hint
+                                  type="date"
+                                  prepend-icon="mdi-calendar"
+                                  v-model="college.sy_start"
+                                  :error-messages="collegeSYStartErrors"
+                                  :max="college.sy_end ? college.sy_end : null"
+                                  @input="$v.college.sy_start.$touch() + validateDate('college.sy_start') + validateFields_form1()"
+                                  @blur="$v.college.sy_start.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="2"
+                                md="2"
+                                lg="2"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y End *"
+                                  hint="MM/DD/YYYY"
+                                  persistent-hint
+                                  type="date"
+                                  prepend-icon="mdi-calendar"
+                                  v-model="college.sy_end"
+                                  :error-messages="collegeSYEndErrors"
+                                  :min="college.sy_start ? college.sy_start : null"
+                                  @input="$v.college.sy_end.$touch() + validateDate('college.sy_end') + validateFields_form1()"
+                                  @blur="$v.college.sy_end.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <!-- <v-col
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y Attended *"
+                                  v-model="college.sy_attended"
+                                  :error-messages="collegeSYErrors"
+                                  @input="$v.college.sy_attended.$touch() + (validateEducAttain())"
+                                  @blur="$v.college.sy_attended.$touch()"
+                                ></v-text-field>
+                              </v-col> -->
+                              <v-col
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Honors Received"
+                                  v-model="college.honors"
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                            <!-- <v-divider v-if="applicant.educ_attain === 4"></v-divider> -->
+                          </template>
 
-                      <!-- <template v-if="applicant.educ_attain === 4">
+                          <!-- <template v-if="applicant.educ_attain === 4">
+                            <v-row>
+                              <v-col>
+                                <span class="text-h6">
+                                  <strong>Graduate School</strong> 
+                                </span>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Name of School *"
+                                  v-model="graduate_school.school"
+                                  :error-messages="gradSchoolErrors"
+                                  @input="$v.graduate_school.school.$touch() + (validateEducAttain())"
+                                  @blur="$v.graduate_school.school.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Course/Specialization *"
+                                  v-model="graduate_school.course"
+                                  :error-messages="gradCourseErrors"
+                                  @input="$v.graduate_school.course.$touch() + (validateEducAttain())"
+                                  @blur="$v.graduate_school.course.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y Attended *"
+                                  v-model="graduate_school.sy_attended"
+                                  :error-messages="gradSYErrors"
+                                  @input="$v.graduate_school.sy_attended.$touch() + (validateEducAttain())"
+                                  @blur="$v.graduate_school.sy_attended.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Honors Received"
+                                  v-model="graduate_school.honors"
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                          </template> -->
+                          
+                          <template v-if="applicant.educ_attain == 6">
+                            <v-row>
+                              <v-col>
+                                <span class="text-h6">
+                                  <strong>Vocational School</strong> 
+                                </span>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Name of School *"
+                                  v-model="vocational_school.school"
+                                  :error-messages="vocSchoolErrors"
+                                  @input="$v.vocational_school.school.$touch() + (validateEducAttain())"
+                                  @blur="$v.vocational_school.school.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Course/Specialization *"
+                                  v-model="vocational_school.course"
+                                  :error-messages="vocCourseErrors"
+                                  @input="$v.vocational_school.course.$touch() + (validateEducAttain())"
+                                  @blur="$v.vocational_school.course.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="2"
+                                md="2"
+                                lg="2"
+                              > 
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y Start *"
+                                  hint="MM/DD/YYYY"
+                                  persistent-hint
+                                  type="date"
+                                  prepend-icon="mdi-calendar"
+                                  v-model="vocational_school.sy_start"
+                                  :error-messages="vocSYStartErrors"
+                                  :max="vocational_school.sy_end ? vocational_school.sy_end : null"
+                                  @input="$v.vocational_school.sy_start.$touch() + validateDate('vocational_school.sy_start') + validateFields_form1()"
+                                  @blur="$v.vocational_school.sy_start.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <v-col
+                                cols="12"
+                                xs="12"
+                                sm="2"
+                                md="2"
+                                lg="2"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y End *"
+                                  hint="MM/DD/YYYY"
+                                  persistent-hint
+                                  type="date"
+                                  prepend-icon="mdi-calendar"
+                                  v-model="vocational_school.sy_end"
+                                  :error-messages="vocSYEndErrors"
+                                  :min="vocational_school.sy_start ? vocational_school.sy_start : null"
+                                  @input="$v.vocational_school.sy_end.$touch() + validateDate('vocational_school.sy_end') + validateFields_form1()"
+                                  @blur="$v.vocational_school.sy_end.$touch()"
+                                ></v-text-field>
+                              </v-col>
+                              <!-- <v-col
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y Attended *"
+                                  v-model="vocational_school.sy_attended"
+                                  :error-messages="vocSYErrors"
+                                  @input="$v.vocational_school.sy_attended.$touch() + (validateEducAttain())"
+                                  @blur="$v.vocational_school.sy_attended.$touch()"
+                                ></v-text-field>
+                              </v-col> -->
+                              <v-col
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="3"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Honors Received"
+                                  v-model="vocational_school.honors"
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                          </template>
+                        </template>
+                      </v-card-text>
+                    </v-card>
+                    
+                    <!-- <v-row>
+                      <v-col>
+                        <v-divider class="my-0"></v-divider>
+                      </v-col>
+                    </v-row> -->
+
+                    <v-card class="mt-2">
+                      <v-card-title class="justify-center mb-0 pb-0">
+                        <strong>Work Experience</strong>  
+                      </v-card-title>
+                      <v-divider></v-divider>
+                      <v-card-text>
+                        <template v-for="(item, i) in work_experiences">
+                          <v-row>
+                            <v-col>
+                              <span class="text-h6">
+                                <strong>Work Experience {{ work_experiences.length > 1 ? i + 1 : ''}}</strong> 
+                              </span>
+                              <v-btn icon class="mb-2" color="error" @click="removeExperience(i)" v-if="work_experiences.length > 1"> 
+                                <v-icon>mdi-minus-circle</v-icon> 
+                              </v-btn>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Company/Employer"
+                                v-model="item.company"
+                              ></v-text-field>
+                            </v-col>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Position"
+                                v-model="item.position"
+                              ></v-text-field>
+                            </v-col>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Salary"
+                                v-model="item.salary"
+                              ></v-text-field>
+                            </v-col>
+                            <!-- <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Date of Service"
+                                v-model="item.date_of_service"
+                              ></v-text-field>
+                            </v-col> -->
+                            <v-col
+                              cols="12"
+                              xs="12"
+                              sm="2"
+                              md="2"
+                              lg="2"
+                            > 
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Service Start"
+                                hint="MM/DD/YYYY"
+                                persistent-hint
+                                type="date"
+                                prepend-icon="mdi-calendar"
+                                v-model="item.service_start"
+                                :max="item.service_end ? item.service_end : null"
+                              ></v-text-field>
+                            </v-col>
+                            <v-col
+                              cols="12"
+                              xs="12"
+                              sm="2"
+                              md="2"
+                              lg="2"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Service End"
+                                hint="MM/DD/YYYY"
+                                persistent-hint
+                                type="date"
+                                prepend-icon="mdi-calendar"
+                                v-model="item.service_end"
+                                :min="item.service_start ? item.service_start : null"
+                              ></v-text-field>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col class="mb-2 py-0">
+                              <v-btn color="primary" x-small @click="addExperience()" v-if="i + 1 === work_experiences.length"> 
+                                <v-icon x-small>mdi-plus</v-icon> 
+                                Add More
+                              </v-btn>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col class="my-2 py-0">
+                              <v-divider v-if="work_experiences.length > 1" class="my-0"></v-divider>
+                            </v-col>
+                          </v-row>
+                        </template>
+                      </v-card-text>
+                    </v-card>
+                    
+                    <!-- <v-row>
+                      <v-col>
+                        <v-divider class="my-0"></v-divider>
+                      </v-col>
+                    </v-row> -->
+                    <v-card class="mt-2">
+                      <v-card-title class="justify-center mb-0 pb-0">
+                        <strong>References</strong>  
+                      </v-card-title>
+                      <v-divider></v-divider>
+                      <v-card-text>
+                        <template v-for="(item, i) in references">
+                          <v-row>
+                            <v-col>
+                              <span class="text-h6">
+                                <strong>Reference {{ i + 1 }}</strong> 
+                              </span>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Name *"
+                                v-model="item.name"
+                                :error-messages="referencesError[i].name"
+                                @input="validateReference(i, 'name') + validateFields_form1()"
+                                @blur="validateReference(i, 'name') + validateFields_form1()"
+                              ></v-text-field>
+                            </v-col>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Address *"
+                                v-model="item.address"
+                                :error-messages="referencesError[i].address"
+                                @input="validateReference(i, 'address') + validateFields_form1()"
+                                @blur="validateReference(i, 'address') + validateFields_form1()"
+                              ></v-text-field>
+                            </v-col>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Contact *"
+                                v-model="item.contact"
+                                counter="11"
+                                :rules="rules"
+                                :error-messages="referencesError[i].contact"
+                                @input="validateReference(i, 'contact') + validateFields_form1()"
+                                @blur="validateReference(i, 'contact') + validateFields_form1() "
+                                @keypress="intNumValFilter()"
+                              ></v-text-field>
+                            </v-col>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Company"
+                                v-model="item.company"
+                              ></v-text-field>
+                            </v-col>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Position"
+                                v-model="item.position"
+                              ></v-text-field>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col class="my-2 py-0">
+                              <v-divider class="my-0"></v-divider>
+                            </v-col>
+                          </v-row>
+                        </template>
+                      </v-card-text>
+                    </v-card>
+                    <v-card class="mt-2">
+                      <v-card-title class="justify-center mb-0 pb-0">
+                        <strong>Parents/Guardian/Spouse</strong>  
+                      </v-card-title>
+                      <v-divider></v-divider>
+                      <v-card-text>
                         <v-row>
                           <v-col>
                             <span class="text-h6">
-                              <strong>Graduate School</strong> 
+                              <strong>Father</strong> 
                             </span>
                           </v-col>
                         </v-row>
@@ -1230,15 +1693,12 @@
                             xs="12"
                             sm="6"
                             md="6"
-                            lg="3"
+                            lg="4"
                           >
                             <v-text-field
                               class="ma-0 pa-0"
-                              label="Name of School *"
-                              v-model="graduate_school.school"
-                              :error-messages="gradSchoolErrors"
-                              @input="$v.graduate_school.school.$touch() + (validateEducAttain())"
-                              @blur="$v.graduate_school.school.$touch()"
+                              label="Name"
+                              v-model="father.name"
                             ></v-text-field>
                           </v-col>
                           <v-col 
@@ -1247,827 +1707,419 @@
                             xs="12"
                             sm="6"
                             md="6"
-                            lg="3"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Course/Specialization *"
-                              v-model="graduate_school.course"
-                              :error-messages="gradCourseErrors"
-                              @input="$v.graduate_school.course.$touch() + (validateEducAttain())"
-                              @blur="$v.graduate_school.course.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            class="my-2 py-0"
-                            cols="12"
-                            xs="12"
-                            sm="6"
-                            md="6"
-                            lg="3"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y Attended *"
-                              v-model="graduate_school.sy_attended"
-                              :error-messages="gradSYErrors"
-                              @input="$v.graduate_school.sy_attended.$touch() + (validateEducAttain())"
-                              @blur="$v.graduate_school.sy_attended.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            class="my-2 py-0"
-                            cols="12"
-                            xs="12"
-                            sm="6"
-                            md="6"
-                            lg="3"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Honors Received"
-                              v-model="graduate_school.honors"
-                            ></v-text-field>
-                          </v-col>
-                        </v-row>
-                      </template> -->
-                      
-                      <template v-if="applicant.educ_attain == 6">
-                        <v-row>
-                          <v-col>
-                            <span class="text-h6">
-                              <strong>Vocational School</strong> 
-                            </span>
-                          </v-col>
-                        </v-row>
-                        <v-row>
-                          <v-col 
-                            class="my-2 py-0"
-                            cols="12"
-                            xs="12"
-                            sm="6"
-                            md="6"
-                            lg="3"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Name of School *"
-                              v-model="vocational_school.school"
-                              :error-messages="vocSchoolErrors"
-                              @input="$v.vocational_school.school.$touch() + (validateEducAttain())"
-                              @blur="$v.vocational_school.school.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col 
-                            class="my-2 py-0"
-                            cols="12"
-                            xs="12"
-                            sm="6"
-                            md="6"
-                            lg="3"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="Course/Specialization *"
-                              v-model="vocational_school.course"
-                              :error-messages="vocCourseErrors"
-                              @input="$v.vocational_school.course.$touch() + (validateEducAttain())"
-                              @blur="$v.vocational_school.course.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="2"
-                            md="2"
-                            lg="2"
+                            lg="4"
                           > 
                             <v-text-field
                               class="ma-0 pa-0"
-                              label="S.Y Start *"
-                              hint="MM/DD/YYYY"
-                              persistent-hint
-                              type="date"
-                              prepend-icon="mdi-calendar"
-                              v-model="vocational_school.sy_start"
-                              :error-messages="vocSYStartErrors"
-                              :max="vocational_school.sy_end ? vocational_school.sy_end : null"
-                              @input="$v.vocational_school.sy_start.$touch() + validateDate('vocational_school.sy_start') + validateFields_form1()"
-                              @blur="$v.vocational_school.sy_start.$touch()"
+                              label="Age"
+                              v-model="father.age"
+                              @keypress="intNumValFilter()"
                             ></v-text-field>
                           </v-col>
-                          <v-col
-                            cols="12"
-                            xs="12"
-                            sm="2"
-                            md="2"
-                            lg="2"
-                          >
-                            <v-text-field
-                              class="ma-0 pa-0"
-                              label="S.Y End *"
-                              hint="MM/DD/YYYY"
-                              persistent-hint
-                              type="date"
-                              prepend-icon="mdi-calendar"
-                              v-model="vocational_school.sy_end"
-                              :error-messages="vocSYEndErrors"
-                              :min="vocational_school.sy_start ? vocational_school.sy_start : null"
-                              @input="$v.vocational_school.sy_end.$touch() + validateDate('vocational_school.sy_end') + validateFields_form1()"
-                              @blur="$v.vocational_school.sy_end.$touch()"
-                            ></v-text-field>
-                          </v-col>
-                          <!-- <v-col
+                          <v-col 
                             class="my-2 py-0"
                             cols="12"
                             xs="12"
                             sm="6"
                             md="6"
-                            lg="3"
+                            lg="4"
                           >
                             <v-text-field
                               class="ma-0 pa-0"
-                              label="S.Y Attended *"
-                              v-model="vocational_school.sy_attended"
-                              :error-messages="vocSYErrors"
-                              @input="$v.vocational_school.sy_attended.$touch() + (validateEducAttain())"
-                              @blur="$v.vocational_school.sy_attended.$touch()"
+                              label="Address"
+                              v-model="father.address"
                             ></v-text-field>
-                          </v-col> -->
-                          <v-col
+                          </v-col>
+                          <v-col 
                             class="my-2 py-0"
                             cols="12"
                             xs="12"
                             sm="6"
                             md="6"
-                            lg="3"
+                            lg="4"
                           >
                             <v-text-field
                               class="ma-0 pa-0"
-                              label="Honors Received"
-                              v-model="vocational_school.honors"
+                              label="Contact"
+                              v-model="father.contact"
+                              counter="11"
+                              :rules="rules"
+                              @keypress="intNumValFilter()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Occupation"
+                              v-model="father.occupation"
                             ></v-text-field>
                           </v-col>
                         </v-row>
-                      </template>
-                    </template>
-                    <v-row>
-                      <v-col>
-                        <v-divider class="my-0"></v-divider>
-                      </v-col>
-                    </v-row>
-                    <template v-for="(item, i) in work_experiences">
-                      <v-row>
-                        <v-col>
-                          <span class="text-h6">
-                            <strong>Work Experience {{ work_experiences.length > 1 ? i + 1 : ''}}</strong> 
-                          </span>
-                          <v-btn icon class="mb-2" color="error" @click="removeExperience(i)" v-if="work_experiences.length > 1"> 
-                            <v-icon>mdi-minus-circle</v-icon> 
-                          </v-btn>
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Company/Employer"
-                            v-model="item.company"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Position"
-                            v-model="item.position"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Salary"
-                            v-model="item.salary"
-                          ></v-text-field>
-                        </v-col>
-                        <!-- <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Date of Service"
-                            v-model="item.date_of_service"
-                          ></v-text-field>
-                        </v-col> -->
-                        <v-col
-                          cols="12"
-                          xs="12"
-                          sm="2"
-                          md="2"
-                          lg="2"
-                        > 
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Service Start"
-                            hint="MM/DD/YYYY"
-                            persistent-hint
-                            type="date"
-                            prepend-icon="mdi-calendar"
-                            v-model="item.service_start"
-                            :max="item.service_end ? item.service_end : null"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col
-                          cols="12"
-                          xs="12"
-                          sm="2"
-                          md="2"
-                          lg="2"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Service End"
-                            hint="MM/DD/YYYY"
-                            persistent-hint
-                            type="date"
-                            prepend-icon="mdi-calendar"
-                            v-model="item.service_end"
-                            :min="item.service_start ? item.service_start : null"
-                          ></v-text-field>
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col class="mb-2 py-0">
-                          <v-btn color="primary" x-small @click="addExperience()" v-if="i + 1 === work_experiences.length"> 
-                            <v-icon x-small>mdi-plus</v-icon> 
-                            Add More
-                          </v-btn>
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col class="my-2 py-0">
-                          <v-divider v-if="work_experiences.length > 1" class="my-0"></v-divider>
-                        </v-col>
-                      </v-row>
-                    </template>
-                    <v-row>
-                      <v-col>
-                        <v-divider class="my-0"></v-divider>
-                      </v-col>
-                    </v-row>
-                    <template v-for="(item, i) in references">
-                      <v-row>
-                        <v-col>
-                          <span class="text-h6">
-                            <strong>Reference {{ i + 1 }}</strong> 
-                          </span>
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Name *"
-                            v-model="item.name"
-                            :error-messages="referencesError[i].name"
-                            @input="validateReference(i, 'name') + validateFields_form1()"
-                            @blur="validateReference(i, 'name') + validateFields_form1()"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Address *"
-                            v-model="item.address"
-                            :error-messages="referencesError[i].address"
-                            @input="validateReference(i, 'address') + validateFields_form1()"
-                            @blur="validateReference(i, 'address') + validateFields_form1()"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Contact *"
-                            v-model="item.contact"
-                            counter="11"
-                            :rules="rules"
-                            :error-messages="referencesError[i].contact"
-                            @input="validateReference(i, 'contact') + validateFields_form1()"
-                            @blur="validateReference(i, 'contact') + validateFields_form1() "
-                            @keypress="intNumValFilter()"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Company"
-                            v-model="item.company"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Position"
-                            v-model="item.position"
-                          ></v-text-field>
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col class="my-2 py-0">
-                          <v-divider class="my-0"></v-divider>
-                        </v-col>
-                      </v-row>
-                    </template>
-                    <v-row>
-                      <v-col>
-                        <span class="text-h6">
-                          <strong>Father</strong> 
-                        </span>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Name"
-                          v-model="father.name"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      > 
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Age"
-                          v-model="father.age"
-                          @keypress="intNumValFilter()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Address"
-                          v-model="father.address"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Contact"
-                          v-model="father.contact"
-                          counter="11"
-                          :rules="rules"
-                          @keypress="intNumValFilter()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Occupation"
-                          v-model="father.occupation"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col>
-                        <span class="text-h6">
-                          <strong>Mother</strong> 
-                        </span>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Name"
-                          v-model="mother.name"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Age"
-                          v-model="mother.age"
-                          @keypress="intNumValFilter()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Address"
-                          v-model="mother.address"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Contact"
-                          v-model="mother.contact"
-                          counter="11"
-                          :rules="rules"
-                          @keypress="intNumValFilter()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Occupation"
-                          v-model="mother.occupation"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col>
-                        <span class="text-h6">
-                          <strong>Spouse</strong> 
-                        </span>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Name"
-                          v-model="spouse.name"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Age"
-                          v-model="spouse.age"
-                          @keypress="intNumValFilter()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Address"
-                          v-model="spouse.address"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Contact"
-                          v-model="spouse.contact"
-                          counter="11"
-                          :rules="rules"
-                          @keypress="intNumValFilter()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Occupation"
-                          v-model="spouse.occupation"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col>
-                        <span class="text-h6">
-                          <strong>Guardian</strong> 
-                        </span>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Name"
-                          v-model="guardian.name"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Age"
-                          v-model="guardian.age"
-                          @keypress="intNumValFilter()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Address"
-                          v-model="guardian.address"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Contact"
-                          v-model="guardian.contact"
-                          counter="11"
-                          :rules="rules"
-                          @keypress="intNumValFilter()"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col 
-                        class="my-2 py-0"
-                        cols="12"
-                        xs="12"
-                        sm="6"
-                        md="6"
-                        lg="4"
-                      >
-                        <v-text-field
-                          class="ma-0 pa-0"
-                          label="Occupation"
-                          v-model="guardian.occupation"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col class="my-2 py-0">
-                        <v-divider class="my-0"></v-divider>
-                      </v-col>
-                    </v-row>
-                    <template v-for="(item, i) in dependents">
-                      <v-row>
-                        <v-col>
-                          <span class="text-h6">
-                            <strong>Dependent {{ i + 1 }}</strong> 
-                          </span>
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Name"
-                            v-model="item.name"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Relationship"
-                            v-model="item.relationship"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                          class="ma-0 pa-0"
-                          label="Age"
-                          v-model="item.age"
-                          @keypress="intNumValFilter()"
-                        ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Address"
-                            v-model="item.address"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col 
-                          class="my-2 py-0"
-                          cols="12"
-                          xs="12"
-                          sm="6"
-                          md="6"
-                          lg="4"
-                        >
-                          <v-text-field
-                            class="ma-0 pa-0"
-                            label="Occupation"
-                            v-model="item.occupation"
-                          ></v-text-field>
-                        </v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col class="my-2 py-0">
-                          <v-divider v-if="dependents.length > i + 1" class="my-0"></v-divider>
-                        </v-col>
-                      </v-row>
-                    </template>
-                    <v-row>
+                        <v-row>
+                          <v-col>
+                            <span class="text-h6">
+                              <strong>Mother</strong> 
+                            </span>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Name"
+                              v-model="mother.name"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Age"
+                              v-model="mother.age"
+                              @keypress="intNumValFilter()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Address"
+                              v-model="mother.address"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Contact"
+                              v-model="mother.contact"
+                              counter="11"
+                              :rules="rules"
+                              @keypress="intNumValFilter()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Occupation"
+                              v-model="mother.occupation"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col>
+                            <span class="text-h6">
+                              <strong>Spouse</strong> 
+                            </span>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Name"
+                              v-model="spouse.name"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Age"
+                              v-model="spouse.age"
+                              @keypress="intNumValFilter()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Address"
+                              v-model="spouse.address"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Contact"
+                              v-model="spouse.contact"
+                              counter="11"
+                              :rules="rules"
+                              @keypress="intNumValFilter()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Occupation"
+                              v-model="spouse.occupation"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col>
+                            <span class="text-h6">
+                              <strong>Guardian</strong> 
+                            </span>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Name"
+                              v-model="guardian.name"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Age"
+                              v-model="guardian.age"
+                              @keypress="intNumValFilter()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Address"
+                              v-model="guardian.address"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Contact"
+                              v-model="guardian.contact"
+                              counter="11"
+                              :rules="rules"
+                              @keypress="intNumValFilter()"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col 
+                            class="my-2 py-0"
+                            cols="12"
+                            xs="12"
+                            sm="6"
+                            md="6"
+                            lg="4"
+                          >
+                            <v-text-field
+                              class="ma-0 pa-0"
+                              label="Occupation"
+                              v-model="guardian.occupation"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col class="my-2 py-0">
+                            <v-divider class="my-0"></v-divider>
+                          </v-col>
+                        </v-row>
+                      </v-card-text>
+                    </v-card>
+                    <v-card class="mt-2">
+                      <v-card-title class="justify-center mb-0 pb-0">
+                        <strong>Dependents</strong>  
+                      </v-card-title>
+                      <v-divider></v-divider>
+                      <v-card-text>
+                        <template v-for="(item, i) in dependents">
+                          <v-row>
+                            <v-col>
+                              <span class="text-h6">
+                                <strong>Dependent {{ i + 1 }}</strong> 
+                              </span>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Name"
+                                v-model="item.name"
+                              ></v-text-field>
+                            </v-col>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Relationship"
+                                v-model="item.relationship"
+                              ></v-text-field>
+                            </v-col>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                              class="ma-0 pa-0"
+                              label="Age"
+                              v-model="item.age"
+                              @keypress="intNumValFilter()"
+                            ></v-text-field>
+                            </v-col>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Address"
+                                v-model="item.address"
+                              ></v-text-field>
+                            </v-col>
+                            <v-col 
+                              class="my-2 py-0"
+                              cols="12"
+                              xs="12"
+                              sm="6"
+                              md="6"
+                              lg="4"
+                            >
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Occupation"
+                                v-model="item.occupation"
+                              ></v-text-field>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col class="my-2 py-0">
+                              <v-divider v-if="dependents.length > i + 1" class="my-0"></v-divider>
+                            </v-col>
+                          </v-row>
+                        </template>
+                      </v-card-text>
+                    </v-card>
+                    
+                    <v-row class="mt-2 ml-3">
                       <v-col>
                         <span class="font-italic font-weight-bold red--text">Note: All fields with asterisk(*) are required</span>
                       </v-col>
                     </v-row>
-                    <v-row>
+                    <v-row class="ml-3">
                       <v-col>
                         <v-fade-transition mode="out-in">
                           <v-btn
