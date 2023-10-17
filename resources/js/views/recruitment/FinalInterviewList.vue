@@ -1945,6 +1945,7 @@ export default {
             if(bi_status == 1) // BI passed then set new progress
             {
               progress = "Final Interview " + text;
+              color = "success";
 
               if(final_interview_status == 1 ) // Final Interview passed then set new progress
               {
