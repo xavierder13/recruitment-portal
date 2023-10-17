@@ -1667,7 +1667,7 @@
                           </v-row>
                           <v-row>
                             <v-col class="my-2 py-0">
-                              <v-divider class="my-0"></v-divider>
+                              <v-divider v-if="references.length > 1 && references.length - 1 != i" class="my-0"></v-divider>
                             </v-col>
                           </v-row>
                         </template>
@@ -1763,6 +1763,11 @@
                           </v-col>
                         </v-row>
                         <v-row>
+                          <v-col class="my-2 py-0">
+                            <v-divider class="my-0"></v-divider>
+                          </v-col>
+                        </v-row>
+                        <v-row>
                           <v-col>
                             <span class="text-h6">
                               <strong>Mother</strong> 
@@ -1843,6 +1848,11 @@
                               label="Occupation"
                               v-model="mother.occupation"
                             ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col class="my-2 py-0">
+                            <v-divider class="my-0"></v-divider>
                           </v-col>
                         </v-row>
                         <v-row>
@@ -1929,6 +1939,11 @@
                           </v-col>
                         </v-row>
                         <v-row>
+                          <v-col class="my-2 py-0">
+                            <v-divider class="my-0"></v-divider>
+                          </v-col>
+                        </v-row>
+                        <v-row>
                           <v-col>
                             <span class="text-h6">
                               <strong>Guardian</strong> 
@@ -2009,11 +2024,6 @@
                               label="Occupation"
                               v-model="guardian.occupation"
                             ></v-text-field>
-                          </v-col>
-                        </v-row>
-                        <v-row>
-                          <v-col class="my-2 py-0">
-                            <v-divider class="my-0"></v-divider>
                           </v-col>
                         </v-row>
                       </v-card-text>
