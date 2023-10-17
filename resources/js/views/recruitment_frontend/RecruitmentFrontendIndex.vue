@@ -1555,7 +1555,7 @@
                           </v-row>
                           <v-row>
                             <v-col class="my-2 py-0">
-                              <v-divider v-if="work_experiences.length > 1" class="my-0"></v-divider>
+                              <v-divider v-if="work_experiences.length > 1 && work_experiences.length - 1 != i" class="my-0"></v-divider>
                             </v-col>
                           </v-row>
                         </template>
