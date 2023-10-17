@@ -359,7 +359,7 @@
                 <v-icon>mdi-close-circle</v-icon>
               </v-btn>
             </v-card-title>
-            <v-card-text>
+            <v-card-text class="px-0 mb-0">
               <v-stepper v-model="stepper" class="mt-2">
                 <v-stepper-header>
                   <v-stepper-step :complete="stepper > 1" step="1">
@@ -381,7 +381,7 @@
                         <span class="font-italic font-weight-bold red--text">Note: All fields with asterisk(*) are required</span>
                       </v-col>
                     </v-row>
-                    <v-card class="mt-2">
+                    <v-card class="mt-2 mx-4">
                       <v-card-title class="justify-center mb-0 pb-0">
                         <strong>Personal Information</strong>  
                       </v-card-title>
@@ -777,7 +777,7 @@
                       <v-divider  class="mb-0"></v-divider>
                      </v-col>
                     </v-row> -->
-                    <v-card class="mt-2">
+                    <v-card class="mt-2 mx-4">
                       <v-card-title class="justify-center mb-0 pb-0">
                         <strong>Educational Background</strong>  
                       </v-card-title>
@@ -1434,7 +1434,7 @@
                       </v-col>
                     </v-row> -->
 
-                    <v-card class="mt-2">
+                    <v-card class="mt-2 mx-4">
                       <v-card-title class="justify-center mb-0 pb-0">
                         <strong>Work Experience</strong>  
                       </v-card-title>
@@ -1567,7 +1567,7 @@
                         <v-divider class="my-0"></v-divider>
                       </v-col>
                     </v-row> -->
-                    <v-card class="mt-2">
+                    <v-card class="mt-2 mx-4">
                       <v-card-title class="justify-center mb-0 pb-0">
                         <strong>References</strong>  
                       </v-card-title>
@@ -1673,7 +1673,7 @@
                         </template>
                       </v-card-text>
                     </v-card>
-                    <v-card class="mt-2">
+                    <v-card class="mt-2 mx-4">
                       <v-card-title class="justify-center mb-0 pb-0">
                         <strong>Parents/Guardian/Spouse</strong>  
                       </v-card-title>
@@ -2028,7 +2028,7 @@
                         </v-row>
                       </v-card-text>
                     </v-card>
-                    <v-card class="mt-2">
+                    <v-card class="mt-2 mx-4">
                       <v-card-title class="justify-center mb-0 pb-0">
                         <strong>Dependents</strong>  
                       </v-card-title>
@@ -2123,7 +2123,6 @@
                         </template>
                       </v-card-text>
                     </v-card>
-                    
                     <v-row class="mt-2 ml-3">
                       <v-col>
                         <span class="font-italic font-weight-bold red--text">Note: All fields with asterisk(*) are required</span>
@@ -2198,7 +2197,7 @@
                 </v-stepper-items>
               </v-stepper>
             </v-card-text>
-            <v-divider class="mb-3 mt-0"></v-divider>
+            <!-- <v-divider class="mb-3 mt-0"></v-divider> -->
             <v-card-actions class="pa-0">
               <v-spacer></v-spacer>
               <v-fade-transition mode="out-in">
