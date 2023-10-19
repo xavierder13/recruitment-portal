@@ -1875,6 +1875,7 @@ export default {
         formData.append('date_from', date_from);
         formData.append('date_to', date_to);
         formData.append('branch_id', branch_id);
+        
         // formData.append('progress', this.progress_items[this.step]); // progress_items index 3 (Final Interview)
         // formData.append('step', this.step); // step 3 (Final Interview)
 
