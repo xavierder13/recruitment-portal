@@ -1533,7 +1533,16 @@ export default {
       disabled: false,
       progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'Background Investigation', 'Final Interview'],
       dateHasError: false,
-      hiring_officer_positions: ['Department Manager', 'Branch Manager', 'OIC', 'Sales Supervisor', 'CCS', 'MSS'],
+      hiring_officer_positions: [
+        'General Manager',
+        'HR Division Manager',
+        'Recruitment Manager',
+        'Immediate Division Manager',
+        'Immediate Department Manager',
+        'Branch Manager',
+        'Immediate Branch Supervisor',
+        'Recruitment Staff',
+      ],
     };
   },
   methods: {

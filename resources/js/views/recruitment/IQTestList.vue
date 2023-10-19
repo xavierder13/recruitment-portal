@@ -1524,6 +1524,16 @@ export default {
       },
       disabled: false,
       progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'Background Investigation', 'Final Interview'],
+      hiring_officer_positions: [
+        'General Manager',
+        'HR Division Manager',
+        'Recruitment Manager',
+        'Immediate Division Manager',
+        'Immediate Department Manager',
+        'Branch Manager',
+        'Immediate Branch Supervisor',
+        'Recruitment Staff',
+      ],
     };
   },
   methods: {

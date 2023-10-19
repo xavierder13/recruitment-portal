@@ -1528,7 +1528,16 @@ export default {
         orientation_date: { status: false, msg: "" },
         signing_of_contract_date: { status: false, msg: "" },
       },
-      hiring_officer_positions: ['Department Manager', 'Branch Manager', 'OIC', 'Sales Supervisor', 'CCS', 'MSS'],
+      hiring_officer_positions: [
+        'General Manager',
+        'HR Division Manager',
+        'Recruitment Manager',
+        'Immediate Division Manager',
+        'Immediate Department Manager',
+        'Branch Manager',
+        'Immediate Branch Supervisor',
+        'Recruitment Staff',
+      ],
     };
   },
   methods: {

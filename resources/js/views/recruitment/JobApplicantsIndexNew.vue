@@ -264,7 +264,7 @@
                           <v-chip 
                             class="ma-0" 
                             :color="progress.color" 
-                            @click="progress.text == 'Final Interview' ? clickProgress(progress) : ''" 
+                            @click="progress.text == 'Final Interview' && applicant.final_interview_status ? clickProgress(progress) : ''" 
                           > 
                             <v-icon class="mr-1"> {{ progress.icon }} </v-icon> 
                             {{ progress.text }}
@@ -1638,7 +1638,16 @@ export default {
       },
       disabled: false,
       progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'Background Investigation', 'Final Interview'],
-      hiring_officer_positions: ['Department Manager', 'Branch Manager', 'OIC', 'Sales Supervisor', 'CCS', 'MSS'],
+      hiring_officer_positions: [
+        'General Manager',
+        'HR Division Manager',
+        'Recruitment Manager',
+        'Immediate Division Manager',
+        'Immediate Department Manager',
+        'Branch Manager',
+        'Immediate Branch Supervisor',
+        'Recruitment Staff',
+      ],
     };
   },
   methods: {
