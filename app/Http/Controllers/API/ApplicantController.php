@@ -28,7 +28,7 @@ class ApplicantController extends Controller
   public function get_applicants_old(){
     $job_applicants = DB::table('applicants')
                         ->select('id', 
-                                 DB::raw("CONCAT(lastname, ', ', firstname, ', ', middlename) AS name"),
+                                 DB::raw("CONCAT(lastname, ', ', firstname, ', ', IFNULL(middlename,'')) AS name"),
                                  'address', 
                                  'birthdate', 
                                  'age', 
@@ -61,7 +61,7 @@ class ApplicantController extends Controller
 												->leftJoin(DB::raw('branches as tbranches'), 'tbranches.id', '=', 'applicants.branch_complied')
 												->select('applicants.id AS id',
 																 'positions.name AS position_name',
-																 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', applicants.middlename) AS name"),
+																 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', IFNULL(applicants.middlename,'')) AS name"),
 																 DB::raw("DATE_FORMAT(applicants.created_at, '%M %d, %Y') AS created_at"),
 																 'branches.name AS branch_name',
 																 'applicants.status',
@@ -569,6 +569,8 @@ class ApplicantController extends Controller
 																 'applicants.final_interview_status',
 																 'applicants.employment_position',
 																 'applicants.employment_branch',
+																 'applicants.hiring_officer_position',
+																 'applicants.hiring_officer_name',
 																 'applicants.orientation_date',
 																 'applicants.signing_of_contract_date',
 																)
@@ -705,6 +707,8 @@ class ApplicantController extends Controller
 														 				 'applicants.final_interview_status',
 																		 'employment_position.name as employment_position',
 																		 'employment_branch.name as employment_branch',
+																		 'applicants.hiring_officer_position',
+																 	   'applicants.hiring_officer_name',
 														 DB::raw('DATE_FORMAT(applicants.orientation_date, "%m/%d/%Y") as orientation_date'),
 														 DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%m/%d/%Y") as signing_of_contract_date'),
 														// DB::raw("(CASE WHEN applicants.status = 0 THEN ('On-Progress') 
@@ -855,6 +859,8 @@ class ApplicantController extends Controller
 				$applicant->final_interview_status = null;
 				$applicant->employment_position = null;
 				$applicant->employment_branch = null;
+				$applicant->hiring_officer_position = null;
+				$applicant->hiring_officer_name = null;
 				$applicant->orientation_date = null;
 				$applicant->signing_of_contract_date = null;
 			}
@@ -865,6 +871,8 @@ class ApplicantController extends Controller
 			$applicant->final_interview_status = $req->final_interview_status;
 			$applicant->employment_position = $req->employment_position;
 			$applicant->employment_branch = $req->employment_branch;
+			$applicant->hiring_officer_position = $req->hiring_officer_position;
+			$applicant->hiring_officer_name = $req->hiring_officer_name;
 			$applicant->orientation_date = $req->orientation_date;
 			$applicant->signing_of_contract_date = $req->signing_of_contract_date;
 
@@ -872,6 +880,8 @@ class ApplicantController extends Controller
 			{
 				$applicant->employment_position = null;
 				$applicant->employment_branch = null;
+				$applicant->hiring_officer_position = null;
+				$applicant->hiring_officer_name = null;
 				$applicant->orientation_date = null;
 				$applicant->signing_of_contract_date = null;
 			}

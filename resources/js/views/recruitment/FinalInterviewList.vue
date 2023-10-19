@@ -981,6 +981,26 @@
                             <v-col class="my-2 py-0">
                               <v-text-field
                                 class="ma-0 pa-0"
+                                label="Hiring Officer Position"
+                                v-model="applicant.hiring_officer_position"
+                                readonly
+                              ></v-text-field>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Hiring Officer Name"
+                                v-model="applicant.hiring_officer_name"
+                                readonly
+                              ></v-text-field>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
                                 label="Orientation/Training Date"
                                 type="date"
                                 prepend-icon="mdi-calendar"
@@ -1182,6 +1202,7 @@
                       :error-messages="applicantError.final_interview_date + dateErrors.final_interview_date.msg"
                       @input="validateDate('final_interview_date')"
                     ></v-text-field>
+                    
                   </v-col>
                 </v-row>
                 <v-row>
@@ -1218,6 +1239,25 @@
                       v-model="editedItem.employment_branch"
                       :disabled="editedItem.final_interview_status != 1"
                     ></v-autocomplete>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col class="my-0 py-0">
+                    <v-autocomplete
+                      :items="hiring_officer_positions"
+                      label="Hiring Officer Position"
+                      v-model="editedItem.hiring_officer_position"
+                      :disabled="editedItem.final_interview_status != 1"
+                    ></v-autocomplete>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col class="my-0 py-0">
+                    <v-text-field
+                      label="Hiring Officer Name"
+                      v-model="editedItem.hiring_officer_name"
+                      :disabled="editedItem.final_interview_status != 1"
+                    ></v-text-field>
                   </v-col>
                 </v-row>
                 <v-row>
@@ -1359,6 +1399,8 @@ export default {
         'Employment Position' : 'employment_position',
         'Employment Branch' : 'employment_branch',
         'Requirements' : 'requirements',
+        'Hiring Officer Position': 'hiring_officer_position',
+        'Hiring Officer Name': 'hiring_officer_name',
         'Date of Orientation & Training' : 'orientation_date',
         'Date of Contract Signing' : 'signing_of_contract_date',
       },
@@ -1398,9 +1440,12 @@ export default {
         position_preference: [],
         branch_preference: [],
         final_interview_date: "",
+        employment_position: "",
         employment_branch: "",
+        hiring_officer_position: "",
+        hiring_officer_name: "",
         orientation_date: "",
-        hired_date: "",
+        signing_of_contract_date: "",
       },
 
       // export_btn
@@ -1453,6 +1498,8 @@ export default {
         final_interview_status: "",
         employment_position: "",
         employment_branch: "",
+        hiring_officer_position: "",
+        hiring_officer_name: "",
         orientation_date: "",
         hired_date: "",
       },
@@ -1467,9 +1514,10 @@ export default {
         position_preference: [],
         branch_preference: [],
         final_interview_date: "",
-        final_interview_status: "",
         employment_position: "",
         employment_branch: "",
+        hiring_officer_position: "",
+        hiring_officer_name: "",
         orientation_date: "",
         hired_date: "",
       },
@@ -1480,6 +1528,7 @@ export default {
         orientation_date: { status: false, msg: "" },
         signing_of_contract_date: { status: false, msg: "" },
       },
+      hiring_officer_positions: ['Department Manager', 'Branch Manager', 'OIC', 'Sales Supervisor', 'CCS', 'MSS'],
     };
   },
   methods: {
@@ -2049,16 +2098,16 @@ export default {
       fields.forEach(field => {
         let field_value = this.applicant[field];
         
-        if(['initial_interview_date', 'final_interview_date', 'signing_of_contract_date', 'orientation_date'].includes(field) && field_value)
-        {
-          let split_date_val = field_value.split('-');
+        // if(['initial_interview_date', 'final_interview_date', 'signing_of_contract_date', 'orientation_date'].includes(field) && field_value)
+        // {
+        //   let split_date_val = field_value.split('-');
           
-          let day = split_date_val[0];
-          let month = split_date_val[1];
-          let year = split_date_val[2];
+        //   let day = split_date_val[0];
+        //   let month = split_date_val[1];
+        //   let year = split_date_val[2];
 
-          field_value = `${year}-${month}-${day}`;
-        }
+        //   field_value = `${year}-${month}-${day}`;
+        // }
         this.editedItem[field] = field_value;
       });
 
