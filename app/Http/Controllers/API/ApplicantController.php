@@ -14,6 +14,7 @@ use App\ApplicantFamilyMember;
 use App\ApplicantDependent;
 use App\ApplicantFile;
 use App\Position;
+use App\Branch;
 use Validator;
 use Excel;
 use Mail;
@@ -340,7 +341,7 @@ class ApplicantController extends Controller
 							'applicant_id' => $applicant->id,
 							'educ_level' => 'Senior HighSchool',
 							'school' => $hs['school'],
-							'sy_attended' => $hs['sy_attended'],
+							'sy_attended' => $hs['sy_start'] . ' to ' . $hs['sy_end'],
 						]
 					);
 				}
@@ -389,12 +390,15 @@ class ApplicantController extends Controller
 				}
 
 				foreach ($req->experiences as $value) {
+
+					$date_of_service = $value['service_start'] && $value['service_end'] ? $value['service_start'] . ' to ' . $value['service_end'] : '';
+
 					ApplicantExperience::create([
 						'applicant_id' => $applicant->id,
 						'employer' => $value['company'],
 						'position' => $value['position'],
 						'salary' => $value['salary'],
-						'date_of_service' => $value['service_start'] . ' to ' . $value['service_end'],
+						'date_of_service' => $date_of_service,
 						'job_description' => $value['job_description'],
 					]);
 				}
@@ -658,7 +662,7 @@ class ApplicantController extends Controller
 		$date_to = $req->date_to;
 		$fields = ['status', 'initial_interview_status', 'iq_status', 'bi_status', 'final_interview_status'];
 		$step = $req->step;
-		$field = $fields[$step];
+		$field = null; //$fields[$step];
 
 		// id: 1000 - Admin
 		// else branch - branches
@@ -667,15 +671,18 @@ class ApplicantController extends Controller
 										->join('applicants', 'applicants.jobvacancy_id', '=', 'job_vacancies.id')
 										->join('positions', 'positions.id', '=', 'job_vacancies.position_id')
 										->join('branches', 'branches.id', '=', 'applicants.branch_id')
-										->select(DB::raw('applicants.id AS cnt_id'),
-														 DB::raw('DATE_FORMAT(applicants.created_at, "%m-%d-%Y") as date_applied'),
+										->leftJoin('branches as branch_complied', 'branch_complied.id', '=', 'applicants.branch_complied')
+										->leftJoin('positions as employment_position', 'employment_position.id', '=', 'applicants.employment_position')
+										->leftJoin('branches as employment_branch', 'employment_branch.id', '=', 'applicants.employment_branch')
+										->select('applicants.id',
+														 DB::raw('DATE_FORMAT(applicants.created_at, "%m/%d/%Y") as date_applied'),
 														 				 'branches.name AS branch_name',			 
 														         'positions.name AS position_name',
 														 				 'applicants.lastname',
 																		 'applicants.firstname',
 																		 'applicants.middlename',
 														         'applicants.address',
-														 DB::raw('DATE_FORMAT(applicants.birthdate, "%m-%d-%Y") as birthdate'),
+														 DB::raw('DATE_FORMAT(applicants.birthdate, "%m/%d/%Y") as birthdate'),
 															 			 'applicants.age',
 																		 'applicants.gender',
 														         'applicants.contact_no', 
@@ -685,7 +692,21 @@ class ApplicantController extends Controller
 														         'applicants.course',
 																		 'applicants.school_grad',
 														         'applicants.how_learn',
-														 DB::raw("'".$req->progress . "' as progress_status"),
+														 DB::raw('applicants.status as screening_status'),
+														//  DB::raw("'".$req->progress . "' as progress_status"),
+																	   'applicants.initial_interview_status',
+														 DB::raw('DATE_FORMAT(applicants.initial_interview_date, "%m/%d/%Y") as initial_interview_date'),
+														         'applicants.position_preference',
+																		 'applicants.branch_preference',
+														 DB::raw('branch_complied.name as branch_complied'),
+																		 'applicants.iq_status',
+																		 'applicants.bi_status',
+														 DB::raw('DATE_FORMAT(applicants.final_interview_date, "%m/%d/%Y") as final_interview_date'),
+														 				 'applicants.final_interview_status',
+																		 'employment_position.name as employment_position',
+																		 'employment_branch.name as employment_branch',
+														 DB::raw('DATE_FORMAT(applicants.orientation_date, "%m/%d/%Y") as orientation_date'),
+														 DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%m/%d/%Y") as signing_of_contract_date'),
 														// DB::raw("(CASE WHEN applicants.status = 0 THEN ('On-Progress') 
 														// 		 					 WHEN applicants.status = 1 THEN ('Qualified') 
 														// 							 WHEN applicants.status = 2 THEN ('Not-Qualified')
@@ -710,10 +731,66 @@ class ApplicantController extends Controller
 												$result->whereIn('bi_status', [0, 2]);
 											}
 										})
-										->get();	
+										->get() //;
+										->toArray();	
 
-		if($applicants->count()){
-			return response()->json(['success' => true, 'resp' => $applicants, 'branch_id' => $branch_id]);
+		$branches = Branch::get();
+		$positions = Position::get();
+		
+		$arrApplicants = [];
+		$status = ['On Process', 'Passed', 'Failed', 'Did Not Comply'];
+					
+		foreach ($applicants as $key => $applicant) {
+			$applicant_files = ApplicantFile::where('applicant_id', $applicant->id)->where('title', '!=', 'Resume')->pluck('title')->toArray();
+			$arrApplicants[$key] = [];
+			$fields = array_keys((array)$applicant);
+
+			foreach ($fields as $field) {
+				$arrApplicants[$key][$field] = $applicants[$key]->{$field};
+
+				$position_preference_id = $applicant->position_preference;
+				$position_preference = null;
+
+				$branch_preference_id = $applicant->branch_preference;
+				$branch_preference = null;
+				
+				if($position_preference_id)
+				{
+					$exploded_position_preference_id  = explode(',', $position_preference_id);
+					$position_preferences = $positions->whereIn('id', $exploded_position_preference_id)->pluck('name')->toArray();
+					$position_preference = count($position_preferences) ? implode(", ", $position_preferences) : null;
+				}
+
+				if($branch_preference_id)
+				{
+					$exploded_branch_preference_id  = explode(',', $branch_preference_id);
+					$branch_preferences = $branches->whereIn('id', $exploded_branch_preference_id)->pluck('name')->toArray();
+					$branch_preference = count($branch_preferences) ? implode(", ", $branch_preferences) : null;
+				}
+
+				$screening_status = $applicant->screening_status;
+				$initial_interview_status = $applicant->initial_interview_status;
+				$iq_status = $applicant->iq_status;
+				$bi_status = $applicant->bi_status;
+				$final_interview_status = $applicant->final_interview_status;
+
+				$arrApplicants[$key]['screening_status'] = !is_null($screening_status) ? $status[$screening_status] : null;
+				$arrApplicants[$key]['initial_interview_status'] = !is_null($initial_interview_status) ? $status[$initial_interview_status] : null;
+				$arrApplicants[$key]['iq_status'] = !is_null($iq_status) ? $status[$iq_status] : null;
+				$arrApplicants[$key]['bi_status'] = !is_null($bi_status) ? $status[$bi_status] : null;
+				$arrApplicants[$key]['final_interview_status'] = !is_null($final_interview_status) ? $status[$final_interview_status] : null;
+				$arrApplicants[$key]['requirements'] = implode(", ", $applicant_files);
+				$arrApplicants[$key]['position_preference'] = $position_preference;
+				$arrApplicants[$key]['branch_preference'] = $branch_preference;
+				
+			}
+			
+		}		
+		
+
+		// if($applicants->count()){
+		if(count($arrApplicants)){	
+			return response()->json(['success' => true, 'resp' => $arrApplicants, 'branch_id' => $branch_id]);
 		}else{
 			return response()->json(['success' => false, 'resp' => "No records found."]);
 		}

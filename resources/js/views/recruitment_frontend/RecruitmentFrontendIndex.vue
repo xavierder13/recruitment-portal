@@ -844,7 +844,7 @@
                                   label="Name of School *"
                                   v-model="highschool.school"
                                   :error-messages="HSSchoolErrors"
-                                  @input="$v.highschool.school.$touch() + (validateEducAttain())"
+                                  @input="$v.highschool.school.$touch() + validateFields_form1()"
                                   @blur="$v.highschool.school.$touch()"
                                 ></v-text-field>
                               </v-col>
@@ -928,7 +928,7 @@
                                   label="Name of School *"
                                   v-model="jr_highschool.school"
                                   :error-messages="JRHSchoolErrors"
-                                  @input="$v.jr_highschool.school.$touch() + (validateEducAttain())"
+                                  @input="$v.jr_highschool.school.$touch() + validateFields_form1()"
                                   @blur="$v.jr_highschool.school.$touch()"
                                 ></v-text-field>
                               </v-col>
@@ -1013,7 +1013,7 @@
                                   label="Name of School *"
                                   v-model="sr_highschool.school"
                                   :error-messages="SRHSchoolErrors"
-                                  @input="$v.sr_highschool.school.$touch() + (validateEducAttain())"
+                                  @input="$v.sr_highschool.school.$touch() + validateFields_form1()"
                                   @blur="$v.sr_highschool.school.$touch()"
                                 ></v-text-field>
                               </v-col>
@@ -1029,7 +1029,7 @@
                                   label="Strand *"
                                   v-model="sr_highschool.strand"
                                   :error-messages="SRHSStrandErrors"
-                                  @input="$v.sr_highschool.strand.$touch() + (validateEducAttain())"
+                                  @input="$v.sr_highschool.strand.$touch() + validateFields_form1()"
                                   @blur="$v.sr_highschool.strand.$touch()"
                                 ></v-text-field>
                               </v-col>
@@ -1131,7 +1131,7 @@
                                   label="Name of School *"
                                   v-model="college.school"
                                   :error-messages="collegeSchoolErrors"
-                                  @input="$v.college.school.$touch() + (validateEducAttain())"
+                                  @input="$v.college.school.$touch() + validateFields_form1()"
                                   @blur="$v.college.school.$touch()"
                                 ></v-text-field>
                               </v-col>
@@ -1148,7 +1148,7 @@
                                   label="Course/Specialization *"
                                   v-model="college.course"
                                   :error-messages="collegeCourseErrors"
-                                  @input="$v.college.course.$touch() + (validateEducAttain())"
+                                  @input="$v.college.course.$touch() + validateFields_form1()"
                                   @blur="$v.college.course.$touch()"
                                 ></v-text-field>
                               </v-col>
@@ -1328,7 +1328,7 @@
                                   label="Name of School *"
                                   v-model="vocational_school.school"
                                   :error-messages="vocSchoolErrors"
-                                  @input="$v.vocational_school.school.$touch() + (validateEducAttain())"
+                                  @input="$v.vocational_school.school.$touch() + validateFields_form1()"
                                   @blur="$v.vocational_school.school.$touch()"
                                 ></v-text-field>
                               </v-col>
@@ -1345,7 +1345,7 @@
                                   label="Course/Specialization *"
                                   v-model="vocational_school.course"
                                   :error-messages="vocCourseErrors"
-                                  @input="$v.vocational_school.course.$touch() + (validateEducAttain())"
+                                  @input="$v.vocational_school.course.$touch() + validateFields_form1()"
                                   @blur="$v.vocational_school.course.$touch()"
                                 ></v-text-field>
                               </v-col>
@@ -1523,7 +1523,9 @@
                                 type="date"
                                 prepend-icon="mdi-calendar"
                                 v-model="item.service_start"
+                                :error-messages="work_experiences[i].service_start_error_msg"
                                 :max="item.service_end ? item.service_end : null"
+                                @input="validateFields_form1()"
                               ></v-text-field>
                             </v-col>
                             <v-col
@@ -1541,7 +1543,9 @@
                                 type="date"
                                 prepend-icon="mdi-calendar"
                                 v-model="item.service_end"
+                                :error-messages="work_experiences[i].service_end_error_msg"
                                 :min="item.service_start ? item.service_start : null"
+                                @input="validateFields_form1"
                               ></v-text-field>
                             </v-col>
                           </v-row>
@@ -2946,6 +2950,14 @@ export default {
           sy_end: false,
         },
         
+      },
+
+      dateRangeErrors: {
+        highschool: false,
+        jr_highschool: false,
+        sr_highschool: false,
+        college: false,
+        vocational_school: false,
       }
     }
   },
@@ -3157,6 +3169,13 @@ export default {
           sy_end: false,
         },
 
+      };
+      this.dateRangeErrors ={
+        highschool: false,
+        jr_highschool: false,
+        sr_highschool: false,
+        college: false,
+        vocational_school: false,
       };
     },
 
@@ -3551,35 +3570,65 @@ export default {
 			}
 		},
 
-    validateFields_form1(){
+    async validateFields_form1(){
       let fieldnames = Object.keys(this.applicant);
       this.referencesHasError = false;
       this.educAttainHasError = false;
       this.continue_1 = true;
 
-      fieldnames.forEach(value => {
-        if(!['middlename', 'myFileInput', 'email'].includes(value)){
-          if(!this.applicant[value]){
-            this.continue_1 = false;
-            // console.log(value, this.applicant[value]);
-          }
-          else
-          {
-            if(this.$v.applicant.contact_no.$error || this.$v.applicant.email.$error)
-            { 
-              this.continue_1 = false;
-            }
+      let required_fields = [
+        'lastname',
+        'firstname',
+        'address',
+        'address2',
+        'birth_place',
+        'birthdate',
+        'gender',
+        'civil_status',
+        'contact_no',
+        'educ_attain',
+        'citizenship',
+        'religion',
+        'height',
+        'weight',
+        'how_learn',
+      ];
 
+      await required_fields.forEach(value => {
+        
+        if(!this.applicant[value]){
+          this.continue_1 = false;
+          // console.log(value, this.applicant[value]);
+        }
+        else
+        {
+          if(this.$v.applicant.contact_no.$error || this.$v.applicant.email.$error)
+          { 
+            this.continue_1 = false;
           }
 
         }
-  
+
       });
 
-      this.validateEducAttain();
+      this.educAttainHasError = await false;
+      await this.validateEducAttain();
+      
+      // validateDateRang for educ attains S.Y
+      let fields = Object.keys(this.dateRangeErrors);
+      let dateRangeHasError = false;
+      await fields.forEach(field => {
+        this.dateRangeErrors[field] = false;
+        let hasError = this.validateDateRange(this[field].sy_start, this[field].sy_end).hasError;
+        this.dateRangeErrors[field] = hasError;
+        if(hasError)
+        {
+          dateRangeHasError = true;
+        }
+      });
 
       // validate References
-      this.references.forEach((value, i) => {
+      await this.references.forEach((value, i) => {
         let fieldnames = Object.keys(value);
         
         fieldnames.forEach(field => {
@@ -3596,7 +3645,7 @@ export default {
       // validate all date input fields
       let date_obj_names = Object.keys(this.dateErrors);
       let dateInputHasError = false;
-      date_obj_names.forEach(field => {
+      await date_obj_names.forEach(field => {
         let obj_names = Object.keys(this.dateErrors[field]);
         obj_names.forEach(obj => {
           if(this.dateErrors[field][obj]) //if error value is true
@@ -3606,10 +3655,23 @@ export default {
         });
       });
 
-      this.continue_1 = this.educAttainHasError || this.referencesHasError ? false : dateInputHasError ? false : this.continue_1;
+      // validate work experiences
+      let workExperienceHasError = false;
+      await this.work_experiences.forEach((value, i) => {
+        this.validateWorkExperiences(i);
+        if(this.work_experiences[i].service_start_error || this.work_experiences[i].service_end_error)
+        {
+          workExperienceHasError = true;
+        }
+      });
+
+      // if educ attain has error or references has error or all date input has error or workexperiences has error then btn continue will be hidden
+      this.continue_1 = this.educAttainHasError || this.referencesHasError ? false : dateInputHasError ? false : workExperienceHasError ? false : this.continue_1;
       // console.log('this.educAttainHasError', this.educAttainHasError);
       // console.log('this.referencesHasError', this.referencesHasError);
       // console.log('dateInputHasError', dateInputHasError);
+      // console.log(workExperienceHasError);
+      // console.log(this.continue_1);
       
     },
 
@@ -3618,6 +3680,10 @@ export default {
       let max_date = new Date().getTime();
       let [obj1, obj2] = model.split('.'); // e.g split 'highschool.sy_start'
       let date = this[obj1][obj2];
+
+      let split_str = obj2.split('_');
+      let str1 = "";
+      let str2 = "";
       
       let date_value = new Date(date).getTime();
       let [year, month, day] = date.split('-');
@@ -3629,21 +3695,15 @@ export default {
       }  
     },
 
-    validateDateRange(model_min, model_max) {
-      
-      let [min_obj1, min_obj2] = model_min.split('.'); // e.g split 'highschool.sy_start'
-      let [max_obj1, max_obj2] = model_max.split('.'); // e.g split 'highschool.sy_end'
-      let min_date = this[min_obj1][min_obj2];
-      let max_date = this[max_obj1][max_obj2];
+    validateDateRange(min, max) {
+      let hasError = false;
+      min = min ? new Date(min) : new Date('1900-01-01').getTime();
+      max = max ? new Date(max) : new Date().getTime();
 
-      min_date = min_date ? new Date(min_date) : new Date('1900-01-01').getTime();
-      max_date = max_date ? new Date(max_date) : new Date().getTime();
-
-      if (max_date < min_date) {
-        this.dateErrors[min_obj1][min_obj2] = true;
-        this.dateErrors[max_obj1][max_obj2] = true;
+      if (max < min) {
+        hasError = true;
       }  
-      
+      return { hasError: hasError };
     },
 
     validateEducAttain(){
@@ -3704,12 +3764,14 @@ export default {
       {
         voc_fields.forEach(value => {
           if(!this.vocational_school[value] && !['honors', 'major'].includes(value)){
+
             hasError = true;
           }
         });
       }
       
       this.educAttainHasError = hasError;
+
 
     },
 
@@ -3726,19 +3788,55 @@ export default {
 
     validateWorkExperiences(index) {
       let data = this.work_experiences[index];
-
+      let date_now = new Date().getTime();
+      let default_min_date = new Date('1900-01-01').getTime();
       let min_date = data.service_start;
       let max_date = data.service_end;
+      let [min_year, min_month, min_day] = min_date.split('-');
+      let [max_year, max_month, max_day] = max_date.split('-');
 
       min_date = min_date ? new Date(min_date) : new Date('1900-01-01').getTime();
       max_date = max_date ? new Date(max_date) : new Date().getTime();
 
+      let service_start_error = false;
+      let service_start_error_msg = "";
+      let service_end_error = false;
+      let service_end_error_msg = "";
+
+      // if one of the fields has value and one the fields has no value, if field has a value the other one will be required
+      if(data.service_start && !data.service_end)
+      {
+        service_end_error = true;
+        service_end_error_msg = "This field is required";
+      }
+      if (!data.service_start && data.service_end)
+      {
+        service_start_error = true;
+        service_start_error_msg = "This field is required";
+      }
+      if(date_now < min_date || default_min_date > min_date || min_year.length > 4)
+      {
+        service_start_error = true;
+        service_start_error_msg = "Enter a valid date";
+      }
+      if(date_now < max_date || default_min_date > max_date || max_year.length > 4)
+      {
+        service_end_error = true;
+        service_end_error_msg = "Enter a valid date";
+      }
       if (max_date < min_date) {
-        data.service_start_error = true;
-        data.service_start_error_msg = "Enter a valid date";
-        data.service_end_error = true;
-        data.service_end_error_msg = "Enter a valid date";
-      }  
+        service_start_error = true;
+        service_start_error_msg = "Enter a valid date";
+        service_end_error = true;
+        service_end_error_msg = "Enter a valid date";
+      } 
+
+      this.work_experiences[index].service_start_error = service_start_error;
+      this.work_experiences[index].service_start_error_msg = service_start_error_msg;
+      this.work_experiences[index].service_end_error = service_end_error;
+      this.work_experiences[index].service_end_error_msg = service_end_error_msg;
+
+      // console.log(this.work_experiences);
     },
 
     validateFile(){
@@ -3822,6 +3920,12 @@ export default {
     },
 
     'applicant.educ_attain'() {
+      this.$v.highschool.$reset();
+      this.$v.jr_highschool.$reset();
+      this.$v.sr_highschool.$reset();
+      this.$v.college.$reset();
+      this.$v.graduate_school.$reset();
+      this.$v.vocational_school.$reset();
       this.highschool = {
         school: "",
         sy_start: "",
@@ -4069,9 +4173,9 @@ export default {
       !this.$v.highschool.sy_start.required &&
         errors.push("This field is required.");
 
-      if(this.dateErrors.highschool.sy_start)
+      if(this.dateErrors.highschool.sy_start || this.dateRangeErrors.highschool)
       {
-        this.dateErrors.highschool.sy_start && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       }  
       
       return errors;
@@ -4083,9 +4187,9 @@ export default {
       !this.$v.highschool.sy_end.required &&
         errors.push("This field is required.");
 
-      if(this.dateErrors.highschool.sy_end)
+      if(this.dateErrors.highschool.sy_end || this.dateRangeErrors.highschool)
       {
-        this.dateErrors.highschool.sy_end && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       }  
       return errors;
     },
@@ -4104,9 +4208,9 @@ export default {
       if (!this.$v.jr_highschool.sy_start.$dirty) return errors;
       !this.$v.jr_highschool.sy_start.required &&
         errors.push("This field is required.");
-      if(this.dateErrors.jr_highschool.sy_start)
+      if(this.dateErrors.jr_highschool.sy_start || this.dateRangeErrors.jr_highschool)
       {
-        this.dateErrors.jr_highschool.sy_start && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       } 
       return errors;
     },
@@ -4116,9 +4220,9 @@ export default {
       if (!this.$v.jr_highschool.sy_end.$dirty) return errors;
       !this.$v.jr_highschool.sy_end.required &&
         errors.push("This field is required.");
-      if(this.dateErrors.jr_highschool.sy_end)
+      if(this.dateErrors.jr_highschool.sy_end || this.dateRangeErrors.jr_highschool)
       {
-        this.dateErrors.jr_highschool.sy_end && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       } 
       return errors;
     },
@@ -4144,9 +4248,9 @@ export default {
       if (!this.$v.sr_highschool.sy_start.$dirty) return errors;
       !this.$v.sr_highschool.sy_start.required &&
         errors.push("This field is required.");
-      if(this.dateErrors.sr_highschool.sy_start)
+      if(this.dateErrors.sr_highschool.sy_start || this.dateRangeErrors.sr_highschool)
       {
-        this.dateErrors.sr_highschool.sy_start && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       } 
       return errors;
     },
@@ -4156,9 +4260,9 @@ export default {
       if (!this.$v.sr_highschool.sy_end.$dirty) return errors;
       !this.$v.sr_highschool.sy_end.required &&
         errors.push("This field is required.");
-      if(this.dateErrors.sr_highschool.sy_end)
+      if(this.dateErrors.sr_highschool.sy_end || this.dateRangeErrors.sr_highschool)
       {
-        this.dateErrors.sr_highschool.sy_end && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       } 
       return errors;
     },
@@ -4184,9 +4288,9 @@ export default {
       if (!this.$v.college.sy_start.$dirty) return errors;
       !this.$v.college.sy_start.required &&
         errors.push("This field is required.");
-      if(this.dateErrors.college.sy_start)
+      if(this.dateErrors.college.sy_start || this.dateRangeErrors.college)
       {
-        this.dateErrors.college.sy_start && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       } 
       return errors;
     },
@@ -4195,9 +4299,9 @@ export default {
       if (!this.$v.college.sy_end.$dirty) return errors;
       !this.$v.college.sy_end.required &&
         errors.push("This field is required.");
-      if(this.dateErrors.college.sy_end)
+      if(this.dateErrors.college.sy_end || this.dateRangeErrors.college)
       {
-        this.dateErrors.college.sy_end && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       } 
       return errors;
     },
@@ -4223,9 +4327,9 @@ export default {
       if (!this.$v.graduate_school.sy_start.$dirty) return errors;
       !this.$v.graduate_school.sy_start.required &&
         errors.push("This field is required.");
-      if(this.dateErrors.graduate_school.sy_start)
+      if(this.dateErrors.graduate_school.sy_start || this.dateRangeErrors.graduate_school)
       {
-        this.dateErrors.graduate_school.sy_start && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       } 
       return errors;
     },
@@ -4235,9 +4339,9 @@ export default {
       if (!this.$v.graduate_school.sy_end.$dirty) return errors;
       !this.$v.graduate_school.sy_end.required &&
         errors.push("This field is required.");
-      if(this.dateErrors.graduate_school.sy_end)
+      if(this.dateErrors.graduate_school.sy_end || this.dateRangeErrors.graduate_school)
       {
-        this.dateErrors.graduate_school.sy_end && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       } 
       return errors;
     },
@@ -4263,9 +4367,9 @@ export default {
       if (!this.$v.vocational_school.sy_start.$dirty) return errors;
       !this.$v.vocational_school.sy_start.required &&
         errors.push("This field is required.");
-      if(this.dateErrors.vocational_school.sy_start)
+      if(this.dateErrors.vocational_school.sy_start || this.dateRangeErrors.vocational_school)
       {
-        this.dateErrors.vocational_school.sy_start && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       } 
       return errors;
     },
@@ -4275,9 +4379,9 @@ export default {
       if (!this.$v.vocational_school.sy_start.$dirty) return errors;
       !this.$v.vocational_school.sy_start.required &&
         errors.push("This field is required.");
-      if(this.dateErrors.vocational_school.sy_end)
+      if(this.dateErrors.vocational_school.sy_end || this.dateRangeErrors.vocational_school)
       {
-        this.dateErrors.vocational_school.sy_end && errors.push('Enter a valid date');
+        errors.push('Enter a valid date');
       }
       return errors;
     },
@@ -4326,15 +4430,16 @@ export default {
     },
 
     collegeIsRequired() {
-      return this.applicant.educ_attain > 3 && this.applicant.educ_attain != 7;
+      return this.applicant.educ_attain > 3 && this.applicant.educ_attain != 6;
     },
 
     gradSchoolIsRequired() {
-      return this.applicant.educ_attain  === 6;
+      // return this.applicant.educ_attain  === 5;
+      return false;
     },
 
     vocSchoolIsRequired() {
-      return this.applicant.educ_attain === 7;
+      return this.applicant.educ_attain === 6;
     },
 
     HSSYStartDate() {

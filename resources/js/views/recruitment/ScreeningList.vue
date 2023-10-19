@@ -1060,7 +1060,7 @@
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.initial_interview_date"
                       :error-messages="initialInterviewDateErrors"
-                      @input="$v.editedItem.initial_interview_date.$touch()"
+                      @input="$v.editedItem.initial_interview_date.$touch() + validateDate()"
                       @blur="$v.editedItem.initial_interview_date.$touch()"
                       :disabled="editedItem.status != 1"
                     ></v-text-field>
@@ -1319,7 +1319,7 @@ export default {
         { text: "#", value: "cnt_id" },
         { text: "Full name", value: "name" },
         { text: "Position", value: "position_name" },
-        { text: "Branch Name", value: "branch_name" },
+        { text: "Branch Applied", value: "branch_name" },
         { text: "Date Submitted", value: "created_at" },
         { text: "Status", value: "status" },
         { text: "Actions", value: "actions", sortable: false, width: "100px" },
@@ -1346,25 +1346,27 @@ export default {
       branch_id: "",
       
       json_fields: {
-        '#': 'cnt_id',
+        // '#': 'cnt_id',
         'Last Name': 'lastname',
         'First Name': 'firstname',
         'Middle Name': 'middlename',
-        'Complete Address': 'address',
-        'Age': 'age',
-        'Gender': 'gender',
-        'Contact No.': 'contact_no',
-        'Civil Status': 'civil_status',
-        'Position Applied': 'position_name',
-        'Educational Attainment': 'educ_attain',
-        'Course/Specialization': 'course',
-        'Date Applied': 'date_applied',
+        'Poistion Applied': 'position_name',
         'Branch Applied': 'branch_name',
-        'Birthday': 'birthdate',
-        'Email Address': 'email',
-        // 'School graduated': 'school_grad',
-        'How did you learn about job vacancy?': 'how_learn',
-        'Status': 'status',
+        'Gender': 'gender',
+        'Screening': 'screening_status',
+        'Interview Schedule': 'initial_interview_date',
+        'Initial Interview': 'initial_interview_status',
+        'Position Preference': 'position_preference',
+        'Branch Preference': 'branch_preference',
+        'IQ Test': 'iq_status',
+        'Background Investigation': 'bi_status',
+        'Final Interview Date': 'final_interview_date',
+        'Final Interview Status': 'final_interview_status',
+        'Employment Position' : 'employment_position',
+        'Employment Branch' : 'employment_branch',
+        'Requirements' : 'requirements',
+        'Date of Orientation & Training' : 'orientation_date',
+        'Date of Contract Signing' : 'signing_of_contract_date',
       },
 
       json_data: [],
@@ -1482,6 +1484,7 @@ export default {
       },
       disabled: false,
       progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'Background Investigation', 'Final Interview'],
+      dateHasError: false,
     };
   },
   methods: {
@@ -1539,27 +1542,40 @@ export default {
              
             data.educ_attains.forEach(value => {
               let sy_attended = value.sy_attended;
-              let [start, end] = sy_attended.split(' to ');
-              let sy_start = new Date(start);
-              let sy_end = new Date(end);
+              if(sy_attended)
+              {
+                if(sy_attended.split(' to ').length > 1)
+                {
+                  let [start, end] = sy_attended.split(' to ');
+                  let sy_start = new Date(start);
+                  let sy_end = new Date(end);
 
-              sy_attended = sy_attended ? sy_start.toLocaleDateString("en-US") + ' to ' +  sy_end.toLocaleDateString("en-US") : null;
-
+                  sy_attended = sy_attended ? sy_start.toLocaleDateString("en-US") + ' to ' +  sy_end.toLocaleDateString("en-US") : null;
+                }
+              }
+              
               this.educ_attains.push(Object.assign(value, { sy_attended: sy_attended }));
               
             });
 
             data.experiences.forEach(value => {
               let date_of_service = value.date_of_service;
-              let [start, end] = date_of_service.split(' to ');
-              let service_start = new Date(start);
-              let service_end = new Date(end);
 
-              date_of_service = date_of_service ? service_start.toLocaleDateString("en-US") + ' to ' +  service_end.toLocaleDateString("en-US") : null;
+              if(date_of_service)
+              {
+                if(date_of_service.split(' to ').length > 1)// if has value format like '1900-01-01 to 1900-01-01'
+                {
+                  let [start, end] = date_of_service.split(' to ');
+                  let service_start = new Date(start);
+                  let service_end = new Date(end);
 
+                  date_of_service = date_of_service ? service_start.toLocaleDateString("en-US") + ' to ' +  service_end.toLocaleDateString("en-US") : null;
+                }
+              }
+          
               this.experiences.push(Object.assign(value, { date_of_service: date_of_service }));
               
-            }); 
+            });   
 
             let position_preference = this.applicant.position_preference;
 
@@ -2028,13 +2044,14 @@ export default {
       this.editedItem = Object.assign({}, this.defaultItem);
       this.application_status_dialog = false;
       this.step = null;
+      this.dateHasError = false;
     },
 
     showConfirmAlert() {
 
       this.$v.editedItem.$touch();
 
-      if (!this.$v.editedItem.$error) {
+      if (!this.$v.editedItem.$error && !this.dateHasError) {
 
         let progress = this.progress_items[this.step];
 
@@ -2055,6 +2072,24 @@ export default {
         });
 
       }
+    },
+
+    validateDate() {
+      let min_date = new Date('1900-01-01').getTime();
+      let max_date = new Date().getTime();
+      let date = this.editedItem.initial_interview_date;
+      if(date)
+      {
+        let date_value = new Date(date).getTime();
+        let [year, month, day] = date.split('-');
+
+        this.dateHasError = false;
+
+        if (date_value < min_date || date_value > max_date || year.length > 4) {
+          this.dateHasError = true;
+        }  
+      }
+      
     },
 
     websocket() {
@@ -2094,6 +2129,10 @@ export default {
       if (!this.$v.editedItem.initial_interview_date.$dirty) return errors;
       !this.$v.editedItem.initial_interview_date.required &&
         errors.push("Initial Interview Date is required.");
+      if(this.dateHasError)
+      {
+        errors.push("Enter a valid date");
+      }
       return errors;
     },
 

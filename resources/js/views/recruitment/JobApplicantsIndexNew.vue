@@ -1403,7 +1403,7 @@ export default {
         { text: "#", value: "cnt_id" },
         { text: "Full name", value: "name" },
         { text: "Position", value: "position_name" },
-        { text: "Branch Name", value: "branch_name" },
+        { text: "Branch Applied", value: "branch_name" },
         { text: "Date Submitted", value: "created_at" },
         { text: "Status", value: "status" },
         { text: "Actions", value: "actions", sortable: false, width: "100px" },
@@ -1429,26 +1429,49 @@ export default {
       dates: [],
       branch_id: "",
       
+      // json_fields: {
+      //   '#': 'cnt_id',
+      //   'Last Name': 'lastname',
+      //   'First Name': 'firstname',
+      //   'Middle Name': 'middlename',
+      //   'Complete Address': 'address',
+      //   'Age': 'age',
+      //   'Gender': 'gender',
+      //   'Contact No.': 'contact_no',
+      //   'Civil Status': 'civil_status',
+      //   'Position Applied': 'position_name',
+      //   'Educational Attainment': 'educ_attain',
+      //   'Course/Specialization': 'course',
+      //   'Date Applied': 'date_applied',
+      //   'Branch Applied': 'branch_name',
+      //   'Birthday': 'birthdate',
+      //   'Email Address': 'email',
+      //   'School graduated': 'school_grad',
+      //   'How did you learn about job vacancy?': 'how_learn',
+      //   'Status': 'status',
+      // },
       json_fields: {
-        '#': 'cnt_id',
+        // '#': 'cnt_id',
         'Last Name': 'lastname',
         'First Name': 'firstname',
         'Middle Name': 'middlename',
-        'Complete Address': 'address',
-        'Age': 'age',
-        'Gender': 'gender',
-        'Contact No.': 'contact_no',
-        'Civil Status': 'civil_status',
-        'Position Applied': 'position_name',
-        'Educational Attainment': 'educ_attain',
-        'Course/Specialization': 'course',
-        'Date Applied': 'date_applied',
+        'Poistion Applied': 'position_name',
         'Branch Applied': 'branch_name',
-        'Birthday': 'birthdate',
-        'Email Address': 'email',
-        'School graduated': 'school_grad',
-        'How did you learn about job vacancy?': 'how_learn',
-        'Status': 'status',
+        'Gender': 'gender',
+        'Screening': 'screening_status',
+        'Interview Schedule': 'initial_interview_date',
+        'Initial Interview': 'initial_interview_status',
+        'Position Preference': 'position_preference',
+        'Branch Preference': 'branch_preference',
+        'IQ Test': 'iq_status',
+        'Background Investigation': 'bi_status',
+        'Final Interview Date': 'final_interview_date',
+        'Final Interview Status': 'final_interview_status',
+        'Employment Position' : 'employment_position',
+        'Employment Branch' : 'employment_branch',
+        'Requirements' : 'requirements',
+        'Date of Orientation & Training' : 'orientation_date',
+        'Date of Contract Signing' : 'signing_of_contract_date',
       },
 
       json_data: [],
@@ -1598,6 +1621,7 @@ export default {
       axios.get("/api/job_applicant/get_applicants_new").then(
         (response) => {
           let data = response.data
+         
           this.v_table = true;
           this.table_loader = false;
           this.loading = false;
@@ -1636,24 +1660,37 @@ export default {
              
             data.educ_attains.forEach(value => {
               let sy_attended = value.sy_attended;
-              let [start, end] = sy_attended.split(' to ');
-              let sy_start = new Date(start);
-              let sy_end = new Date(end);
+              if(sy_attended)
+              {
+                if(sy_attended.split(' to ').length > 1)
+                {
+                  let [start, end] = sy_attended.split(' to ');
+                  let sy_start = new Date(start);
+                  let sy_end = new Date(end);
 
-              sy_attended = sy_attended ? sy_start.toLocaleDateString("en-US") + ' to ' +  sy_end.toLocaleDateString("en-US") : null;
-
+                  sy_attended = sy_attended ? sy_start.toLocaleDateString("en-US") + ' to ' +  sy_end.toLocaleDateString("en-US") : null;
+                }
+              }
+              
               this.educ_attains.push(Object.assign(value, { sy_attended: sy_attended }));
               
             });
 
             data.experiences.forEach(value => {
               let date_of_service = value.date_of_service;
-              let [start, end] = date_of_service.split(' to ');
-              let service_start = new Date(start);
-              let service_end = new Date(end);
 
-              date_of_service = date_of_service ? service_start.toLocaleDateString("en-US") + ' to ' +  service_end.toLocaleDateString("en-US") : null;
+              if(date_of_service)
+              {console.log(date_of_service);
+                if(date_of_service.split(' to ').length > 1)// if has value format like '1900-01-01 to 1900-01-01'
+                {
+                  let [start, end] = date_of_service.split(' to ');
+                  let service_start = new Date(start);
+                  let service_end = new Date(end);
 
+                  date_of_service = date_of_service ? service_start.toLocaleDateString("en-US") + ' to ' +  service_end.toLocaleDateString("en-US") : null;
+                }
+              }
+          
               this.experiences.push(Object.assign(value, { date_of_service: date_of_service }));
               
             });   
@@ -1800,7 +1837,7 @@ export default {
           }
         }).then(
           (response) => {
-            // console.log(response);
+            console.log(response);
 
             if(response.data.success){
               this.loader_dialog = false;
@@ -1813,6 +1850,7 @@ export default {
               this.export_btn = true;
 
               this.json_data = response.data.resp;
+              
             }else{
 
               this.generate_btn = true;
