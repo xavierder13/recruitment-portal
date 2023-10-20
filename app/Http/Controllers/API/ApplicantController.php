@@ -664,7 +664,7 @@ class ApplicantController extends Controller
 		$date_to = $req->date_to;
 		$fields = ['status', 'initial_interview_status', 'iq_status', 'bi_status', 'final_interview_status'];
 		$step = $req->step;
-		$field = null; //$fields[$step];
+		// $field = $fields[$step];
 
 		// id: 1000 - Admin
 		// else branch - branches
@@ -729,10 +729,11 @@ class ApplicantController extends Controller
 												$result->whereDate('applicants.created_at', '<=', $date_to);
 											}
 										})
-										->where(function($result) use ($step, $field) {
+										->where(function($result) use ($step, $fields) {
 											if(isset($step))
 											{
-												$result->whereIn('bi_status', [0, 2]);
+												$result->whereNotNull($fields[$step])
+															 ->whereIn($fields[$step], [0, 2]); //where status is on process or failed
 											}
 										})
 										->get() //;
@@ -958,7 +959,8 @@ class ApplicantController extends Controller
 
 	public function get_screening_list() 
 	{
-		$job_applicants = $this->all_job_applicants()->whereIn('applicants.status', [0, 2])// where status 0 or 2 (on process or failed)
+		$job_applicants = $this->all_job_applicants()->where('applicants.status', 0)
+																								// ->whereIn('applicants.status', [0, 2])// where status 0 or 2 (on process or failed)
 																								->orderBy('applicants.created_at', 'DESC')
 																								->get()
 																								->each(function ($row, $index) {
@@ -969,7 +971,8 @@ class ApplicantController extends Controller
 
 	public function get_initial_interview_list() 
 	{
-		$job_applicants = $this->all_job_applicants()->whereIn('initial_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
+		$job_applicants = $this->all_job_applicants()->where('applicants.initial_interview_status', 0)
+																									// ->whereIn('initial_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
 																									->orderBy('applicants.created_at', 'DESC')
 																									->get()
 																									->each(function ($row, $index) {
@@ -981,7 +984,8 @@ class ApplicantController extends Controller
 
 	public function get_iq_test_list() 
 	{
-		$applicants = $this->all_job_applicants()->whereIn('iq_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
+		$applicants = $this->all_job_applicants()->where('applicants.iq_status', 0)
+																					  // ->whereIn('iq_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
 																						->orderBy('applicants.created_at', 'DESC')
 																						->get()
 																						->each(function ($row, $index) {
@@ -1018,7 +1022,8 @@ class ApplicantController extends Controller
 
 	public function get_bi_list() 
 	{
-		$job_applicants = $this->all_job_applicants()->whereIn('bi_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
+		$job_applicants = $this->all_job_applicants()->where('applicants.bi_status', 0)
+																						// ->whereIn('bi_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
 																						->orderBy('applicants.created_at', 'DESC')
 																						->get()
 																						->each(function ($row, $index) {
@@ -1030,7 +1035,8 @@ class ApplicantController extends Controller
 
 	public function get_final_interview_list() 
 	{
-		$job_applicants = $this->all_job_applicants()->whereIn('final_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
+		$job_applicants = $this->all_job_applicants()->where('applicants.final_interview_status', 0)
+																				    // ->whereIn('final_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
 																						->orderBy('applicants.created_at', 'DESC')
 																						->get()
 																						->each(function ($row, $index) {

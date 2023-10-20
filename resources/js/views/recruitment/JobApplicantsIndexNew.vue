@@ -1289,7 +1289,8 @@
                       type="date"
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.final_interview_date"
-                      :error-messages="applicantError.final_interview_date"
+                      :error-messages="applicantError.final_interview_date + dateErrors.final_interview_date.msg"
+                      @input="validateDate('final_interview_date')"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -1355,9 +1356,9 @@
                       type="date"
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.orientation_date"
-                      :error-messages="applicantError.orientation_date"
+                      :error-messages="applicantError.orientation_date + dateErrors.orientation_date.msg"
                       :disabled="editedItem.final_interview_status != 1"
-                      @input="applicantError.orientation_date = []"
+                      @input="(applicantError.orientation_date = []) + validateDate('orientation_date')"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -1368,9 +1369,9 @@
                       type="date"
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.signing_of_contract_date"
-                      :error-messages="applicantError.signing_of_contract_date"
+                      :error-messages="applicantError.signing_of_contract_date + dateErrors.signing_of_contract_date.msg"
                       :disabled="editedItem.final_interview_status != 1"
-                      @input="applicantError.signing_of_contract_date = []"
+                      @input="(applicantError.signing_of_contract_date = []) + validateDate('signing_of_contract_date')"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -1638,6 +1639,11 @@ export default {
       },
       disabled: false,
       progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'Background Investigation', 'Final Interview'],
+      dateErrors: {
+        final_interview_date: { status: false, msg: "" },
+        orientation_date: { status: false, msg: "" },
+        signing_of_contract_date: { status: false, msg: "" },
+      },
       hiring_officer_positions: [
         'General Manager',
         'HR Division Manager',
@@ -1736,7 +1742,7 @@ export default {
               let date_of_service = value.date_of_service;
 
               if(date_of_service)
-              {console.log(date_of_service);
+              {
                 if(date_of_service.split(' to ').length > 1)// if has value format like '1900-01-01 to 1900-01-01'
                 {
                   let [start, end] = date_of_service.split(' to ');
@@ -2192,7 +2198,7 @@ export default {
     },
 
     clickProgress(progress) {
-      console.log(progress);
+
       let index = this.progressItems.indexOf(progress);
       this.application_status_dialog = true;
       this.step = index;
@@ -2227,27 +2233,58 @@ export default {
       this.editedItem = Object.assign({}, this.defaultItem);
       this.application_status_dialog = false;
       this.step = null;
+      this.dateErrors = {
+        final_interview_date: { status: false, msg: "" },
+        orientation_date: { status: false, msg: "" },
+        signing_of_contract_date: { status: false, msg: "" },
+      };
     },
 
     showConfirmAlert() {
 
       let progress = this.progress_items[this.step];
 
-      this.$swal({
-        title: "Are you sure?",
-        text: `Update ${progress} Status`,
-        icon: "warning",
-        showCancelButton: true,
-        cancelButtonColor: "#6c757d",
-        confirmButtonColor: "#1976d2", 
-        confirmButtonText: "Save",
-      }).then((result) => {
-        // <--
+      if(!this.dateHasError)
+      {
+        this.$swal({
+          title: "Are you sure?",
+          text: `Update ${progress} Status`,
+          icon: "warning",
+          showCancelButton: true,
+          cancelButtonColor: "#6c757d",
+          confirmButtonColor: "#1976d2", 
+          confirmButtonText: "Save",
+        }).then((result) => {
+          // <--
 
-        if (result.value) {
-          this.saveStatus();
-        }
-      });
+          if (result.value) {
+            this.saveStatus();
+          }
+        });
+      }
+
+    },
+
+    validateDate(field) {
+      let min_date = new Date('1900-01-01').getTime();
+      let max_date = new Date().getTime();
+      let date = this.editedItem[field];
+   
+      if(date)
+      {
+        let date_value = new Date(date).getTime();
+        let [year, month, day] = date.split('-');
+
+        this.dateErrors[field].status = false;
+        this.dateErrors[field].msg = "";
+
+        // if (date_value < min_date || date_value > max_date || year.length > 4) {
+        if (date_value < min_date || year.length > 4) {
+          this.dateErrors[field].status = true;
+          this.dateErrors[field].msg = 'Enter a valid date';
+        }  
+      }
+        
     },
 
     websocket() {
@@ -2308,6 +2345,20 @@ export default {
       }
 
       return status_items
+    },
+
+    dateHasError() {
+      let hasError = false;
+      let fields = Object.keys(this.dateErrors)
+
+      fields.forEach(field => {
+        if(this.dateErrors[field].status)
+        {
+          hasError = true;
+        }
+      });
+
+      return hasError;
     },
 
     fieldIsRequired() {

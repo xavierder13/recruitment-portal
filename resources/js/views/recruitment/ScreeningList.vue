@@ -2143,7 +2143,8 @@ export default {
 
         this.dateHasError = false;
 
-        if (date_value < min_date || date_value > max_date || year.length > 4) {
+        // if (date_value < min_date || date_value > max_date || year.length > 4) {
+        if (date_value < min_date || year.length > 4) {
           this.dateHasError = true;
         }  
       }

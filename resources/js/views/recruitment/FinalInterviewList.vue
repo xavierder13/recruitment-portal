@@ -1269,7 +1269,7 @@
                       v-model="editedItem.orientation_date"
                       :error-messages="applicantError.orientation_date + dateErrors.orientation_date.msg"
                       :disabled="editedItem.final_interview_status != 1"
-                      @input="applicantError.orientation_date = [] + validateDate('orientation_date')"
+                      @input="(applicantError.orientation_date = []) + validateDate('orientation_date')"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -1282,7 +1282,7 @@
                       v-model="editedItem.signing_of_contract_date"
                       :error-messages="applicantError.signing_of_contract_date + dateErrors.signing_of_contract_date.msg"
                       :disabled="editedItem.final_interview_status != 1"
-                      @input="applicantError.signing_of_contract_date = [] + validateDate('signing_of_contract_date')"
+                      @input="(applicantError.signing_of_contract_date = []) + validateDate('signing_of_contract_date')"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -2177,11 +2177,13 @@ export default {
         this.dateErrors[field].status = false;
         this.dateErrors[field].msg = "";
 
-        if (date_value < min_date || date_value > max_date || year.length > 4) {
+        // if (date_value < min_date || date_value > max_date || year.length > 4) {
+        if (date_value < min_date || year.length > 4) {
           this.dateErrors[field].status = true;
           this.dateErrors[field].msg = 'Enter a valid date';
-        }
+        }  
       }
+      console.log(this.dateErrors);
         
     },
 
