@@ -264,7 +264,7 @@
                           <v-chip 
                             class="ma-0" 
                             :color="progress.color" 
-                            @click="progress.text == 'Final Interview' && applicant.final_interview_status ? clickProgress(progress) : ''" 
+                            @click="progress.text == 'Final Interview' && applicant.final_interview_status && hasPermission('jobapplicants-update-hired-details') ? clickProgress(progress) : ''" 
                           > 
                             <v-icon class="mr-1"> {{ progress.icon }} </v-icon> 
                             {{ progress.text }}
