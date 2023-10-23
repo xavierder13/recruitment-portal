@@ -54,6 +54,7 @@ class ApplicantController extends Controller
 
 	public function all_job_applicants()
 	{
+
 		$job_applicants = DB::table('job_vacancies')
 												->join('applicants', 'applicants.jobvacancy_id', '=', 'job_vacancies.id')
 												->join('positions', 'positions.id', '=', 'job_vacancies.position_id')
@@ -84,9 +85,29 @@ class ApplicantController extends Controller
 														$user = Auth::user();
 														if($user->hasRole('Branch Manager'))
 														{
-															$query->where('applicants.initial_interview_status', '>', 0)
-																		->where('applicants.branch_id', $user->branch_id);
+															//status 0 = on process, 1 = passed
+															$query->where(function($qry){
+																				//where status either on on process or passed; exclude failed status
+																				$qry->whereIn('iq_status', [0, 1])
+																					->orWhereIn('bi_status', [0, 1]);
+																			})
+																			->where(function($qry) {
+																				$user = Auth::user();
+																				$qry->whereNull('tbranches.id')
+																				    ->orWhere('tbranches.id', $user->branch_id);
+																			})
+																			->where(function($q) { //where final interview is on process or value is null
+																				$q->where('final_interview_status', 0)
+																					->orWhereNull('final_interview_status');
+																			})
+																			->orWhere(function($qry) { // where final interview is passed then get the record where user branch is equal to employment branch
+																				$user = Auth::user();
+
+																				$qry->where('final_interview_status', 1)
+																				  ->where('employment_branch', $user->branch_id);
+																			});
 														}
+														
 												});	
 
 		return $job_applicants;
@@ -99,6 +120,31 @@ class ApplicantController extends Controller
 																								->each(function ($row, $index) {
 																									$row->cnt_id = $index + 1;
 																								});
+		$applicantsArr = [];
+		$user = Auth::user();
+
+		foreach ($job_applicants as $applicant) {
+			
+			$branch_preference = $applicant->branch_preference;
+
+			if($user->hasRole('Branch Manager'))
+			{
+				if($branch_preference)
+				{
+					$branch_ids = explode(',', $branch_preference);
+
+					if(in_array($user->branch_id, $branch_ids))
+					{
+						$applicantsArr[] = $applicant;
+					}
+				}
+			}
+			else
+			{
+				$applicantsArr[] = $applicant;
+			}
+
+		}
 
 		$branches = DB::table('branches')
 												->orderBy('id', 'ASC')
@@ -106,7 +152,7 @@ class ApplicantController extends Controller
 
 		$positions = Position::orderBy('name', 'Asc')->get();
 
-		return response()->json(['job_applicants' => $job_applicants, 'branches' => $branches, 'positions' => $positions], 200);										
+		return response()->json(['job_applicants' => $applicantsArr, 'branches' => $branches, 'positions' => $positions], 200);										
 	}
 
 	public function submit_application(Request $req){
@@ -732,8 +778,8 @@ class ApplicantController extends Controller
 										->where(function($result) use ($step, $fields) {
 											if(isset($step))
 											{
-												$result->whereNotNull($fields[$step])
-															 ->whereIn($fields[$step], [0, 2]); //where status is on process or failed
+												$result->whereNotNull($fields[$step]);
+															//  ->whereIn($fields[$step], [0, 2]); //where status is on process or failed
 											}
 										})
 										->get() //;

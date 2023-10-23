@@ -197,7 +197,7 @@ export default {
         },
         { 
           text: 'Final Interview', 
-          color: 'success', 
+          color: 'cyan', 
           hasPermission: this.hasPermission('jobapplicants-final-interview-list'), 
           count: this.final_interview_ctr, 
           link: '/jobapplicants/final-interview-list'

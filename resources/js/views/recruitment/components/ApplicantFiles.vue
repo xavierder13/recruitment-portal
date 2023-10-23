@@ -182,7 +182,7 @@ export default {
       file: [],
       selected_doc_type: "",
       specified_doc_type: "",
-      doc_types: ["Medical Certificate", "Diploma", "TOR", "Driver's License", "Others"],
+      doc_types: ["Exam", "Background Investigation", "Diploma/Copy of Grades", "Birth Certificate", "Others"],
       dialog: false,
       file: [],
       loading: true,

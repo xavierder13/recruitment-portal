@@ -1353,7 +1353,7 @@ export default {
       headers: [
         { text: "#", value: "cnt_id" },
         { text: "Full name", value: "name" },
-        { text: "Position", value: "position_name" },
+        { text: "Position Applied", value: "position_name" },
         { text: "Branch Applied", value: "branch_name" },
         { text: "Date Submitted", value: "created_at" },
         { text: "Status", value: "status" },
@@ -1552,7 +1552,7 @@ export default {
       axios.get("/api/job_applicant/iq_test_list").then(
         (response) => {
           let data = response.data
-          console.log(data.applicans);
+         
           this.v_table = true;
           this.table_loader = false;
           this.loading = false;
@@ -1981,6 +1981,7 @@ export default {
             if(bi_status == 1) // BI passed then set new progress
             {
               progress = "Final Interview " + text;
+              color = "cyan";
 
               if(final_interview_status == 1 ) // Final Interview passed then set new progress
               {
