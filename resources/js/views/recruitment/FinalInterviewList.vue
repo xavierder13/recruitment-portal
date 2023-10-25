@@ -2142,7 +2142,7 @@ export default {
       let color = '';
       let border_color = '';
       let icon = 'mdi-check-circle';
-      let disabled = [0, 2, 3].includes(status) && status !== null? false : true; // if status is not null or ('on process', 'failed', 'did not comply') then enable progress item (v-chip) else disabled
+      let disabled = [0, 2, 3].includes(status) && status !== null ? false : true; // if status is not null or ('on process', 'failed', 'did not comply') then enable progress item (v-chip) else disabled
       if(status == 0) // if on process
       {
         color = 'warning';
