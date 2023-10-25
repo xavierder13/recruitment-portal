@@ -790,8 +790,8 @@ class ApplicantController extends Controller
 																									->where(function($result) use ($step, $fields) {
 																										if(isset($step))
 																										{
-																											$result->whereNotNull($fields[$step])
-																														 ->whereIn($fields[$step], [0, 2]); //where status is on process or failed
+																											$result->whereNotNull('applicants.'.$fields[$step])
+																														 ->whereIn('applicants.'.$fields[$step], [0, 2]); //where status is on process or failed
 																										}
 																									})
 																									->where(function($query) {
