@@ -59,63 +59,88 @@ class ApplicantController extends Controller
 												->join('applicants', 'applicants.jobvacancy_id', '=', 'job_vacancies.id')
 												->join('positions', 'positions.id', '=', 'job_vacancies.position_id')
 												->join('branches', 'branches.id', '=', 'applicants.branch_id')
-												->leftJoin(DB::raw('branches as tbranches'), 'tbranches.id', '=', 'applicants.branch_complied')
+												->leftJoin('branches as branch_complied', 'branch_complied.id', '=', 'applicants.branch_complied')
+												->leftJoin('positions as employment_position', 'employment_position.id', '=', 'applicants.employment_position')
+												->leftJoin('branches as employment_branch', 'employment_branch.id', '=', 'applicants.employment_branch')
 												->select('applicants.id AS id',
 																 'positions.name AS position_name',
 																 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', IFNULL(applicants.middlename,'')) AS name"),
-																 DB::raw("DATE_FORMAT(applicants.created_at, '%M %d, %Y') AS created_at"),
+																 'applicants.lastname',
+																 'applicants.firstname',
+																 'applicants.middlename',
+														     'applicants.address',
+														 		 DB::raw('DATE_FORMAT(applicants.birthdate, "%m/%d/%Y") as birthdate'),
+															 	 'applicants.age',
+																 'applicants.gender',
+														     'applicants.contact_no', 
+																 'applicants.civil_status', 
+														     'applicants.email',
+														     'applicants.educ_attain',
+														     'applicants.course',
+																 'applicants.school_grad',
+														     'applicants.how_learn',
+																 DB::raw("DATE_FORMAT(applicants.created_at, '%m/%d/%Y') AS created_at"),
 																 'branches.name AS branch_name',
 																 'applicants.status',
-																 DB::raw('DATE_FORMAT(applicants.initial_interview_date, "%m-%d-%Y") as initial_interview_date'),
-																 'applicants.initial_interview_status',
 																 'applicants.position_preference',
 																 'applicants.branch_preference',
-																 DB::raw('tbranches.id as branch_id_complied'),
-																 DB::raw('tbranches.name as branch_complied'),
+														 		 DB::raw('applicants.status as screening_status'),
+																 'applicants.initial_interview_status',
+														 		 DB::raw('DATE_FORMAT(applicants.initial_interview_date, "%m/%d/%Y") as initial_interview_date'),
+														     'applicants.position_preference',
+																 'applicants.branch_preference',
 																 'applicants.iq_status',
+																 DB::raw('branch_complied.id as branch_id_complied'),
+																 DB::raw('branch_complied.name as branch_complied'),
 																 'applicants.bi_status',
-																 DB::raw('DATE_FORMAT(applicants.final_interview_date, "%m-%d-%Y") as final_interview_date'),
-																 'applicants.final_interview_status',
-																 'applicants.employment_position',
-																 'applicants.employment_branch',
-																 DB::raw('DATE_FORMAT(applicants.orientation_date, "%m-%d-%Y") as orientation_date'),
-																 DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%m-%d-%Y") as signing_of_contract_date'),
-																)
-												->where(function($query) {
-														$user = Auth::user();
-														if($user->hasRole('Branch Manager'))
-														{
-															//status 0 = on process, 1 = passed
-															$query->where(function($qry){
-																				//where status either on on process or passed; exclude failed status
-																				$qry->whereIn('iq_status', [0, 1])
-																					->orWhereIn('bi_status', [0, 1]);
-																			})
-																			->where(function($qry) {
-																				$user = Auth::user();
-																				$qry->whereNull('tbranches.id')
-																				    ->orWhere('tbranches.id', $user->branch_id);
-																			})
-																			->where(function($q) { //where final interview is on process or value is null
-																				$q->where('final_interview_status', 0)
-																					->orWhereNull('final_interview_status');
-																			})
-																			->orWhere(function($qry) { // where final interview is passed then get the record where user branch is equal to employment branch
-																				$user = Auth::user();
-
-																				$qry->where('final_interview_status', 1)
-																				  ->where('employment_branch', $user->branch_id);
-																			});
-														}
-														
-												});	
+																 DB::raw('DATE_FORMAT(applicants.final_interview_date, "%m/%d/%Y") as final_interview_date'),
+														 		 'applicants.final_interview_status',
+																 'employment_position.name as employment_position',
+																 'employment_branch.name as employment_branch',
+																 'applicants.hiring_officer_position',
+																 'applicants.hiring_officer_name',
+														 		 DB::raw('DATE_FORMAT(applicants.orientation_date, "%m/%d/%Y") as orientation_date'),
+														 		 DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%m/%d/%Y") as signing_of_contract_date')
+																);	
 
 		return $job_applicants;
 	}
 
   public function get_applicants_new(){
 
-		$job_applicants = $this->all_job_applicants()->orderBy('applicants.created_at', 'DESC')
+		$job_applicants = $this->all_job_applicants()->where(function($query) {
+																										$user = Auth::user();
+																										if($user->hasRole('Branch Manager'))
+																										{
+																											//status 0 = on process, 1 = passed
+																											$query->where(function($qry){
+																																//where status either on on process or passed; exclude failed status
+																																$qry->whereIn('iq_status', [0, 1])
+																																		->orWhereIn('bi_status', [0, 1]);
+																															})
+																															->where(function($qry) {
+																																$qry->where(function($q){
+																																				$user = Auth::user();
+																																				$q->whereNotNull('branch_complied.id')
+																																					->where(function($d){
+																																						$d->whereNull('final_interview_status')
+																																							->orWhere('final_interview_status', 0);
+																																					})
+																																					->where('branch_complied.id', $user->branch_id);
+																																		})
+																																		->orWhereNull('branch_complied.id')
+																																		->orWhere(function($qry) { // where final interview is passed then get the record where user branch is equal to employment branch
+																																			$user = Auth::user();
+
+																																			$qry->where('final_interview_status', [1, 4])
+																																					->whereNotNull('final_interview_status')
+																																					->where('employment_branch', $user->branch_id);
+																																		});
+																															});
+																										}
+																										
+																								})
+																								->orderBy('applicants.created_at', 'DESC')
 																								->get()
 																								->each(function ($row, $index) {
 																									$row->cnt_id = $index + 1;
@@ -589,7 +614,7 @@ class ApplicantController extends Controller
 																 'branches.id AS branch_id',
 																 'branches.name AS branch_name',
 																 'applicants.id', 
-												 				 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', applicants.middlename) AS name"),
+												 				 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', IFNULL(applicants.middlename,'')) AS name"),
 																 'applicants.address',
 												 				 DB::raw('DATE_FORMAT(applicants.birthdate, "%m/%d/%Y") as birthdate'),
 																 'applicants.age',
@@ -711,87 +736,138 @@ class ApplicantController extends Controller
 		$fields = ['status', 'initial_interview_status', 'iq_status', 'bi_status', 'final_interview_status'];
 		$step = $req->step;
 		// $field = $fields[$step];
-
+		
 		// id: 1000 - Admin
 		// else branch - branches
+		// $applicants = $this->get_initial_interview_list()->toArray();
+		
 
-		$applicants = DB::table('job_vacancies')
-										->join('applicants', 'applicants.jobvacancy_id', '=', 'job_vacancies.id')
-										->join('positions', 'positions.id', '=', 'job_vacancies.position_id')
-										->join('branches', 'branches.id', '=', 'applicants.branch_id')
-										->leftJoin('branches as branch_complied', 'branch_complied.id', '=', 'applicants.branch_complied')
-										->leftJoin('positions as employment_position', 'employment_position.id', '=', 'applicants.employment_position')
-										->leftJoin('branches as employment_branch', 'employment_branch.id', '=', 'applicants.employment_branch')
-										->select('applicants.id',
-														 DB::raw('DATE_FORMAT(applicants.created_at, "%m/%d/%Y") as date_applied'),
-														 				 'branches.name AS branch_name',			 
-														         'positions.name AS position_name',
-														 				 'applicants.lastname',
-																		 'applicants.firstname',
-																		 'applicants.middlename',
-														         'applicants.address',
-														 DB::raw('DATE_FORMAT(applicants.birthdate, "%m/%d/%Y") as birthdate'),
-															 			 'applicants.age',
-																		 'applicants.gender',
-														         'applicants.contact_no', 
-																		 'applicants.civil_status', 
-														         'applicants.email',
-														         'applicants.educ_attain',
-														         'applicants.course',
-																		 'applicants.school_grad',
-														         'applicants.how_learn',
-														 DB::raw('applicants.status as screening_status'),
-														//  DB::raw("'".$req->progress . "' as progress_status"),
-																	   'applicants.initial_interview_status',
-														 DB::raw('DATE_FORMAT(applicants.initial_interview_date, "%m/%d/%Y") as initial_interview_date'),
-														         'applicants.position_preference',
-																		 'applicants.branch_preference',
-														 DB::raw('branch_complied.name as branch_complied'),
-																		 'applicants.iq_status',
-																		 'applicants.bi_status',
-														 DB::raw('DATE_FORMAT(applicants.final_interview_date, "%m/%d/%Y") as final_interview_date'),
-														 				 'applicants.final_interview_status',
-																		 'employment_position.name as employment_position',
-																		 'employment_branch.name as employment_branch',
-																		 'applicants.hiring_officer_position',
-																 	   'applicants.hiring_officer_name',
-														 DB::raw('DATE_FORMAT(applicants.orientation_date, "%m/%d/%Y") as orientation_date'),
-														 DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%m/%d/%Y") as signing_of_contract_date'),
-														// DB::raw("(CASE WHEN applicants.status = 0 THEN ('On-Progress') 
-														// 		 					 WHEN applicants.status = 1 THEN ('Qualified') 
-														// 							 WHEN applicants.status = 2 THEN ('Not-Qualified')
-														// 							 WHEN applicants.status = 3 THEN ('Hired')
-														// 							 WHEN applicants.status = 4 THEN ('Failed')
-														// 						ELSE 'None' 
-														// 					END) AS status")
-														)
-										->where(function($result) use ($branch_id, $date_from, $date_to){
-											if($branch_id === "1000"){
-												$result->whereDate('applicants.created_at', '>=', $date_from);
-												$result->whereDate('applicants.created_at', '<=', $date_to);
-											}else{
-												$result->where('branches.id', '=', $branch_id);
-												$result->whereDate('applicants.created_at', '>=', $date_from);
-												$result->whereDate('applicants.created_at', '<=', $date_to);
-											}
-										})
-										->where(function($result) use ($step, $fields) {
-											if(isset($step))
-											{
-												$result->whereNotNull($fields[$step]);
-															//  ->whereIn($fields[$step], [0, 2]); //where status is on process or failed
-											}
-										})
-										->get() //;
-										->toArray();	
+		// START IQ test list
+																						
+		$user = Auth::user();
+
+		if($step == 2 && $user->hasRole('Branch Manager'))//IQ Test
+		{
+			$applicants_iq_list = $this->all_job_applicants()->where(function($result) use ($date_from, $date_to){
+																													
+																													$result->whereDate('applicants.created_at', '>=', $date_from);
+																													$result->whereDate('applicants.created_at', '<=', $date_to);
+																													
+																												})
+																												->whereIn('applicants.iq_status', [0, 2, 3])
+																												->orderBy('applicants.created_at', 'DESC')
+																												->get()
+																												->each(function ($row, $index) {
+																														$row->cnt_id = $index + 1;
+																												});
+
+			$applicantsArr = [];
+			
+			foreach ($applicants_iq_list as $applicant) {
+
+				$branch_preference = $applicant->branch_preference;
+
+				if($branch_preference)
+				{
+					$branch_ids = explode(',', $branch_preference);
+
+					if(in_array($user->branch_id, $branch_ids))
+					{
+						$applicantsArr[] = $applicant;
+					}
+				}
+			
+			}
+			$applicants = $applicantsArr;
+			// END IQ test list
+		}
+		else
+		{
+			$applicants = $this->all_job_applicants()->where(function($result) use ($branch_id, $date_from, $date_to){
+																											$result->whereDate('applicants.created_at', '>=', $date_from);
+																											$result->whereDate('applicants.created_at', '<=', $date_to);																
+																									})
+																									->where(function($result) use ($step, $fields) {
+																										if(isset($step))
+																										{
+																											$result->whereNotNull($fields[$step])
+																														 ->whereIn($fields[$step], [0, 2]); //where status is on process or failed
+																										}
+																									})
+																									->where(function($query) {
+																										// $user = Auth::user();
+																										// if($user->hasRole('Branch Manager'))
+																										// {
+																										// 	//status 0 = on process, 1 = passed
+																										// 	$query->where(function($qry){
+																										// 						//where status either on on process or passed; exclude failed status
+																										// 						$qry->whereIn('iq_status', [0, 2])
+																										// 								->orWhereIn('bi_status', [0, 2]);
+																										// 					})
+																										// 					->where(function($qry) {
+																										// 						$qry->where(function($q){
+																										// 										$user = Auth::user();
+																										// 										$q->whereNotNull('branch_complied.id')
+																										// 											->where(function($d){
+																										// 												$d->whereNull('final_interview_status')
+																										// 													->orWhere('final_interview_status', 0);
+																										// 											})
+																										// 											->where('branch_complied.id', $user->branch_id);
+																										// 								})
+																										// 								->orWhereNull('branch_complied.id')
+																										// 								->orWhere(function($qry) { // where final interview is passed then get the record where user branch is equal to employment branch
+																										// 									$user = Auth::user();
+
+																										// 									$qry->where('final_interview_status', [1, 4])
+																										// 											->whereNotNull('final_interview_status')
+																										// 											->where('employment_branch', $user->branch_id);
+																										// 								});
+																										// 					});
+																										// }
+																										$user = Auth::user();
+																										if($user->hasRole('Branch Manager'))
+																										{
+																											//status 0 = on process, 1 = passed
+																											$query->where(function($qry) {
+																																$qry->where(function($q) {
+																																				// $q->where('');
+																																		})
+																																		->where(function($q){
+																																				$user = Auth::user();
+																																				$q->whereNotNull('branch_complied.id')
+																																					->where(function($d){
+																																						$d->whereNull('final_interview_status')
+																																							->orWhere('final_interview_status', 0);
+																																					})
+																																					->where('branch_complied.id', $user->branch_id);
+																																		})
+																																		->orWhere(function($qry) { // where final interview is passed then get the record where user branch is equal to employment branch
+																																			$user = Auth::user();
+
+																																			$qry->where('final_interview_status', [1, 4])
+																																					->whereNotNull('final_interview_status')
+																																					->where('employment_branch', $user->branch_id);
+																																		});
+																															});
+																										}
+																										
+																								})
+																								->orderBy('applicants.created_at', 'DESC')
+																								->get()
+																								->each(function ($row, $index) {
+																									$row->cnt_id = $index + 1;
+																								})
+																								->toArray();	
+		}
 
 		$branches = Branch::get();
 		$positions = Position::get();
 		
 		$arrApplicants = [];
-		$status = ['On Process', 'Passed', 'Failed', 'Did Not Comply'];
+		$status = ['On Process', 'Passed', 'Failed', 'Did Not Comply', 'Reserved'];
 					
 		foreach ($applicants as $key => $applicant) {
+			
 			$applicant_files = ApplicantFile::where('applicant_id', $applicant->id)->where('title', '!=', 'Resume')->pluck('title')->toArray();
 			$arrApplicants[$key] = [];
 			$fields = array_keys((array)$applicant);
@@ -855,9 +931,11 @@ class ApplicantController extends Controller
 		$applicant = Applicant::find($id);	
 					
 		$step = $req->step;
+		$user = Auth::user();
 
 		if($step == 0) //screening
 		{
+
 			$applicant->status = $req->status;
 			$applicant->initial_interview_date = $req->initial_interview_date;
 			$applicant->initial_interview_status = 0;
@@ -869,8 +947,9 @@ class ApplicantController extends Controller
 			}
 			
 		}
-		else if($step == 1) //inital interview
+		else if($step == 1) //initial interview
 		{
+
 			$applicant->initial_interview_status = $req->initial_interview_status;
 			$applicant->position_preference = $req->position_preference;
 			$applicant->branch_preference = $req->branch_preference;
@@ -885,8 +964,15 @@ class ApplicantController extends Controller
 		}
 		else if($step == 2) //iq test
 		{
+
+			// if user is branch manager and status is not On Process then return warning message
+			if($applicant->iq_status > 0 && $user->hasRole('Branch Manager'))
+			{
+				return response()->json(['warning' => 'Status is already updated'], 200);
+			}
+
 			$applicant->iq_status = $req->iq_status;
-			$applicant->branch_complied = $req->branch_id_complied;
+			$applicant->branch_complied = $req->iq_status == 1 ? $req->branch_id_complied : null;
 			$applicant->bi_status = 0;
 			
 			if(in_array($req->iq_status, [0, 2]))
@@ -897,6 +983,12 @@ class ApplicantController extends Controller
 		}
 		else if($step == 3) //background investigation
 		{
+			// if user is branch manager and status is not On Process then return warning message
+			if($applicant->bi_status > 0 && $user->hasRole('Branch Manager'))
+			{
+				return response()->json(['warning' => 'Status is already updated'], 200);
+			}
+			
 			$applicant->bi_status = $req->bi_status;
 			$applicant->final_interview_status = 0;
 			if(in_array($req->bi_status, [0, 2]))

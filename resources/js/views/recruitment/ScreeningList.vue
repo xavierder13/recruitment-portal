@@ -20,16 +20,36 @@
               single-line
             ></v-text-field>
             <v-spacer></v-spacer>
-              <v-btn
-                color="#009688"
-                fab
-                dark
-                class="mb-2"
-                @click="openExportDialog()"
-                v-if="userPermissions.jobapplicants_export"
-              >
-                <v-icon>mdi-file-excel</v-icon>
-              </v-btn>
+            <v-tooltip top>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  color="primary"
+                  fab
+                  dark
+                  class="mb-2 mr-2"
+                  @click="getApplicants()"
+                  v-bind="attrs" v-on="on"
+                >
+                  <v-icon>mdi-refresh</v-icon>
+                </v-btn>
+              </template>
+              <span>Refresh Data</span>
+            </v-tooltip>  
+            <v-tooltip top v-if="hasPermission('jobapplicants-export')">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  color="#009688"
+                  fab
+                  dark
+                  class="mb-2"
+                  @click="openExportDialog()"
+                  v-bind="attrs" v-on="on"
+                >
+                  <v-icon>mdi-file-excel</v-icon>
+                </v-btn>
+              </template>
+              <span>Export Data</span>
+            </v-tooltip>
           </v-card-title>
 
           <v-data-table
@@ -1226,7 +1246,7 @@
                       item-text="name"
                       label="Employment Position"
                       v-model="editedItem.employment_position"
-                      :disabled="editedItem.final_interview_status != 1"
+                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
                     ></v-autocomplete>
                   </v-col>
                 </v-row>
@@ -1238,7 +1258,7 @@
                       item-text="name"
                       label="Employment Branch"
                       v-model="editedItem.employment_branch"
-                      :disabled="editedItem.final_interview_status != 1"
+                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
                     ></v-autocomplete>
                   </v-col>
                 </v-row>
@@ -1248,7 +1268,7 @@
                       :items="hiring_officer_positions"
                       label="Hiring Officer Position"
                       v-model="editedItem.hiring_officer_position"
-                      :disabled="editedItem.final_interview_status != 1"
+                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
                     ></v-autocomplete>
                   </v-col>
                 </v-row>
@@ -1257,7 +1277,7 @@
                     <v-text-field
                       label="Hiring Officer Name"
                       v-model="editedItem.hiring_officer_name"
-                      :disabled="editedItem.final_interview_status != 1"
+                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -1269,7 +1289,7 @@
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.orientation_date"
                       :error-messages="applicantError.orientation_date"
-                      :disabled="editedItem.final_interview_status != 1"
+                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
                       @input="applicantError.orientation_date = []"
                     ></v-text-field>
                   </v-col>
@@ -1282,7 +1302,7 @@
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.signing_of_contract_date"
                       :error-messages="applicantError.signing_of_contract_date"
-                      :disabled="editedItem.final_interview_status != 1"
+                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
                       @input="applicantError.signing_of_contract_date = []"
                     ></v-text-field>
                   </v-col>
@@ -1446,7 +1466,6 @@ export default {
         position_preference: [],
         branch_preference: [],
         final_interview_date: "",
-        final_interview_status: "",
         employment_position: "",
         employment_branch: "",
         hiring_officer_position: "",
@@ -1578,7 +1597,6 @@ export default {
     view_applicant(id){
       
       this.view_applicant_loading = true;
-      this.view_dialog = true;
       this.applicant_id = id;
 
       const url = `/api/job_applicant/view_applicants_new/${id}`;
@@ -1588,74 +1606,97 @@ export default {
 
           if (response.data.success) {
             const data = response.data;
-            // console.log(data);
-            this.applicant = data.applicant;
-            // this.educ_attains = data.educ_attains;
-            // this.experiences = data.experiences;
-            this.references = data.references;
-            this.fam_members = data.fam_members;
-            this.dependents = data.dependents;
-            this.applicant_files = data.applicant_files;
-            this.download_file = data.file;
-             
-            data.educ_attains.forEach(value => {
-              let sy_attended = value.sy_attended;
-              if(sy_attended)
-              {
-                if(sy_attended.split(' to ').length > 1)
-                {
-                  let [start, end] = sy_attended.split(' to ');
-                  let sy_start = new Date(start);
-                  let sy_end = new Date(end);
-
-                  sy_attended = sy_attended ? sy_start.toLocaleDateString("en-US") + ' to ' +  sy_end.toLocaleDateString("en-US") : null;
-                }
-              }
-              
-              this.educ_attains.push(Object.assign(value, { sy_attended: sy_attended }));
-              
-            });
-
-            data.experiences.forEach(value => {
-              let date_of_service = value.date_of_service;
-
-              if(date_of_service)
-              {
-                if(date_of_service.split(' to ').length > 1)// if has value format like '1900-01-01 to 1900-01-01'
-                {
-                  let [start, end] = date_of_service.split(' to ');
-                  let service_start = new Date(start);
-                  let service_end = new Date(end);
-
-                  date_of_service = date_of_service ? service_start.toLocaleDateString("en-US") + ' to ' +  service_end.toLocaleDateString("en-US") : null;
-                }
-              }
-          
-              this.experiences.push(Object.assign(value, { date_of_service: date_of_service }));
-              
-            });   
-
-            let position_preference = this.applicant.position_preference;
-
-            if(position_preference)
+            
+            // refresh data when there are some upated status/records detected
+            if(data.applicant.status > 0)
             {
-              let positions = position_preference.split(',');
-              this.applicant.position_preference = positions;
+              this.$swal({
+                title: "Updated Data Detected.",
+                text: "There are some updated data detected. Refresh record List",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "primary",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Confirm",
+              }).then((result) => {
+                  if(result.value)
+                  {
+                    this.getApplicants();
+                  }
+              });
             }
             else
             {
-              this.applicant.position_preference = [];
-            }
+              this.applicant = data.applicant;
+              this.view_dialog = true;
+              // this.educ_attains = data.educ_attains;
+              // this.experiences = data.experiences;
+              this.references = data.references;
+              this.fam_members = data.fam_members;
+              this.dependents = data.dependents;
+              this.applicant_files = data.applicant_files;
+              this.download_file = data.file;
+              
+              data.educ_attains.forEach(value => {
+                let sy_attended = value.sy_attended;
+                if(sy_attended)
+                {
+                  if(sy_attended.split(' to ').length > 1)
+                  {
+                    let [start, end] = sy_attended.split(' to ');
+                    let sy_start = new Date(start);
+                    let sy_end = new Date(end);
 
-            let branch_preference = this.applicant.branch_preference;
-            if(position_preference)
-            {
-              let branches = branch_preference.split(',');
-              this.applicant.branch_preference = branches;
-            }
-            else
-            {
-              this.applicant.branch_preference = [];
+                    sy_attended = sy_attended ? sy_start.toLocaleDateString("en-US") + ' to ' +  sy_end.toLocaleDateString("en-US") : null;
+                  }
+                }
+                
+                this.educ_attains.push(Object.assign(value, { sy_attended: sy_attended }));
+                
+              });
+
+              data.experiences.forEach(value => {
+                let date_of_service = value.date_of_service;
+
+                if(date_of_service)
+                {
+                  if(date_of_service.split(' to ').length > 1)// if has value format like '1900-01-01 to 1900-01-01'
+                  {
+                    let [start, end] = date_of_service.split(' to ');
+                    let service_start = new Date(start);
+                    let service_end = new Date(end);
+
+                    date_of_service = date_of_service ? service_start.toLocaleDateString("en-US") + ' to ' +  service_end.toLocaleDateString("en-US") : null;
+                  }
+                }
+            
+                this.experiences.push(Object.assign(value, { date_of_service: date_of_service }));
+                
+              });   
+
+              let position_preference = this.applicant.position_preference;
+
+              if(position_preference)
+              {
+                let positions = position_preference.split(',');
+                this.applicant.position_preference = positions;
+              }
+              else
+              {
+                this.applicant.position_preference = [];
+              }
+
+              let branch_preference = this.applicant.branch_preference;
+              if(position_preference)
+              {
+                let branches = branch_preference.split(',');
+                this.applicant.branch_preference = branches;
+              }
+              else
+              {
+                this.applicant.branch_preference = [];
+              }
+
             }
   
           }
@@ -1712,7 +1753,8 @@ export default {
     openExportDialog() {
       if(this.job_applicants.length)
       {
-        this.dialog = true
+        this.dialog = true;
+        this.branch_id = this.user.branch_id;
       }
       else
       {
@@ -1894,7 +1936,7 @@ export default {
       this.export_btn = false;
 
       this.dates = [];
-      this.branch_id = "";
+      this.branch_id = this.user.branch_id;
 
       this.$v.$reset();
     },
@@ -1996,7 +2038,7 @@ export default {
             if(bi_status == 1) // BI passed then set new progress
             {
               progress = "Final Interview " + text;
-              color = "lime";
+              color = "cyan";
 
               if(final_interview_status == 1 ) // Final Interview passed then set new progress
               {
@@ -2004,10 +2046,15 @@ export default {
                 color = "success";
                 
               }
-              else if(bi_status == 2)
+              else if([2, 3].includes(final_interview_status)) //failed or did not comply
               {
                 progress = "Final Interview Failed";
                 color = "error";
+              }
+              else if(final_interview_status == 4)
+              {
+                progress = "Reserved";
+                color = "#1A237E";
               }
             }
             else if(bi_status == 2)
@@ -2052,7 +2099,7 @@ export default {
         icon = '';
         text = '... ' + text;
       }
-      else if(status == 1) // if qualified or passed
+      else if(status == 1 || status == 4) // if qualified or passed or reserved status (for final interview)
       {
         color = 'success';
         border_color = 'success';
@@ -2218,6 +2265,11 @@ export default {
       if(this.step > 1)
       {
         status_items.push({ value: 3, text: 'Did not Comply' });
+
+        if(this.step == 4)
+        {
+          status_items.push({ value: 4, text: 'Reserved' });
+        }
       }
 
       return status_items
