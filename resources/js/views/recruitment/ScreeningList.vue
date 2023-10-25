@@ -1751,17 +1751,19 @@ export default {
     },
 
     openExportDialog() {
-      if(this.job_applicants.length)
-      {
-        this.dialog = true;
-        this.branch_id = this.user.branch_id;
-      }
-      else
-      {
-        this.$toaster.warning('No record found.', {
-          timeout: 2000
-        });
-      }
+      this.dialog = true;
+      this.branch_id = this.user.branch_id;
+      // if(this.job_applicants.length)
+      // {
+      //   this.dialog = true;
+      //   this.branch_id = this.user.branch_id;
+      // }
+      // else
+      // {
+      //   this.$toaster.warning('No record found.', {
+      //     timeout: 2000
+      //   });
+      // }
     },
 
     export_applications(){
