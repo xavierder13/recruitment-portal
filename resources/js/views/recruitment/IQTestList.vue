@@ -2026,7 +2026,7 @@ export default {
 
           if(iq_status == 1)// IQ Test passed then set new progress
           {
-            progress = "Background Investigation " + text;
+            progress = "BI " + text;
             color = "lime";
 
             if(bi_status == 1) // BI passed then set new progress
@@ -2042,12 +2042,12 @@ export default {
               }
               else if(final_interview_status == 2)
               {
-                progress = "Reserved";
-                color = "deep orange";
-              }
-              else if([2, 3].includes(final_interview_status)) //failed or did not comply
-              {
                 progress = "Final Interview Failed";
+                color = "error";
+              }
+              else if(final_interview_status == 3) //failed or did not comply
+              {
+                progress = "Did Not Comply - Final Interview";
                 color = "error";
               }
               else if(final_interview_status == 4)
@@ -2058,7 +2058,12 @@ export default {
             }
             else if(bi_status == 2)
             {
-              progress = "Background Investigation Failed";
+              progress = "BI Failed";
+              color = "error";
+            }
+            else if (bi_status == 3)
+            {
+              progress = "Did Not Comply - BI";
               color = "error";
             }
 
@@ -2068,6 +2073,11 @@ export default {
             progress = "IQ Test Failed";
             color = "error";
           }
+          else if (iq_status == 3)
+          {
+            progress = "Did Not Comply - IQ Test";
+            color = "error";
+          }
 
         }
         else if(initial_interview_status == 2) // Initial Interview Failed
@@ -2075,6 +2085,11 @@ export default {
           progress = "Initial Interview Failed";
           color = "error";
           
+        }
+        else if (initial_interview_status == 3)
+        {
+          progress = "Did Not Comply - IQ Test";
+          color = "error";
         }
       }
       else if(status == 2) // not qualified
@@ -2104,7 +2119,7 @@ export default {
         border_color = 'success';
         icon = 'mdi-check-circle';
       }
-      else if(status == 2) // if not qualified, failed or did not comply
+      else if(status == 2 || status == 3) // if not qualified, failed or did not comply
       {
         color = 'error';
         icon = 'mdi-close-circle';
@@ -2233,6 +2248,11 @@ export default {
       if(this.step > 1)
       {
         status_items.push({ value: 3, text: 'Did not Comply' });
+
+        if(this.step == 4)
+        {
+          status_items.push({ value: 4, text: 'Reserved' });
+        }
       }
 
       return status_items

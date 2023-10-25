@@ -955,7 +955,7 @@ class ApplicantController extends Controller
 			$applicant->branch_preference = $req->branch_preference;
 			$applicant->iq_status = 0; //iq test on process
 
-			if(in_array($req->initial_interview_status, [0, 2]))
+			if(in_array($req->initial_interview_status, [0, 2, 3]))
 			{
 				$applicant->iq_status = null; // iq test on process
 				$applicant->position_preference = null;
@@ -975,7 +975,7 @@ class ApplicantController extends Controller
 			$applicant->branch_complied = $req->iq_status == 1 ? $req->branch_id_complied : null;
 			$applicant->bi_status = 0;
 			
-			if(in_array($req->iq_status, [0, 2]))
+			if(in_array($req->iq_status, [0, 2, 3]))
 			{
 				$applicant->bi_status = null; //background investiation on process
 			}
@@ -991,7 +991,7 @@ class ApplicantController extends Controller
 			
 			$applicant->bi_status = $req->bi_status;
 			$applicant->final_interview_status = 0;
-			if(in_array($req->bi_status, [0, 2]))
+			if(in_array($req->bi_status, [0, 2, 3]))
 			{
 				$applicant->final_interview_status = null; // iq test on process
 				$applicant->final_interview_date = null;
@@ -1015,7 +1015,7 @@ class ApplicantController extends Controller
 			$applicant->orientation_date = $req->orientation_date;
 			$applicant->signing_of_contract_date = $req->signing_of_contract_date;
 
-			if(in_array($req->final_interview_status, [0, 2]))
+			if(in_array($req->final_interview_status, [0, 2, 3]))
 			{
 				$applicant->employment_position = null;
 				$applicant->employment_branch = null;
