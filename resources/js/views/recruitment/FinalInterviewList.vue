@@ -1615,7 +1615,7 @@ export default {
             const data = response.data;
             
             // refresh data when there are some upated status/records detected
-            if(data.applicant.iq_status > 0)
+            if(data.applicant.final_interview_status > 0)
             {
               this.$swal({
                 title: "Updated Data Detected.",
