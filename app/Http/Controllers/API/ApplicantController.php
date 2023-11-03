@@ -115,8 +115,14 @@ class ApplicantController extends Controller
 																											//status 0 = on process, 1 = passed
 																											$query->where(function($qry){
 																																//where status either on on process or passed; exclude failed status
-																																$qry->whereIn('iq_status', [0, 1])
-																																		->orWhereIn('bi_status', [0, 1]);
+																																$qry->where(function($q){
+																																			$q->whereIn('iq_status', [0, 1])
+																																				->whereNull('bi_status');
+																																		})
+																																		->orWhere(function($q){
+																																			$q->whereIn('bi_status', [0, 1])
+																																				->whereNull('final_interview_status');
+																																		});
 																															})
 																															->where(function($qry) {
 																																$qry->where(function($q){
