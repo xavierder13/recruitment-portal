@@ -940,7 +940,7 @@
                                 {{ applicationProgress(applicant).progress }}
                                 
                               </v-toolbar-title>
-                              <v-tooltip top v-if="applicant.signing_of_contract_date == null || applicant.orientation_date == null">
+                              <v-tooltip top v-if="progressIsEditable">
                                 <template v-slot:activator="{ on, attrs }">
                                   <v-icon 
                                     dark
@@ -952,8 +952,8 @@
                                   </v-icon>
                                 </template>
                                 <span>Update Info</span>
+                                
                               </v-tooltip>  
-
                               <v-spacer></v-spacer>
                             </v-col>
                           </v-row>
@@ -2474,7 +2474,28 @@ export default {
       return index;
     },
 
-    fieldIsRequired() {
+    progressIsEditable() {
+      let fields = [
+        'final_interview_date',
+        'final_interview_status',
+        'employment_position',
+        'employment_branch',
+        'hiring_officer_position',
+        'hiring_officer_name',
+        'orientation_date',
+        'signing_of_contract_date'
+      ];
+
+      let isEditable = false;
+
+      fields.forEach(field => {
+        if(!this.applicant[field])
+        {
+          isEditable = true;
+        }
+      });
+
+      return isEditable;
 
     },
 

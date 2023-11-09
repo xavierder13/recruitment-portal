@@ -844,7 +844,7 @@
                             <v-col class="white--text d-flex">
                               <v-spacer></v-spacer>
                               <v-toolbar-title> {{ applicationProgress(applicant).progress }} </v-toolbar-title>
-                              <v-tooltip top>
+                              <v-tooltip top v-if="progressIsEditable">
                                 <template v-slot:activator="{ on, attrs }">
                                   <v-icon 
                                     dark
@@ -2328,6 +2328,31 @@ export default {
 
     initialInterviewDateIsRequired() {
       return this.editedItem.status == 1; // if this.editedItem.status == 1 (passed) then interview date is required
+    },
+
+    progressIsEditable() {
+      let fields = [
+        'final_interview_date',
+        'final_interview_status',
+        'employment_position',
+        'employment_branch',
+        'hiring_officer_position',
+        'hiring_officer_name',
+        'orientation_date',
+        'signing_of_contract_date'
+      ];
+
+      let isEditable = false;
+
+      fields.forEach(field => {
+        if(!this.applicant[field])
+        {
+          isEditable = true;
+        }
+      });
+
+      return isEditable;
+
     },
 
     ...mapState("userRolesPermissions", ["userRoles", "userPermissions"]),
