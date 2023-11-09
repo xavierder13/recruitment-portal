@@ -970,7 +970,7 @@
                               <v-autocomplete
                                 class="ma-0 pa-0"
                                 :items="statusItems"
-                                label="Backgroud Investigation Status"
+                                label="B.I & Basic Req Status"
                                 v-model="applicant.bi_status"
                                 readonly
                               ></v-autocomplete>
@@ -1317,6 +1317,7 @@
                       v-model="editedItem.orientation_date"
                       :error-messages="applicantError.orientation_date"
                       :disabled="![1, 4].includes(editedItem.final_interview_status)"
+                      :readonly="hasRole('Branch Manager')"
                       @input="applicantError.orientation_date = []"
                     ></v-text-field>
                   </v-col>
@@ -1330,6 +1331,7 @@
                       v-model="editedItem.signing_of_contract_date"
                       :error-messages="applicantError.signing_of_contract_date"
                       :disabled="![1, 4].includes(editedItem.final_interview_status)"
+                      :readonly="hasRole('Branch Manager')"
                       @input="applicantError.signing_of_contract_date = []"
                     ></v-text-field>
                   </v-col>
@@ -1450,7 +1452,7 @@ export default {
         'Position Preference': 'position_preference',
         'Branch Preference': 'branch_preference',
         'IQ Test': 'iq_status',
-        'Background Investigation': 'bi_status',
+        'B.I & Basic Req': 'bi_status',
         'Final Interview Date': 'final_interview_date',
         'Final Interview Status': 'final_interview_status',
         'Employment Position' : 'employment_position',
@@ -1579,7 +1581,7 @@ export default {
         signing_of_contract_date: "",
       },
       disabled: false,
-      progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'Background Investigation', 'Final Interview'],
+      progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'B.I & Basic Req', 'Final Interview'],
       hiring_officer_positions: [
         'General Manager',
         'HR Division Manager',
@@ -2282,7 +2284,7 @@ export default {
         this.progressStatus('Screening', this.applicant.status),
         this.progressStatus('Initial Interview', this.applicant.initial_interview_status),
         this.progressStatus('IQ Test', this.applicant.iq_status),
-        this.progressStatus('Background Investigation', this.applicant.bi_status),
+        this.progressStatus('B.I & Basic Req', this.applicant.bi_status),
         this.progressStatus('Final Interview', this.applicant.final_interview_status),
       ];
 
