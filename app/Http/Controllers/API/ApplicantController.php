@@ -981,7 +981,7 @@ class ApplicantController extends Controller
 			}
 
 			$applicant->iq_status = $req->iq_status;
-			$applicant->branch_complied = $req->iq_status == 1 ? $req->branch_id_complied : null;
+			$applicant->branch_complied = $req->iq_status == 1 ? $req->branch_id_complied : $applicant->branch_complied;
 			$applicant->bi_status = 0;
 			
 			if(in_array($req->iq_status, [0, 2, 3]))
