@@ -285,9 +285,9 @@
                           <v-chip 
                             class="ma-0" 
                             :color="progress.color" 
-                            @click="progress.text == 'Final Interview' && applicant.final_interview_status == 1 && hasPermission('jobapplicants-update-hired-details') ? clickProgress(progress) : ''" 
                             :ripple="false"
                           > 
+                            <!-- @click="progress.text == 'Final Interview' && applicant.final_interview_status == 1 && hasPermission('jobapplicants-update-hired-details') ? viewProgress(progress) : ''"  -->
                             <v-icon class="mr-1"> {{ progress.icon }} </v-icon> 
                             {{ progress.text }}
                           </v-chip>
@@ -934,10 +934,27 @@
                       <v-card>
                         <v-toolbar :color="applicationProgress(applicant).color" dense>
                           <v-row>
-                            <v-col  class="white--text d-flex justify-space-around">
+                            <v-col class="white--text d-flex">
+                              <v-spacer></v-spacer>
                               <v-toolbar-title>
                                 {{ applicationProgress(applicant).progress }}
+                                
                               </v-toolbar-title>
+                              <v-tooltip top>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon 
+                                    dark
+                                    class="ml-2" 
+                                    v-bind="attrs" v-on="on"
+                                    @click="viewProgress()"
+                                  >
+                                    mdi-pencil
+                                  </v-icon>
+                                </template>
+                                <span>Update Info</span>
+                              </v-tooltip>  
+
+                              <v-spacer></v-spacer>
                             </v-col>
                           </v-row>
                         </v-toolbar>
@@ -2014,7 +2031,6 @@ export default {
       let formData = new FormData();
       formData.append('applicant_id', this.applicant_id);
       formData.append('status_value', status);
-      console.log(status);
 
       axios.post("/api/job_applicant/update_status", formData, {
         headers: {
@@ -2086,57 +2102,57 @@ export default {
       let data = this.editedItem;
       let position_preference = this.editedItem.position_preference.join(',');
       let branch_preference = this.editedItem.branch_preference.join(',');
-      console.log(data);
-      // Object.assign(data, { 
-      //   applicant_id: this.applicant.id, 
-      //   step: this.step,
-      //   position_preference: position_preference,
-      //   branch_preference: branch_preference,
-      // })
+      
+      Object.assign(data, { 
+        applicant_id: this.applicant.id, 
+        step: this.step,
+        position_preference: position_preference,
+        branch_preference: branch_preference,
+      })
 
-      // axios.post("/api/job_applicant/update_status", data).then(
-      //   (response) => {
-      //     console.log(response.data);
-      //     this.application_status_dialog = false;
-      //     if(response.data.success){
+      axios.post("/api/job_applicant/update_status", data).then(
+        (response) => {
+          console.log(response.data);
+          this.application_status_dialog = false;
+          if(response.data.success){
             
-      //       // this.status_dialog = false;
-      //       this.view_dialog = false;
+            // this.status_dialog = false;
+            this.view_dialog = false;
 
-      //       this.$toaster.success('You have successfully updated the status of the applicant.', {
-      //         timeout: 3000
-      //       });
+            this.$toaster.success('You have successfully updated the status of the applicant.', {
+              timeout: 3000
+            });
 
-      //       var applicant = response.data.applicant;
-      //       var updatedIndex = -1;
-      //       for(var index = 0; index < this.job_applicants.length; index++) {
-      //         var oldApplicant = this.job_applicants[index]
-      //         if(oldApplicant.id == applicant.id) {
-      //           applicant.cnt_id = oldApplicant.cnt_id
-      //           updatedIndex = index;
-      //           break;
-      //         }
-      //       }
-      //       if(updatedIndex > -1) {
-      //         this.job_applicants.splice(updatedIndex, 1, applicant)
-      //       }
+            var applicant = response.data.applicant;
+            var updatedIndex = -1;
+            for(var index = 0; index < this.job_applicants.length; index++) {
+              var oldApplicant = this.job_applicants[index]
+              if(oldApplicant.id == applicant.id) {
+                applicant.cnt_id = oldApplicant.cnt_id
+                updatedIndex = index;
+                break;
+              }
+            }
+            if(updatedIndex > -1) {
+              this.job_applicants.splice(updatedIndex, 1, applicant)
+            }
 
-      //       this.applicant_id = "";
+            this.applicant_id = "";
 
-      //       this.getApplicants();
-      //     }else{
-      //       // this.status_dialog = false;
+            this.getApplicants();
+          }else{
+            // this.status_dialog = false;
             
-      //       this.$toaster.error('You have errors updating the status of the applicant.', {
-      //         timeout: 3000
-      //       });
-      //     }
-      //   },
-      //   (error) => {
-      //     console.log(error);
-      //     this.isUnauthorized(error);
-      //   }
-      // );
+            this.$toaster.error('You have errors updating the status of the applicant.', {
+              timeout: 3000
+            });
+          }
+        },
+        (error) => {
+          console.log(error);
+          this.isUnauthorized(error);
+        }
+      );
     },
   
     removePositionPref(item) {
@@ -2274,13 +2290,12 @@ export default {
       return { color: color, border_color: border_color, icon: icon, text: text, status: status, disabled: true };
     },
 
-    clickProgress(progress) {
-
-      let index = this.progressItems.indexOf(progress);
+    viewProgress() {
+      
       this.application_status_dialog = true;
-      this.step = index;
-      this.progressFormTitle = this.progress_items[index] + ' Status';
-
+      this.step = this.currentProgress;
+      this.progressFormTitle = this.progress_items[this.step] + ' Status';
+      
       let fields = Object.keys(this.editedItem);
 
       fields.forEach(field => {
@@ -2443,6 +2458,20 @@ export default {
       return hasError;
     },
 
+    currentProgress() {
+      let index = this.progressItems.length - 1; // default index is progress(Final Interview)  
+
+      // get the index of status value not 0; status with value not 0 is the current progress/step of applicant's application status with either On Process, Failed, Did not Comply
+      this.progressItems.forEach((value, i) => {
+        if(value.status != 1 && value.status != null)
+        {
+          index = i;
+        }
+      });
+
+      return index;
+    },
+
     fieldIsRequired() {
 
     },
@@ -2526,6 +2555,16 @@ export default {
         this.editedItem.employment_branch = null;
         this.editedItem.employment_position = null;
       }
+      
+      if(this.editedItem.final_interview_status == 1)
+      { 
+        if(!this.hasRole('Administrator') && this.editedItem.employment_branch == null )
+        {
+          this.editedItem.employment_branch = this.editedItem.branch_id_complied;
+        }
+        
+      }
+
     }
 
   },

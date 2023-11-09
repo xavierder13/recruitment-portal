@@ -211,8 +211,8 @@
                           <v-chip 
                             class="ma-0" 
                             :color="progress.color" 
-                            @click="!progress.disabled ? clickProgress(progress) : ''" 
                           > 
+                           <!-- @click="!progress.disabled ? vie(progress) : ''"  -->
                             <v-icon class="mr-1"> {{ progress.icon }} </v-icon> 
                             {{ progress.text }}
                           </v-chip>
@@ -841,10 +841,24 @@
                       <v-card>
                         <v-toolbar :color="applicationProgress(applicant).color" dense>
                           <v-row>
-                            <v-col  class="white--text d-flex justify-space-around">
-                              <v-toolbar-title>
-                                {{ applicationProgress(applicant).progress }}
-                              </v-toolbar-title>
+                            <v-col class="white--text d-flex">
+                              <v-spacer></v-spacer>
+                              <v-toolbar-title> {{ applicationProgress(applicant).progress }} </v-toolbar-title>
+                              <v-tooltip top>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-icon 
+                                    dark
+                                    class="ml-2" 
+                                    v-bind="attrs" v-on="on"
+                                    @click="viewProgress()"
+                                  >
+                                    mdi-pencil
+                                  </v-icon>
+                                </template>
+                                <span>Update Info</span>
+                              </v-tooltip>  
+
+                              <v-spacer></v-spacer>
                             </v-col>
                           </v-row>
                         </v-toolbar>
@@ -2136,12 +2150,11 @@ export default {
       return { color: color, border_color: border_color, icon: icon, text: text, status: status, disabled: disabled };
     },
 
-    clickProgress(progress) {
-
-      let index = this.progressItems.indexOf(progress);
+    viewProgress() {
+      
       this.application_status_dialog = true;
-      this.step = index;
-      this.progressFormTitle = this.progress_items[index] + ' Status';
+      this.step = this.currentProgress;
+      this.progressFormTitle = this.progress_items[this.step] + ' Status';
 
       let fields = Object.keys(this.editedItem);
 
@@ -2297,6 +2310,20 @@ export default {
       return status_items
     },
 
+    currentProgress() {
+      let index = this.progressItems.length - 1; // default index is progress(Final Interview)  
+
+      // get the index of status value not 0; status with value not 0 is the current progress/step of applicant's application status with either On Process, Failed, Did not Comply
+      this.progressItems.forEach((value, i) => {
+        if(value.status != 1 && value.status != null)
+        {
+          index = i;
+        }
+      });
+
+      return index;
+    },
+
     initialInterviewDateIsRequired() {
       return this.editedItem.status == 1; // if this.editedItem.status == 1 (passed) then interview date is required
     },
@@ -2379,6 +2406,16 @@ export default {
         this.editedItem.signing_of_contract_date = null;
         this.editedItem.employment_branch = null;
         this.editedItem.employment_position = null;
+      }
+
+      if(this.editedItem.final_interview_status == 1)
+      { 
+        // if employment branch is null then assign default value from branch complied value
+        if(!this.hasRole('Administrator') && this.editedItem.employment_branch == null )
+        {
+          this.editedItem.employment_branch = this.editedItem.branch_id_complied;
+        }
+        
       }
     }
 

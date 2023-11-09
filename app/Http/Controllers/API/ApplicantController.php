@@ -124,18 +124,18 @@ class ApplicantController extends Controller
 																																// 				->whereNull('final_interview_status');
 																																// 		});
 																																$qry->whereIn('iq_status', [0, 1])
-																																		->whereIn('bi_status', [0, 1]);
+																																		->orWhereIn('bi_status', [0, 1]);
 																																			
 																															})
 																															->where(function($qry) {
 																																$qry->where(function($q){
 																																				$user = Auth::user();
-																																				$q->whereNotNull('branch_complied.id')
-																																					->where(function($d){
-																																						$d->whereNull('final_interview_status')
-																																							->orWhere('final_interview_status', 0);
-																																					})
-																																					->where('branch_complied.id', $user->branch_id);
+																																				// $q->whereNotNull('branch_complied.id')
+																																				// 	->where(function($d){
+																																				// 		$d->whereNull('final_interview_status')
+																																				// 			->orWhere('final_interview_status', 0);
+																																				// 	})
+																																				$q->where('branch_complied.id', $user->branch_id);
 																																		})
 																																		->orWhereNull('branch_complied.id')
 																																		->orWhere(function($qry) { // where final interview is passed then get the record where user branch is equal to employment branch
@@ -1171,6 +1171,13 @@ class ApplicantController extends Controller
 	{
 		$job_applicants = $this->all_job_applicants()->where('applicants.bi_status', 0)
 																						// ->whereIn('bi_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
+																						->where(function($query) {
+																							$user = Auth::user();
+																							if($user->hasRole('Branch Manager'))
+																							{
+																								$query->where('applicants.branch_complied', $user->branch_id);
+																							}
+																						})
 																						->orderBy('applicants.created_at', 'DESC')
 																						->get()
 																						->each(function ($row, $index) {
@@ -1184,6 +1191,13 @@ class ApplicantController extends Controller
 	{
 		$job_applicants = $this->all_job_applicants()->where('applicants.final_interview_status', 0)
 																				    // ->whereIn('final_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
+																						->where(function($query) {
+																							$user = Auth::user();
+																							if($user->hasRole('Branch Manager'))
+																							{
+																								$query->where('branch_complied.id', $user->branch_id);
+																							}
+																						})
 																						->orderBy('applicants.created_at', 'DESC')
 																						->get()
 																						->each(function ($row, $index) {
