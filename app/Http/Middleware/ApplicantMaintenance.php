@@ -96,6 +96,12 @@ class ApplicantMaintenance
 				}
 			}
 
+			if($request->is('api/job_applicant/orientation_list')){
+				if($user->can('jobapplicants-orientation-list')){
+					return $next($request);
+				}
+			}
+
 			if($request->is('api/job_applicant/get_all_status_count')){
 				if($user->can('jobapplicants-list')){
 					return $next($request);

@@ -78,6 +78,7 @@ export default {
       iq_test_ctr: 0,
       bi_ctr: 0,
       final_interview_ctr: 0,
+      orientation_ctr: 0,
     };
   },
 
@@ -95,6 +96,7 @@ export default {
           this.iq_test_ctr = data.iq_test_ctr;
           this.bi_ctr = data.bi_ctr;
           this.final_interview_ctr = data.final_interview_ctr;
+          this.orientation_ctr = data.orientation_ctr;
           
         },
         (error) => {
@@ -201,6 +203,13 @@ export default {
           hasPermission: this.hasPermission('jobapplicants-final-interview-list'), 
           count: this.final_interview_ctr, 
           link: '/jobapplicants/final-interview-list'
+        },
+        { 
+          text: 'Orientation', 
+          color: 'secondary', 
+          hasPermission: this.hasPermission('jobapplicants-orientation-list'), 
+          count: this.orientation_ctr, 
+          link: '/jobapplicants/orientation-list'
         },
        ];
 

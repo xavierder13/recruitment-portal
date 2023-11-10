@@ -1085,6 +1085,7 @@ class ApplicantController extends Controller
 		$iq_test_ctr = count($this->get_iq_test_list());
 		$bi_ctr = count($this->get_bi_list());
 		$final_interview_ctr = count($this->get_final_interview_list());
+		$orientation_ctr = count($this->get_orientation_list());
 
 		return response()->json([
 			'screening_ctr' => $screening_ctr,
@@ -1092,6 +1093,7 @@ class ApplicantController extends Controller
 			'iq_test_ctr' => $iq_test_ctr,
 			'bi_ctr' => $bi_ctr,
 			'final_interview_ctr' => $final_interview_ctr,
+			'orientation_ctr' => $orientation_ctr,
 		]);
 	}
 
@@ -1120,7 +1122,7 @@ class ApplicantController extends Controller
 	{
 		$job_applicants = $this->all_job_applicants()->where('applicants.initial_interview_status', 0)
 																									// ->whereIn('initial_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
-																									->orderBy('applicants.created_at', 'DESC')
+																									->orderBy('applicants.initial_interview_date', 'DESC')
 																									->get()
 																									->each(function ($row, $index) {
 																											$row->cnt_id = $index + 1;
@@ -1198,7 +1200,28 @@ class ApplicantController extends Controller
 																								$query->where('branch_complied.id', $user->branch_id);
 																							}
 																						})
-																						->orderBy('applicants.created_at', 'DESC')
+																						->orderBy('applicants.final_interview_date', 'DESC')
+																						->get()
+																						->each(function ($row, $index) {
+																								$row->cnt_id = $index + 1;
+																						});
+
+		return $job_applicants;
+	}
+
+	public function get_orientation_list() 
+	{
+		$job_applicants = $this->all_job_applicants()->where('applicants.final_interview_status', 1)
+																				    // ->whereIn('final_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or did not comply)
+																						->where(function($query) {
+																							$user = Auth::user();
+																							if($user->hasRole('Branch Manager'))
+																							{
+																								$query->where('applicants.employment_branch', $user->branch_id);
+																							}
+																						})
+																						->whereDate('applicants.orientation_date', '>=', Carbon::now()->format('Y-m-d'))
+																						->orderBy('applicants.orientation_date', 'DESC')
 																						->get()
 																						->each(function ($row, $index) {
 																								$row->cnt_id = $index + 1;
@@ -1263,6 +1286,19 @@ class ApplicantController extends Controller
 	public function final_interview_list() 
 	{
 		$job_applicants = $this->get_final_interview_list();
+
+		$branches = DB::table('branches')
+		->orderBy('id', 'ASC')
+		->get();
+
+		$positions = Position::orderBy('name', 'Asc')->get();
+
+		return response()->json(['job_applicants' => $job_applicants, 'branches' => $branches, 'positions' => $positions], 200);
+	}
+
+	public function orientation_list() 
+	{
+		$job_applicants = $this->get_orientation_list();
 
 		$branches = DB::table('branches')
 		->orderBy('id', 'ASC')

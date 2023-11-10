@@ -1413,7 +1413,7 @@ export default {
         { text: "Full name", value: "name" },
         { text: "Position Applied", value: "position_name" },
         { text: "Branch Applied", value: "branch_name" },
-        { text: "Date Submitted", value: "created_at" },
+        { text: "Initial Interview Date", value: "initial_interview_date" },
         { text: "Status", value: "status" },
         { text: "Actions", value: "actions", sortable: false, width: "100px" },
       ],

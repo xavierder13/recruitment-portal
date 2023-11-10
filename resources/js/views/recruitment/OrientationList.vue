@@ -11,7 +11,7 @@
         </v-breadcrumbs>
         <v-card>
           <v-card-title>
-            Job Applicant Lists (For Backgound Investigation)
+            Job Applicant Lists (For Orientation)
             <v-spacer></v-spacer>
             <v-text-field
               v-model="search"
@@ -68,7 +68,7 @@
               >  
                 {{ applicationProgress(item).progress }}
               </v-chip>
-              
+            
             </template>
             <template v-slot:item.actions="{ item }">
               <v-icon
@@ -1232,8 +1232,10 @@
                       type="date"
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.final_interview_date"
-                      :error-messages="applicantError.final_interview_date"
+                      :error-messages="applicantError.final_interview_date + dateErrors.final_interview_date.msg"
+                      @input="validateDate('final_interview_date')"
                     ></v-text-field>
+                    
                   </v-col>
                 </v-row>
                 <v-row>
@@ -1298,10 +1300,10 @@
                       type="date"
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.orientation_date"
-                      :error-messages="applicantError.orientation_date"
+                      :error-messages="applicantError.orientation_date + dateErrors.orientation_date.msg"
                       :disabled="![1, 4].includes(editedItem.final_interview_status)"
                       :readonly="hasRole('Branch Manager')"
-                      @input="applicantError.orientation_date = []"
+                      @input="(applicantError.orientation_date = []) + validateDate('orientation_date')"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -1312,10 +1314,10 @@
                       type="date"
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.signing_of_contract_date"
-                      :error-messages="applicantError.signing_of_contract_date"
+                      :error-messages="applicantError.signing_of_contract_date + dateErrors.signing_of_contract_date.msg"
                       :disabled="![1, 4].includes(editedItem.final_interview_status)"
                       :readonly="hasRole('Branch Manager')"
-                      @input="applicantError.signing_of_contract_date = []"
+                      @input="(applicantError.signing_of_contract_date = []) + validateDate('signing_of_contract_date')"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -1388,7 +1390,8 @@ export default {
         { text: "Position Applied", value: "position_name" },
         { text: "Branch Applied", value: "branch_name" },
         { text: "Branch Complied", value: "branch_complied" },
-        { text: "Date Submitted", value: "created_at" },
+        { text: "Employment Branch", value: "employment_branch" },
+        { text: "Orientation Date", value: "orientation_date" },
         { text: "Status", value: "status" },
         { text: "Actions", value: "actions", sortable: false, width: "100px" },
       ],
@@ -1426,6 +1429,7 @@ export default {
         'Initial Interview': 'initial_interview_status',
         'Position Preference': 'position_preference',
         'Branch Preference': 'branch_preference',
+        'Branch Complied': 'branch_complied',
         'IQ Test': 'iq_status',
         'B.I & Basic Req': 'bi_status',
         'Final Interview Date': 'final_interview_date',
@@ -1467,8 +1471,6 @@ export default {
         branch_name: "",
         status: "",
         initial_interview_status: "",
-        branch_id_complied: "",
-        branch_complied: "",
         iq_status: "",
         bi_status: "",
         final_interview_status: "",
@@ -1525,8 +1527,6 @@ export default {
       editedItem: {
         status: "",
         initial_interview_status: "",
-        branch_id_complied: "",
-        branch_complied: "",
         iq_status: "",
         bi_status: "",
         initial_interview_date: "",
@@ -1536,6 +1536,8 @@ export default {
         final_interview_status: "",
         employment_position: "",
         employment_branch: "",
+        hiring_officer_position: "",
+        hiring_officer_name: "",
         orientation_date: "",
         hired_date: "",
       },
@@ -1543,22 +1545,27 @@ export default {
       defaultItem: {
         status: "",
         initial_interview_status: "",
-        branch_id_complied: "",
-        branch_complied: "",
         iq_status: "",
         bi_status: "",
+        final_interview_status: "",
         initial_interview_date: "",
         position_preference: [],
         branch_preference: [],
         final_interview_date: "",
-        final_interview_status: "",
         employment_position: "",
         employment_branch: "",
+        hiring_officer_position: "",
+        hiring_officer_name: "",
         orientation_date: "",
         hired_date: "",
       },
       disabled: false,
       progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'B.I & Basic Req', 'Final Interview'],
+      dateErrors: {
+        final_interview_date: { status: false, msg: "" },
+        orientation_date: { status: false, msg: "" },
+        signing_of_contract_date: { status: false, msg: "" },
+      },
       hiring_officer_positions: [
         'General Manager',
         'HR Division Manager',
@@ -1595,7 +1602,7 @@ export default {
       this.v_table = false;
       this.loading = true;
       this.table_loader = true;
-      axios.get("/api/job_applicant/bi_list").then(
+      axios.get("/api/job_applicant/orientation_list").then(
         (response) => {
           let data = response.data
           this.v_table = true;
@@ -1625,9 +1632,8 @@ export default {
             const data = response.data;
             
             // refresh data when there are some upated status/records detected
-            if(data.applicant.bi_status > 0)
+            if(data.applicant.final_interview_status > 0)
             {
-
               this.$swal({
                 title: "Updated Data Detected.",
                 text: "There are some updated data detected. Refresh record List",
@@ -1717,9 +1723,8 @@ export default {
               {
                 this.applicant.branch_preference = [];
               }
-            }
 
-            
+            }
   
           }
         },
@@ -1824,15 +1829,16 @@ export default {
         formData.append('date_from', date_from);
         formData.append('date_to', date_to);
         formData.append('branch_id', branch_id);
-        formData.append('progress', this.progress_items[3]); // progress_items index 3 (B.I & Basic Req)
-        formData.append('step', 3); // step 3 (B.I & Basic Req)
+        formData.append('progress', this.progress_items[4]); // progress_items index 3 (Final Interview)
+        formData.append('step', 4); // step 3 (Final Interview)
+
         axios.post("/api/job_applicant/export_applicants_new", formData, {
           headers: {
             'Content-Type': 'multipart/form-data' 
           }
         }).then(
           (response) => {
-            console.log(response);
+            // console.log(response);
 
             if(response.data.success){
               this.loader_dialog = false;
@@ -1903,8 +1909,7 @@ export default {
         }
       }).then(
         (response) => {
-          let data = response.data;
-          if(data.success){
+          if(response.data.success){
 
             // this.status_dialog = false;
             this.view_dialog = false;
@@ -1913,7 +1918,7 @@ export default {
               timeout: 3000
             });
 
-            var applicant = data.applicant;
+            var applicant = response.data.applicant;
             var updatedIndex = -1;
             for(var index = 0; index < this.job_applicants.length; index++) {
               var oldApplicant = this.job_applicants[index]
@@ -1936,14 +1941,7 @@ export default {
             // this.job_applicants = updatedList;
 
             this.applicant_id = "";
-          }
-          else if(data.warning)
-          {
-            this.$toaster.warning(data.warning, {
-              timeout: 3000
-            });
-          }
-          else{
+          }else{
             // this.status_dialog = false;
             
             this.$toaster.error('You have errors updating the status of the applicant.', {
@@ -2220,27 +2218,60 @@ export default {
       this.editedItem = Object.assign({}, this.defaultItem);
       this.application_status_dialog = false;
       this.step = null;
+      this.dateErrors = {
+        final_interview_date: { status: false, msg: "" },
+        orientation_date: { status: false, msg: "" },
+        signing_of_contract_date: { status: false, msg: "" },
+      };
     },
 
     showConfirmAlert() {
+      let progress_items = ['Screening', 'Initial Interview', 'IQ Test', 'B.I & Basic Req', 'Final Interview'];
 
       let progress = this.progress_items[this.step];
 
-      this.$swal({
-        title: "Are you sure?",
-        text: `Update ${progress} Status`,
-        icon: "warning",
-        showCancelButton: true,
-        cancelButtonColor: "#6c757d",
-        confirmButtonColor: "#1976d2", 
-        confirmButtonText: "Save",
-      }).then((result) => {
-        // <--
+      if(!this.dateHasError)
+      {
+        this.$swal({
+          title: "Are you sure?",
+          text: `Update ${progress} Status`,
+          icon: "warning",
+          showCancelButton: true,
+          cancelButtonColor: "#6c757d",
+          confirmButtonColor: "#1976d2", 
+          confirmButtonText: "Save",
+        }).then((result) => {
+          // <--
 
-        if (result.value) {
-          this.saveStatus();
-        }
-      });
+          if (result.value) {
+            this.saveStatus();
+          }
+        });
+      }
+      
+    },
+
+    validateDate(field) {
+      let min_date = new Date('1900-01-01').getTime();
+      let max_date = new Date().getTime();
+      let date = this.editedItem[field];
+   
+      if(date)
+      {
+        let date_value = new Date(date).getTime();
+        let [year, month, day] = date.split('-');
+
+        this.dateErrors[field].status = false;
+        this.dateErrors[field].msg = "";
+
+        // if (date_value < min_date || date_value > max_date || year.length > 4) {
+        if (date_value < min_date || year.length > 4) {
+          this.dateErrors[field].status = true;
+          this.dateErrors[field].msg = 'Enter a valid date';
+        }  
+      }
+      console.log(this.dateErrors);
+        
     },
 
     websocket() {
@@ -2275,7 +2306,6 @@ export default {
       return errors;
     },
 
-
     progressItems() {
       let progress_items = [
         this.progressStatus('Screening', this.applicant.status),
@@ -2304,8 +2334,23 @@ export default {
           status_items.push({ value: 4, text: 'Reserved' });
         }
       }
+      
 
       return status_items
+    },
+
+    dateHasError() {
+      let hasError = false;
+      let fields = Object.keys(this.dateErrors)
+
+      fields.forEach(field => {
+        if(this.dateErrors[field].status)
+        {
+          hasError = true;
+        }
+      });
+
+      return hasError;
     },
 
     currentProgress() {
