@@ -64,7 +64,7 @@ class ApplicantController extends Controller
 												->leftJoin('branches as employment_branch', 'employment_branch.id', '=', 'applicants.employment_branch')
 												->select('applicants.id AS id',
 																 'positions.name AS position_name',
-																 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', IFNULL(applicants.middlename,'')) AS name"),
+																 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, IFNULL(CONCAT(', ', applicants.middlename),'')) AS name"),
 																 'applicants.lastname',
 																 'applicants.firstname',
 																 'applicants.middlename',
@@ -135,7 +135,11 @@ class ApplicantController extends Controller
 																																				// 		$d->whereNull('final_interview_status')
 																																				// 			->orWhere('final_interview_status', 0);
 																																				// 	})
-																																				$q->where('branch_complied.id', $user->branch_id);
+																																				$q->where(function($d) use ($user){
+																																					$d->where('branch_complied.id', $user->branch_id)
+																																						->whereNull('employment_branch');
+																																					});
+																																				
 																																		})
 																																		->orWhereNull('branch_complied.id')
 																																		->orWhere(function($qry) { // where final interview is passed then get the record where user branch is equal to employment branch
@@ -623,7 +627,7 @@ class ApplicantController extends Controller
 																 'branches.id AS branch_id',
 																 'branches.name AS branch_name',
 																 'applicants.id', 
-												 				 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', IFNULL(applicants.middlename,'')) AS name"),
+																 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, IFNULL(CONCAT(', ', applicants.middlename),'')) AS name"),
 																 'applicants.address',
 												 				 DB::raw('DATE_FORMAT(applicants.birthdate, "%m/%d/%Y") as birthdate'),
 																 'applicants.age',
@@ -1045,7 +1049,7 @@ class ApplicantController extends Controller
 										//DB::raw('row_number() OVER(ORDER BY applicants.id) AS cnt_id'),
 								   				 'applicants.id AS id',
 								   				 'positions.name AS position_name',
-								   				 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, ', ', applicants.middlename) AS name"),
+								   				 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, IFNULL(CONCAT(', ', applicants.middlename),'')) AS name"),
 								   				 DB::raw("DATE_FORMAT(applicants.created_at, '%M %d, %Y') AS created_at"),
 								   				 'branches.name AS branch_name',
 								   				 'applicants.status'
