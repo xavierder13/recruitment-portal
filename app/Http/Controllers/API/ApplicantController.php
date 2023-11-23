@@ -622,13 +622,19 @@ class ApplicantController extends Controller
 												->join('positions', 'positions.id', '=', 'job_vacancies.position_id')
 												->join('branches', 'branches.id', '=', 'applicants.branch_id')
 												->leftJoin(DB::raw('branches as tbranches'), 'tbranches.id', '=', 'applicants.branch_complied')
-												->select('positions.id AS position_id',
+												->select(DB::raw('DATE_FORMAT(applicants.created_at, "%m/%d/%Y") as date_submitted'),
+																 'positions.id AS position_id',
 																 'positions.name AS position_name',
 																 'branches.id AS branch_id',
 																 'branches.name AS branch_name',
 																 'applicants.id', 
 																 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, IFNULL(CONCAT(', ', applicants.middlename),'')) AS name"),
+																 'applicants.lastname',
+																 'applicants.firstname',
+																 DB::raw("IFNULL(applicants.middlename, '') as middlename"),
 																 'applicants.address',
+																 'applicants.address2',
+																 'applicants.birth_place',
 												 				 DB::raw('DATE_FORMAT(applicants.birthdate, "%m/%d/%Y") as birthdate'),
 																 'applicants.age',
 																 'applicants.gender',

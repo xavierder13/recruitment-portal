@@ -259,7 +259,25 @@
                                   <v-text-field
                                     class="ma-0 pa-0"
                                     v-model="applicant.address"
-                                    label="Address"
+                                    label="Present Address"
+                                    readonly
+                                  >
+                                  </v-text-field>
+                                </v-col>
+                                <v-col cols="4" class="my-2 py-0">
+                                  <v-text-field
+                                    class="ma-0 pa-0"
+                                    v-model="applicant.address2"
+                                    label="Home Address"
+                                    readonly
+                                  >
+                                  </v-text-field>
+                                </v-col>
+                                <v-col cols="4" class="my-2 py-0">
+                                  <v-text-field
+                                    class="ma-0 pa-0"
+                                    v-model="applicant.birth_place"
+                                    label="Birth Place"
                                     readonly
                                   >
                                   </v-text-field>

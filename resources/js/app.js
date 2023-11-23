@@ -25,7 +25,6 @@ Vue.use(Toaster);
 Vue.use( CKEditor );
 Vue.use(excel)
 
-
 const app = new Vue({
     vuetify: Vuetify,
     el: '#app',

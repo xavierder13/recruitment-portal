@@ -239,6 +239,20 @@
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-toolbar-title> Applicant's Details </v-toolbar-title>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        icon 
+                        dark 
+                        v-bind="attrs" v-on="on"
+                        @click="downloadPDF()"
+                      > 
+                        <v-icon>mdi-file-pdf</v-icon> 
+                      </v-btn>
+                    </template>
+                    <span>Download PDF</span>
+                  </v-tooltip>  
+                  
                   <!-- <v-spacer></v-spacer>
                   <v-toolbar-items>
                     <v-btn
@@ -334,7 +348,25 @@
                                   <v-text-field
                                     class="ma-0 pa-0"
                                     v-model="applicant.address"
-                                    label="Address"
+                                    label="Present Address"
+                                    readonly
+                                  >
+                                  </v-text-field>
+                                </v-col>
+                                <v-col cols="4" class="my-2 py-0">
+                                  <v-text-field
+                                    class="ma-0 pa-0"
+                                    v-model="applicant.address2"
+                                    label="Home Address"
+                                    readonly
+                                  >
+                                  </v-text-field>
+                                </v-col>
+                                <v-col cols="4" class="my-2 py-0">
+                                  <v-text-field
+                                    class="ma-0 pa-0"
+                                    v-model="applicant.birth_place"
+                                    label="Birth Place"
                                     readonly
                                   >
                                   </v-text-field>
@@ -1435,6 +1467,15 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+        <ApplicantDetailsPDF 
+          :applicant='applicant' 
+          :educ_attains='educ_attains'
+          :experiences="experiences"  
+          :references="references"
+          :fam_members="fam_members"
+          :dependents="dependents"
+          ref="ApplicantDetailsPDF"
+        />
       </v-main>
     </div>
   </div>
@@ -1452,10 +1493,12 @@ import { validationMixin } from "vuelidate";
 import { required, requiredIf, maxLength, email } from "vuelidate/lib/validators";
 import { mapState, mapGetters } from "vuex";
 import ApplicantFiles from './components/ApplicantFiles.vue';
+import ApplicantDetailsPDF from './components/ApplicantDetailsPDF.vue';
 
 export default {
   components: {
-    ApplicantFiles
+    ApplicantFiles,
+    ApplicantDetailsPDF
   },
   mixins: [validationMixin],
 
@@ -1697,6 +1740,7 @@ export default {
         'Immediate Branch Supervisor',
         'Recruitment Staff',
       ],
+      dialog_preview: true,
     };
   },
   methods: {
@@ -1749,6 +1793,7 @@ export default {
         (response) => {
           this.view_applicant_loading = false;
           const data = response.data;
+          console.log(data);
           if (data.success) {
             let step = this.applicationProgress(data.applicant).step;
             let progress_fields = ['status', 'initial_interview_status', 'iq_status', 'bi_status', 'final_interview_status'];
@@ -2379,6 +2424,10 @@ export default {
         }  
       }
         
+    },
+
+    downloadPDF() {
+      this.$refs.ApplicantDetailsPDF.handleClickDownload();
     },
 
     websocket() {
