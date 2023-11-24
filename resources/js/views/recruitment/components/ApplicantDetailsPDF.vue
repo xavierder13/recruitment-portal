@@ -247,7 +247,7 @@ export default {
       // HOW LEARN (FACEBOOK)
       if(data.how_learn == 'Addessa FB Page')
       {
-        radioGroupAttr.x = 93;
+        radioGroupAttr.x = 94;
         radioGroupAttr.y = 603;
       }
       
