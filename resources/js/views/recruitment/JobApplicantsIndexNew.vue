@@ -1793,7 +1793,6 @@ export default {
         (response) => {
           this.view_applicant_loading = false;
           const data = response.data;
-          console.log(data);
           if (data.success) {
             let step = this.applicationProgress(data.applicant).step;
             let progress_fields = ['status', 'initial_interview_status', 'iq_status', 'bi_status', 'final_interview_status'];
@@ -1906,6 +1905,13 @@ export default {
     {
       this.view_dialog = false;
       this.tab = null;
+
+      this.educ_attains = [];
+      this.experiences = [];
+      this.references = [];
+      this.fam_members = [];
+      this.dependents = [];
+      this.applicant_files = [];
 
     },
 
