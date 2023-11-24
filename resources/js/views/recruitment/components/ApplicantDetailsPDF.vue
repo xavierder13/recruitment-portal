@@ -97,7 +97,7 @@ export default {
       
       if(data.gender == 'Male')
       {
-        radioGroupAttr.x = 552;
+        radioGroupAttr.x = 553;
         radioGroupAttr.y = 751;
       }
       else
@@ -247,8 +247,8 @@ export default {
       // HOW LEARN (FACEBOOK)
       if(data.how_learn == 'Addessa FB Page')
       {
-        radioGroupAttr.x = 93;
-        radioGroupAttr.y = 603;
+        radioGroupAttr.x = 94;
+        radioGroupAttr.y = 602;
       }
       
       // set font size
