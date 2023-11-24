@@ -116,17 +116,22 @@ export default {
       // PRESENT ADDRESS
       textAttr.x = 110;
       textAttr.y = 705;
+      textAttr.size = 7;
       firstPage.drawText(data.address || '', textAttr);
 
       // HOME ADDRESS
       textAttr.x = 110;
       textAttr.y = 690;
+      textAttr.size = 7;
       firstPage.drawText(data.address2 || '', textAttr);
 
       // PLACE OF BIRTH
       textAttr.x = 110;
       textAttr.y = 675;
+      textAttr.size = 7;
       firstPage.drawText(data.birth_place || '', textAttr);
+
+      textAttr.size = 10;
 
       if(['Single', 'Married'].includes(data.civil_status))
       {
