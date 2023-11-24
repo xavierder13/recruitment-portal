@@ -40,7 +40,8 @@ export default {
       const font = await pdfDoc.embedFont(StandardFonts.TimesRoman);
       const firstPage = pdfDoc.getPages()[0];
       const form = pdfDoc.getForm();
-      const checkBox = form.createCheckBox('gender.checkBox.male');
+      const radioGroup = form.createRadioGroup('radioGroup');
+      
       let textAttr = {
         x: 35,
         y: 740,
@@ -49,11 +50,11 @@ export default {
         color: rgb(0, 0, 0),
         rotate: degrees(0),
       };
-      let checkboxAttr = { 
+      let radioGroupAttr = { 
         x: 0,
         y: 0,
-        width: 5,
-        height: 5,
+        width: 6,
+        height: 6,
         textColor: rgb(0, 0, 0),
         backgroundColor: rgb(0, 0, 0),
         borderColor: rgb(0, 0, 0),
@@ -96,16 +97,16 @@ export default {
       
       if(data.gender == 'Male')
       {
-        checkboxAttr.x = 552;
-        checkboxAttr.y = 751;
+        radioGroupAttr.x = 552;
+        radioGroupAttr.y = 751;
       }
       else
       {
-        checkboxAttr.x = 553;
-        checkboxAttr.y = 739;
+        radioGroupAttr.x = 553;
+        radioGroupAttr.y = 739;
       }
 
-      checkBox.addToPage(firstPage, checkboxAttr);
+      radioGroup.addOptionToPage('', firstPage, radioGroupAttr);
 
       // MOBILE #
       textAttr.x = 495;
@@ -129,44 +130,44 @@ export default {
 
       if(['Single', 'Married'].includes(data.civil_status))
       {
-        checkboxAttr.x = 460;
+        radioGroupAttr.x = 460;
       }
 
       if(['Widow', 'Domestic Partnership'].includes(data.civil_status))
       {
-        checkboxAttr.x = 506;
+        radioGroupAttr.x = 506;
       }
 
       if(['Single', 'Widow'].includes(data.civil_status))
       {
-        checkboxAttr.y = 695;
+        radioGroupAttr.y = 695;
       }
 
       if(['Married', 'Domestic Partnership'].includes(data.civil_status))
       {
-        checkboxAttr.y = 683;
+        radioGroupAttr.y = 683;
       }
 
-      checkBox.addToPage(firstPage, checkboxAttr);
+      radioGroup.addOptionToPage('', firstPage, radioGroupAttr);
       // // CIVIL STATUS SINGLE
-      // checkboxAttr.x = 460;
-      // checkboxAttr.y = 695;
-      // checkBox.addToPage(firstPage, checkboxAttr);
+      // radioGroupAttr.x = 460;
+      // radioGroupAttr.y = 695;
+      // radioGroup.addOptionToPage('', firstPage, radioGroupAttr);
 
       // // CIVIL STATUS MARRIED
-      // checkboxAttr.x = 460;
-      // checkboxAttr.y = 683;
-      // checkBox.addToPage(firstPage, checkboxAttr);
+      // radioGroupAttr.x = 460;
+      // radioGroupAttr.y = 683;
+      // radioGroup.addOptionToPage('', firstPage, radioGroupAttr);
 
       // // CIVIL STATUS WIDOW
-      // checkboxAttr.x = 506;
-      // checkboxAttr.y = 695;
-      // checkBox.addToPage(firstPage, checkboxAttr);
+      // radioGroupAttr.x = 506;
+      // radioGroupAttr.y = 695;
+      // radioGroup.addOptionToPage('', firstPage, radioGroupAttr);
 
       // // CIVIL STATUS DOMESTIC
-      // checkboxAttr.x = 506;
-      // checkboxAttr.y = 683;
-      // checkBox.addToPage(firstPage, checkboxAttr);
+      // radioGroupAttr.x = 506;
+      // radioGroupAttr.y = 683;
+      // radioGroup.addOptionToPage('', firstPage, radioGroupAttr);
 
       // DATE OF BIRTH
       textAttr.x = 87;
@@ -218,36 +219,36 @@ export default {
       // HOW LEARN (WALLK-IN)
       if(data.how_learn == 'WALLK-IN')
       {
-        checkboxAttr.x = 39;
-        checkboxAttr.y = 615;
+        radioGroupAttr.x = 39;
+        radioGroupAttr.y = 615;
       }
        
       // HOW LEARN (PRINT ADS/TARPAULIN)
       if(data.how_learn == 'PRINT ADS/TARPAULIN')
       {
-        checkboxAttr.x = 93;
-        checkboxAttr.y = 615; 
+        radioGroupAttr.x = 93;
+        radioGroupAttr.y = 615; 
       }
       
       // HOW LEARN (INDEED)
       if(data.how_learn == 'INDEED')
       {
-        checkboxAttr.x = 190;
-        checkboxAttr.y = 615;
+        radioGroupAttr.x = 190;
+        radioGroupAttr.y = 615;
       }
       
       // HOW LEARN (JOB  FAIR)
       if(data.how_learn == 'JOB FAIR')
       {
-        checkboxAttr.x = 39;
-        checkboxAttr.y = 603;
+        radioGroupAttr.x = 39;
+        radioGroupAttr.y = 603;
       }
       
       // HOW LEARN (FACEBOOK)
       if(data.how_learn == 'Addessa FB Page')
       {
-        checkboxAttr.x = 93;
-        checkboxAttr.y = 603;
+        radioGroupAttr.x = 93;
+        radioGroupAttr.y = 603;
       }
       
       // set font size
@@ -257,21 +258,21 @@ export default {
       if(['Local Government FB Page', 'Now hiring FB Group Page', 'PESO FB Page', 'Addessa Website'].includes(data.how_learn))
       { 
         // HOW LEARN (OTHERS)
-        checkboxAttr.x = 190;
-        checkboxAttr.y = 603;
+        radioGroupAttr.x = 191;
+        radioGroupAttr.y = 602;
 
         textAttr.x = 225;
         textAttr.y = 603;
         firstPage.drawText(data.how_learn, textAttr); 
       }
 
-      checkBox.addToPage(firstPage, checkboxAttr); 
+      radioGroup.addOptionToPage('', firstPage, radioGroupAttr); 
       
       
       // // HOW LEARN (EMPLOYEE REFFERAL)
-      // checkboxAttr.x = 39;
-      // checkboxAttr.y = 590;
-      // checkBox.addToPage(firstPage, checkboxAttr);  
+      // radioGroupAttr.x = 39;
+      // radioGroupAttr.y = 590;
+      // radioGroup.addOptionToPage('', firstPage, radioGroupAttr);  
 
       // // HOW LEARN (EMPLOYEE REFFERAL TEXT)
       // textAttr.x = 129;
@@ -291,14 +292,14 @@ export default {
       // textAttr.y = 626;
       // firstPage.drawText('xavier.aguilar.deguzman', textAttr);
 
-      // checkboxAttr.width = 3,
-      // checkboxAttr.height = 3,
+      // radioGroupAttr.width = 3,
+      // radioGroupAttr.height = 3,
       // textAttr.size = 8;
 
       // // HAS RELATIVES (YES)
-      // checkboxAttr.x = 359;
-      // checkboxAttr.y = 601;
-      // checkBox.addToPage(firstPage, checkboxAttr); 
+      // radioGroupAttr.x = 359;
+      // radioGroupAttr.y = 601;
+      // radioGroup.addOptionToPage('', firstPage, radioGroupAttr); 
 
       // // HAS RELATIVES (YES TEXT)
       // textAttr.x = 343;
@@ -306,14 +307,14 @@ export default {
       // firstPage.drawText('Anokaya Anokaya', textAttr);
 
       // // HAS RELATIVES (NO)
-      // checkboxAttr.x = 380;
-      // checkboxAttr.y = 601;
-      // checkBox.addToPage(firstPage, checkboxAttr);
+      // radioGroupAttr.x = 380;
+      // radioGroupAttr.y = 601;
+      // radioGroup.addOptionToPage('', firstPage, radioGroupAttr);
 
       // // INVOLVED IN CRIMINAL ACTIVITIES (YES)
-      // checkboxAttr.x = 505;
-      // checkboxAttr.y = 601;
-      // checkBox.addToPage(firstPage, checkboxAttr); 
+      // radioGroupAttr.x = 505;
+      // radioGroupAttr.y = 601;
+      // radioGroup.addOptionToPage('', firstPage, radioGroupAttr); 
 
       // INVOLVED IN CRIMINAL ACTIVITIES (YES TEXT)
       // textAttr.x = 475;
@@ -321,9 +322,9 @@ export default {
       // firstPage.drawText('Anokaya Anokaya', textAttr);
 
       // // INVOLVED IN CRIMINAL ACTIVITIES (NO)
-      // checkboxAttr.x = 526;
-      // checkboxAttr.y = 601;
-      // checkBox.addToPage(firstPage, checkboxAttr); 
+      // radioGroupAttr.x = 526;
+      // radioGroupAttr.y = 601;
+      // radioGroup.addOptionToPage('', firstPage, radioGroupAttr); 
 
       let junior_school = '';
       let junior_course = '';
