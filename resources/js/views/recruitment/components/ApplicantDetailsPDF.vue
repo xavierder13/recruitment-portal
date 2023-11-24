@@ -87,10 +87,12 @@ export default {
       textAttr.y = 740;
       firstPage.drawText(data.position_name, textAttr);
 
+      let applicant_age = data.age ? data.age.toString() : '';
+
       // AGE
       textAttr.x = 473;
       textAttr.y = 742;
-      firstPage.drawText(data.age, textAttr);
+      firstPage.drawText(applicant_age, textAttr);
       
       if(data.gender == 'Male')
       {
@@ -182,13 +184,13 @@ export default {
       firstPage.drawText(data.religion || '', textAttr);
 
       // WEIGHT
-      let weight = data.weight ? data.weight + ' kg' : '';
+      let weight = data.weight ? data.weight.toString() + ' kg' : '';
       textAttr.x = 480;
       textAttr.y = 658;
       firstPage.drawText(weight, textAttr);
 
       // HEIGHT
-      let height = data.height ? data.height + ' cm' : ''; 
+      let height = data.height ? data.height.toString() + ' cm' : ''; 
       textAttr.x = 545;
       textAttr.y = 658;
       firstPage.drawText(height, textAttr);
@@ -700,7 +702,7 @@ export default {
       let mother = '';
       let spouse = '';
       let guardian = '';
-    console.log(this.fam_members);
+    
       this.fam_members.forEach(value => {
         if(value.relationship == 'father')
         {
@@ -725,10 +727,12 @@ export default {
       textAttr.y = 283;
       firstPage.drawText(father.name || '', textAttr);
 
+      let father_age = father.age ? father.age.toString() : ''; 
+
       // FATHER AGE
       textAttr.x = 223;
       textAttr.y = 283;
-      firstPage.drawText(father.age || '', textAttr);
+      firstPage.drawText(father_age || '', textAttr);
 
       // FATHER ADDRESS
       textAttr.x = 253;
@@ -750,10 +754,12 @@ export default {
       textAttr.y = 265;
       firstPage.drawText(mother.occupation || '', textAttr);
 
+      let mother_age = mother.age ? mother.age.toString() : '';
+
       // MOTHER AGE
       textAttr.x = 223;
       textAttr.y = 265;
-      firstPage.drawText(mother.age || '', textAttr);
+      firstPage.drawText(mother_age || '', textAttr);
 
       // MOTHER ADDRESS
       textAttr.x = 253;
@@ -770,6 +776,8 @@ export default {
       textAttr.y = 265;
       firstPage.drawText(mother.occupation || '', textAttr);
 
+      let spouse_age = spouse.age ? spouse.age.toString() : '';
+
       // SPOUSE NAME
       textAttr.x = 90;
       textAttr.y = 248;
@@ -778,7 +786,7 @@ export default {
       // SPOUSE AGE
       textAttr.x = 223;
       textAttr.y = 248;
-      firstPage.drawText(spouse.age || '', textAttr);
+      firstPage.drawText(spouse_age || '', textAttr);
 
       // SPOUSE ADDRESS
       textAttr.x = 253;
@@ -800,10 +808,12 @@ export default {
       textAttr.y = 230;
       firstPage.drawText(guardian.name || '', textAttr);
 
+      let guardian_age = guardian.age ? guardian.age.toString() : '';
+
       // GUARDIAN AGE
       textAttr.x = 223;
       textAttr.y = 230;
-      firstPage.drawText(guardian.age || '', textAttr);
+      firstPage.drawText(guardian_age || '', textAttr);
 
       // GUARDIAN ADDRESS
       textAttr.x = 253;
@@ -834,10 +844,12 @@ export default {
         textAttr.y = 183;
         firstPage.drawText(dep1.relationship || '', textAttr);
 
+        let dep1_age = dep1.age ? dep1.age.toString() : '';
+
         // DEPENDENT 1 AGE
         textAttr.x = 273;
         textAttr.y = 183;
-        firstPage.drawText(dep1.age || '', textAttr);
+        firstPage.drawText(dep1_age || '', textAttr);
 
         // DEPENDENT 1 ADDRESS
         textAttr.x = 303;
@@ -864,10 +876,12 @@ export default {
         textAttr.y = 167;
         firstPage.drawText(dep2.relationship || '', textAttr);
 
+        let dep2_age = dep2.age ? dep2.age.toString() : '';
+
         // DEPENDENT 2 AGE
         textAttr.x = 273;
         textAttr.y = 167;
-        firstPage.drawText(dep2.age || '', textAttr);
+        firstPage.drawText(dep2_age || '', textAttr);
 
         // DEPENDENT 2 ADDRESS
         textAttr.x = 303;
@@ -895,10 +909,12 @@ export default {
         textAttr.y = 151;
         firstPage.drawText(dep3.relationship || '', textAttr);
 
+        let dep3_age = dep3.age ? dep3.age.toString() : '';
+
         // DEPENDENT 3 AGE
         textAttr.x = 273;
         textAttr.y = 151;
-        firstPage.drawText(dep3.age || '', textAttr);
+        firstPage.drawText(dep3_age || '', textAttr);
 
         // DEPENDENT 3 ADDRESS
         textAttr.x = 303;
