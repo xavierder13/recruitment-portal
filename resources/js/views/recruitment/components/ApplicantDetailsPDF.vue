@@ -537,8 +537,9 @@ export default {
         firstPage.drawText(exp1.salary || '', textAttr);
 
         // EMPLOYMENT HISTORY 1 DATE SERVICE
-        textAttr.x = 310;
+        textAttr.x = 306;
         textAttr.y = 441;
+        textAttr.size = 6;
         firstPage.drawText(exp1.date_of_service || '', textAttr);
 
         // EMPLOYMENT HISTORY 1 JOB DESCRIPTION
@@ -567,8 +568,9 @@ export default {
         firstPage.drawText(exp2.salary || '', textAttr);
 
         // EMPLOYMENT HISTORY 2 DATE SERVICE
-        textAttr.x = 310;
+        textAttr.x = 306;
         textAttr.y = 425;
+        textAttr.size = 6;
         firstPage.drawText(exp2.date_of_service || '', textAttr);
 
         // EMPLOYMENT HISTORY 2 JOB DESCRIPTION
@@ -597,8 +599,9 @@ export default {
         firstPage.drawText(exp3.salary || '', textAttr);
 
         // EMPLOYMENT HISTORY 3 DATE SERVICE
-        textAttr.x = 310;
+        textAttr.x = 306;
         textAttr.y = 409;
+        textAttr.size = 6;
         firstPage.drawText(exp3.date_of_service || '', textAttr);
 
         // EMPLOYMENT HISTORY 3 JOB DESCRIPTION
