@@ -197,11 +197,24 @@
                   <v-btn
                     icon
                     dark
-                    @click="view_dialog = false"
+                    @click="closeApplicantDialog()"
                   >
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-toolbar-title> Applicant's Details </v-toolbar-title>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        icon 
+                        dark 
+                        v-bind="attrs" v-on="on"
+                        @click="downloadPDF()"
+                      > 
+                        <v-icon>mdi-file-pdf</v-icon> 
+                      </v-btn>
+                    </template>
+                    <span>Download PDF</span>
+                  </v-tooltip>  
                 </v-toolbar>
                 <v-card-text>
                   <v-row>
@@ -881,7 +894,18 @@
                           </v-row>
                         </v-toolbar>
                         <v-card-text>
-                          <v-row class="mt-6">
+                         <v-row class="mt-6">
+                            <v-col class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0" 
+                                v-model="applicant.date_applied"
+                                label="Date Applied"
+                                type="date"
+                                prepend-icon="mdi-calendar"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
                             <v-col class="my-2 py-0">
                               <v-text-field
                                 class="ma-0 pa-0"
@@ -891,6 +915,8 @@
                               >
                               </v-text-field>
                             </v-col>
+                          </v-row>
+                          <v-row class="mt-6">
                             <v-col class="my-2 py-0">
                               <v-text-field
                                 class="ma-0 pa-0" 
@@ -1358,6 +1384,15 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+        <ApplicantDetailsPDF 
+          :applicant='applicant' 
+          :educ_attains='educ_attains'
+          :experiences="experiences"  
+          :references="references"
+          :fam_members="fam_members"
+          :dependents="dependents"
+          ref="ApplicantDetailsPDF"
+        />
       </v-main>
     </div>
   </div>
@@ -1375,10 +1410,12 @@ import { validationMixin } from "vuelidate";
 import { required, requiredIf, maxLength, email } from "vuelidate/lib/validators";
 import { mapState, mapGetters } from "vuex";
 import ApplicantFiles from './components/ApplicantFiles.vue';
+import ApplicantDetailsPDF from './components/ApplicantDetailsPDF.vue';
 
 export default {
   components: {
-    ApplicantFiles
+    ApplicantFiles,
+    ApplicantDetailsPDF
   },
   mixins: [validationMixin],
 
@@ -1648,100 +1685,102 @@ export default {
 
           if (response.data.success) {
             const data = response.data;
+             
+            // // refresh data when there are some upated status/records detected
+            // if(data.applicant.final_interview_status > 0)
+            // {
+            //   this.$swal({
+            //     title: "Updated Data Detected.",
+            //     text: "There are some updated data detected. Refresh record List",
+            //     icon: "info",
+            //     showCancelButton: true,
+            //     confirmButtonColor: "primary",
+            //     cancelButtonColor: "#6c757d",
+            //     confirmButtonText: "Confirm",
+            //   }).then((result) => {
+            //       if(result.value)
+            //       {
+            //         this.getApplicants();
+            //       }
+            //   });
+            // }
+            // else
+            // {
+              
+
+            // }
+
+            this.applicant = data.applicant;
+            this.view_dialog = true;
+            // this.educ_attains = data.educ_attains;
+            // this.experiences = data.experiences;
+            this.references = data.references;
+            this.fam_members = data.fam_members;
+            this.dependents = data.dependents;
+            this.applicant_files = data.applicant_files;
+            this.download_file = data.file;
             
-            // refresh data when there are some upated status/records detected
-            if(data.applicant.final_interview_status > 0)
+            data.educ_attains.forEach(value => {
+              let sy_attended = value.sy_attended;
+              if(sy_attended)
+              {
+                if(sy_attended.split(' to ').length > 1)
+                {
+                  let [start, end] = sy_attended.split(' to ');
+                  let sy_start = new Date(start);
+                  let sy_end = new Date(end);
+
+                  sy_attended = sy_attended ? sy_start.toLocaleDateString("en-US") + ' to ' +  sy_end.toLocaleDateString("en-US") : null;
+                }
+              }
+              
+              this.educ_attains.push(Object.assign(value, { sy_attended: sy_attended }));
+              
+            });
+
+            data.experiences.forEach(value => {
+              let date_of_service = value.date_of_service;
+
+              if(date_of_service)
+              {
+                if(date_of_service.split(' to ').length > 1)// if has value format like '1900-01-01 to 1900-01-01'
+                {
+                  let [start, end] = date_of_service.split(' to ');
+                  let service_start = new Date(start);
+                  let service_end = new Date(end);
+
+                  date_of_service = date_of_service ? service_start.toLocaleDateString("en-US") + ' to ' +  service_end.toLocaleDateString("en-US") : null;
+                }
+              }
+          
+              this.experiences.push(Object.assign(value, { date_of_service: date_of_service }));
+              
+            });   
+            
+            let position_preference = this.applicant.position_preference;
+            
+            if(position_preference)
             {
-              this.$swal({
-                title: "Updated Data Detected.",
-                text: "There are some updated data detected. Refresh record List",
-                icon: "info",
-                showCancelButton: true,
-                confirmButtonColor: "primary",
-                cancelButtonColor: "#6c757d",
-                confirmButtonText: "Confirm",
-              }).then((result) => {
-                  if(result.value)
-                  {
-                    this.getApplicants();
-                  }
-              });
+              let positionsIdArr = position_preference.split(',');
+              let positions = positionsIdArr.map(Number);
+              this.applicant.position_preference = positions;
             }
             else
             {
-              this.applicant = data.applicant;
-              this.view_dialog = true;
-              // this.educ_attains = data.educ_attains;
-              // this.experiences = data.experiences;
-              this.references = data.references;
-              this.fam_members = data.fam_members;
-              this.dependents = data.dependents;
-              this.applicant_files = data.applicant_files;
-              this.download_file = data.file;
-              
-              data.educ_attains.forEach(value => {
-                let sy_attended = value.sy_attended;
-                if(sy_attended)
-                {
-                  if(sy_attended.split(' to ').length > 1)
-                  {
-                    let [start, end] = sy_attended.split(' to ');
-                    let sy_start = new Date(start);
-                    let sy_end = new Date(end);
+              this.applicant.position_preference = [];
+            }
 
-                    sy_attended = sy_attended ? sy_start.toLocaleDateString("en-US") + ' to ' +  sy_end.toLocaleDateString("en-US") : null;
-                  }
-                }
-                
-                this.educ_attains.push(Object.assign(value, { sy_attended: sy_attended }));
-                
-              });
+            let branch_preference = this.applicant.branch_preference;
 
-              data.experiences.forEach(value => {
-                let date_of_service = value.date_of_service;
-
-                if(date_of_service)
-                {
-                  if(date_of_service.split(' to ').length > 1)// if has value format like '1900-01-01 to 1900-01-01'
-                  {
-                    let [start, end] = date_of_service.split(' to ');
-                    let service_start = new Date(start);
-                    let service_end = new Date(end);
-
-                    date_of_service = date_of_service ? service_start.toLocaleDateString("en-US") + ' to ' +  service_end.toLocaleDateString("en-US") : null;
-                  }
-                }
-            
-                this.experiences.push(Object.assign(value, { date_of_service: date_of_service }));
-                
-              });   
-              
-              let position_preference = this.applicant.position_preference;
-              
-              if(position_preference)
-              {
-                let positionsIdArr = position_preference.split(',');
-                let positions = positionsIdArr.map(Number);
-                this.applicant.position_preference = positions;
-              }
-              else
-              {
-                this.applicant.position_preference = [];
-              }
-
-              let branch_preference = this.applicant.branch_preference;
-
-              if(branch_preference)
-              {
-                let branchesIdArr = branch_preference.split(',');
-                let branches = branchesIdArr.map(Number);
-                this.applicant.branch_preference = branches;
-              }
-              else
-              {
-                this.applicant.branch_preference = [];
-              }
-
+            if(branch_preference)
+            {
+              let branchesIdArr = branch_preference.split(',');
+              let branches = branchesIdArr.map(Number);
+              this.applicant.branch_preference = branches;
+            }
+            else
+            {
+              this.applicant.branch_preference = [];
             }
   
           }
@@ -1751,6 +1790,20 @@ export default {
           console.log(error);
         }
       );
+    },
+
+    closeApplicantDialog()
+    {
+      this.view_dialog = false;
+      this.tab = null;
+
+      this.educ_attains = [];
+      this.experiences = [];
+      this.references = [];
+      this.fam_members = [];
+      this.dependents = [];
+      this.applicant_files = [];
+
     },
 
     deleteApplicant(id){
@@ -2290,6 +2343,10 @@ export default {
       }
       console.log(this.dateErrors);
         
+    },
+
+    downloadPDF() {
+      this.$refs.ApplicantDetailsPDF.handleClickDownload();
     },
 
     websocket() {

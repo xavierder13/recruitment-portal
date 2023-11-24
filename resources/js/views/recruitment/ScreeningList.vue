@@ -196,11 +196,24 @@
                   <v-btn
                     icon
                     dark
-                    @click="view_dialog = false"
+                    @click="closeApplicantDialog()"
                   >
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-toolbar-title> Applicant's Details </v-toolbar-title>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        icon 
+                        dark 
+                        v-bind="attrs" v-on="on"
+                        @click="downloadPDF()"
+                      > 
+                        <v-icon>mdi-file-pdf</v-icon> 
+                      </v-btn>
+                    </template>
+                    <span>Download PDF</span>
+                  </v-tooltip>  
                 </v-toolbar>
                 <v-card-text>
                   <v-row>
@@ -884,6 +897,17 @@
                           <v-row class="mt-6">
                             <v-col class="my-2 py-0">
                               <v-text-field
+                                class="ma-0 pa-0" 
+                                v-model="applicant.date_applied"
+                                label="Date Applied"
+                                type="date"
+                                prepend-icon="mdi-calendar"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col class="my-2 py-0">
+                              <v-text-field
                                 class="ma-0 pa-0"
                                 v-model="applicant.position_name"
                                 label="Job Position Applied"
@@ -891,6 +915,8 @@
                               >
                               </v-text-field>
                             </v-col>
+                          </v-row>
+                          <v-row class="mt-6">
                             <v-col class="my-2 py-0">
                               <v-text-field
                                 class="ma-0 pa-0" 
@@ -1360,6 +1386,15 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+        <ApplicantDetailsPDF 
+          :applicant='applicant' 
+          :educ_attains='educ_attains'
+          :experiences="experiences"  
+          :references="references"
+          :fam_members="fam_members"
+          :dependents="dependents"
+          ref="ApplicantDetailsPDF"
+        />
       </v-main>
     </div>
   </div>
@@ -1377,10 +1412,12 @@ import { validationMixin } from "vuelidate";
 import { required, requiredIf, maxLength, email } from "vuelidate/lib/validators";
 import { mapState, mapGetters } from "vuex";
 import ApplicantFiles from './components/ApplicantFiles.vue';
+import ApplicantDetailsPDF from './components/ApplicantDetailsPDF.vue';
 
 export default {
   components: {
-    ApplicantFiles
+    ApplicantFiles,
+    ApplicantDetailsPDF
   },
   mixins: [validationMixin],
 
@@ -1740,6 +1777,20 @@ export default {
           console.log(error);
         }
       );
+    },
+
+    closeApplicantDialog()
+    {
+      this.view_dialog = false;
+      this.tab = null;
+
+      this.educ_attains = [];
+      this.experiences = [];
+      this.references = [];
+      this.fam_members = [];
+      this.dependents = [];
+      this.applicant_files = [];
+
     },
 
     deleteApplicant(id){
@@ -2252,6 +2303,10 @@ export default {
         }  
       }
       
+    },
+
+    downloadPDF() {
+      this.$refs.ApplicantDetailsPDF.handleClickDownload();
     },
 
     websocket() {

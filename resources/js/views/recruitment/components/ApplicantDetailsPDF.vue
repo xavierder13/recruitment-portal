@@ -66,38 +66,38 @@ export default {
       // DATE
       textAttr.x = 60;
       textAttr.y = 788;
-      firstPage.drawText(data.date_submitted, textAttr);
+      firstPage.drawText(data.date_submitted || '', textAttr);
 
       // LAST NAME
       textAttr.x = 44;
       textAttr.y = 740;
-      firstPage.drawText(data.lastname, textAttr);
+      firstPage.drawText(data.lastname || '', textAttr);
 
       // FIRST NAME
       textAttr.x = 139;
       textAttr.y = 740;
-      firstPage.drawText(data.firstname, textAttr);
+      firstPage.drawText(data.firstname || '', textAttr);
 
       // MIDDLE NAME
       textAttr.x = 230;
       textAttr.y = 740;
-      firstPage.drawText(data.middlename, textAttr);
+      firstPage.drawText(data.middlename || '', textAttr);
 
       // POSITION
       textAttr.x = 344;
       textAttr.y = 740;
-      firstPage.drawText(data.position_name, textAttr);
+      firstPage.drawText(data.position_name || '', textAttr);
 
       let applicant_age = data.age ? data.age.toString() : '';
 
       // AGE
       textAttr.x = 473;
       textAttr.y = 742;
-      firstPage.drawText(applicant_age, textAttr);
+      firstPage.drawText(applicant_age || '', textAttr);
       
       if(data.gender == 'Male')
       {
-        radioGroupAttr.x = 553;
+        radioGroupAttr.x = 552;
         radioGroupAttr.y = 751;
       }
       else
@@ -111,22 +111,22 @@ export default {
       // MOBILE #
       textAttr.x = 495;
       textAttr.y = 722;
-      firstPage.drawText(data.contact_no, textAttr);
+      firstPage.drawText(data.contact_no || '', textAttr);
 
       // PRESENT ADDRESS
       textAttr.x = 110;
       textAttr.y = 705;
-      firstPage.drawText(data.address, textAttr);
+      firstPage.drawText(data.address || '', textAttr);
 
       // HOME ADDRESS
       textAttr.x = 110;
       textAttr.y = 690;
-      firstPage.drawText(data.address2, textAttr);
+      firstPage.drawText(data.address2 || '', textAttr);
 
       // PLACE OF BIRTH
       textAttr.x = 110;
       textAttr.y = 675;
-      firstPage.drawText(data.birth_place, textAttr);
+      firstPage.drawText(data.birth_place || '', textAttr);
 
       if(['Single', 'Married'].includes(data.civil_status))
       {
@@ -247,7 +247,7 @@ export default {
       // HOW LEARN (FACEBOOK)
       if(data.how_learn == 'Addessa FB Page')
       {
-        radioGroupAttr.x = 94;
+        radioGroupAttr.x = 93;
         radioGroupAttr.y = 603;
       }
       
@@ -356,7 +356,7 @@ export default {
           junior_honors = value.sy_honors;
 
           let [fr, to] = value.sy_attended.split(' to ');
-          junior_sy_attended = `${fr}-${to}`;
+          junior_sy_attended = to ? `${fr}-${to}` : fr;
           
         }
 
@@ -368,7 +368,7 @@ export default {
           senior_honors = value.sy_honors;
 
           let [fr, to] = value.sy_attended.split(' to ');
-          senior_sy_attended = `${fr}-${to}`
+          senior_sy_attended = to ? `${fr}-${to}` : fr;
         }
 
         if(value.educ_level == 'Vocational School')
@@ -379,7 +379,7 @@ export default {
           vocational_honors = value.sy_honors;
 
           let [fr, to] = value.sy_attended.split(' to ');
-          vocational_sy_attended = `${fr}-${to}`
+          vocational_sy_attended = to ? `${fr}-${to}` : fr;
         }
 
         if(value.educ_level == 'College')
@@ -390,7 +390,7 @@ export default {
           college_honors = value.sy_honors;
 
           let [fr, to] = value.sy_attended.split(' to ');
-          college_sy_attended = `${fr}-${to}`
+          college_sy_attended = to ? `${fr}-${to}` : fr;
         }
 
       });

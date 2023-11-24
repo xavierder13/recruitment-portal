@@ -994,6 +994,17 @@
                           <v-row class="mt-6">
                             <v-col class="my-2 py-0">
                               <v-text-field
+                                class="ma-0 pa-0" 
+                                v-model="applicant.date_applied"
+                                label="Date Applied"
+                                type="date"
+                                prepend-icon="mdi-calendar"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col class="my-2 py-0">
+                              <v-text-field
                                 class="ma-0 pa-0"
                                 v-model="applicant.position_name"
                                 label="Job Position Applied"
@@ -1001,6 +1012,8 @@
                               >
                               </v-text-field>
                             </v-col>
+                          </v-row>
+                          <v-row class="mt-6">
                             <v-col class="my-2 py-0">
                               <v-text-field
                                 class="ma-0 pa-0" 
