@@ -97,7 +97,7 @@ export default {
       
       if(data.gender == 'Male')
       {
-        radioGroupAttr.x = 552;
+        radioGroupAttr.x = 553;
         radioGroupAttr.y = 751;
       }
       else
