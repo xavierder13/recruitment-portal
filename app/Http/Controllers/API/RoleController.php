@@ -105,8 +105,6 @@ class RoleController extends Controller
             // return response()->json(['error' => "You can't update role Admin"], 200);
         }
 
-        $role = Role::find($roleid);
-
         //if record is empty then display error page
         if(empty($role->id))
         {

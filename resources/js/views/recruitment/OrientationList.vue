@@ -863,7 +863,7 @@
                           </v-card>
                         </v-tab-item>
                         <v-tab-item>
-                          <ApplicantFiles :applicant="applicant"/>
+                          <ApplicantFiles :applicant="applicant" :key="componentKey"/>
                         </v-tab-item>
                       </v-tabs-items>
                     </v-col>
@@ -1479,6 +1479,8 @@ export default {
         'Poistion Applied': 'position_name',
         'Branch Applied': 'branch_name',
         'Gender': 'gender',
+        'Contact': 'contact_no',
+        'Date Applied': 'date_applied',
         'Screening': 'screening_status',
         'Interview Schedule': 'initial_interview_date',
         'Initial Interview': 'initial_interview_status',
@@ -1631,6 +1633,7 @@ export default {
         'Immediate Branch Supervisor',
         'Recruitment Staff',
       ],
+      componentKey: 0, // use to force refresh component contents
     };
   },
   methods: {
@@ -2556,6 +2559,10 @@ export default {
         }
         
       }
+    },
+
+    tab() {
+      this.componentKey += 1;
     }
 
   },

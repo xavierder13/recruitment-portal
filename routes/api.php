@@ -324,6 +324,11 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
 
 });
 
+Route::get('/job_applicant/delete_applicants_old', [
+    'uses' => 'API\ApplicantController@delete_applicants_old',
+    'as' => 'job_applicant.delete_applicants_old',
+]);
+
 // Jobapplicant File Routes
 Route::group(['prefix' => 'jobapplicant_file', 'middleware' => ['auth:api', 'applicant_file.maintenance']], function(){
     Route::get('/get_applicant_files/{id}', [
@@ -341,7 +346,7 @@ Route::group(['prefix' => 'jobapplicant_file', 'middleware' => ['auth:api', 'app
         'as' => 'job_applicant_file.delete',
     ]);
     
-  });
+});
 
 // Public API
 Route::group(['prefix' => 'public_api'], function(){

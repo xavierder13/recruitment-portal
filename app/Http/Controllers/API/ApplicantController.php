@@ -572,20 +572,44 @@ class ApplicantController extends Controller
 	}
 
 	public function delete_applicant($id){
+
 		$applicant = Applicant::find($id);
 
-		$filename = DB::table('applicants')
-									->select('file')
-									->whereId($id)
-									->get();
+		// $filename = DB::table('applicants')
+		// 							->select('file')
+		// 							->whereId($id)
+		// 							->get();
 
 		//unlink file in public storage
-		foreach($filename as $data){
-			$filename = $data->file;
-			$destinationPath = public_path(). '/wysiwyg/resume_files/';
-			File::delete($destinationPath.$filename);
+		// foreach($filename as $data){
+		// 	$filename = $data->file;
+		// 	$destinationPath = public_path(). '/wysiwyg/resume_files/';
+		// 	File::delete($destinationPath.$filename);
+		// }
+
+		if(empty($applicant->id))
+		{
+				return abort(404, 'Not Found');
 		}
 
+		$files = ApplicantFile::where('applicant_id', $applicant->id)->get();
+    
+		foreach ($files as $file) {
+
+			//if record is empty then display error page
+			if(empty($file->id))
+			{
+					return abort(404, 'Not Found');
+			}
+
+			ApplicantFile::find($file->id)->delete();
+
+			$file_path = $file->file_path;
+
+			$path = public_path() . $file_path . "/" . $file->file_name;
+			unlink($path);
+		}
+		
 		if($applicant->delete()){
 			return response()->json(['success' => true, 'message' => 'Applicant Deleted Successfully!']);
 		}else{
@@ -1395,6 +1419,28 @@ class ApplicantController extends Controller
 		}
 
 		$applicant->save();
+	}
+
+	public function delete_applicants_old() {
+
+		$six_months_old = (Carbon::now())->addDays(-180);
+												
+		Applicant::whereDate('created_at', '<=', $six_months_old)
+							->where(function($query){
+								$query->where('final_interview_status', '<>', 1)
+											->orWhereNull('final_interview_status');
+							})
+							->delete();
+
+		// foreach ($applicants as $key => $applicant) {
+		// 	DB::table('consolidations')->insert(
+		// 		['applicant_id' => $applicant->id]
+		// 	);
+		// }	
+
+		// $logs = DB::table('consolidations')->get();
+
+		return response()->json(['success' => 'Records has been deleted'], 200);
 	}
 	
 }

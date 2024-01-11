@@ -761,7 +761,7 @@ export default {
       // MOTHER NAME
       textAttr.x = 90;
       textAttr.y = 265;
-      firstPage.drawText(mother.occupation || '', textAttr);
+      firstPage.drawText(mother.name || '', textAttr);
 
       let mother_age = mother.age ? mother.age.toString() : '';
 
