@@ -1480,11 +1480,13 @@ export default {
         'Gender': 'gender',
         'Contact': 'contact_no',
         'Date Applied': 'date_applied',
+        'Source' : 'how_learn',
         'Screening': 'screening_status',
         'Interview Schedule': 'initial_interview_date',
         'Initial Interview': 'initial_interview_status',
         'Position Preference': 'position_preference',
         'Branch Preference': 'branch_preference',
+        'Branch Complied': 'branch_complied',
         'IQ Test': 'iq_status',
         'B.I & Basic Req': 'bi_status',
         'Final Interview Date': 'final_interview_date',
@@ -2337,7 +2339,7 @@ export default {
         { value: 2, text: 'Failed' },
       ];
 
-      if(this.step > 1)
+      if(this.step > 0)
       {
         status_items.push({ value: 3, text: 'Did not Comply' });
 
