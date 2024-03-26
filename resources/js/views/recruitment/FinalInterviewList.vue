@@ -2215,14 +2215,14 @@ export default {
         }
         else if (initial_interview_status == 3)
         {
-          progress = "Did Not Comply - IQ Test";
+          progress = "Did Not Comply - Initial Interview";
           color = "error";
         }
       }
       else if(status == 2) // not qualified
       {
         progress = "Not Qualified";
-        color = "red";
+        color = "error";
       }
 
       return { progress: progress, color: color };

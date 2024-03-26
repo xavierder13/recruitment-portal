@@ -272,6 +272,11 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
         'as' => 'job_applicant.export_applicants_new',
     ]);
 
+    Route::post('/export_total_number_of_applicants', [
+        'uses' => 'API\ApplicantController@export_total_number_of_applicants',
+        'as' => 'job_applicant.export_total_number_of_applicants',
+    ]);
+
 	Route::post('/update_status', [
 		'uses' => 'API\ApplicantController@update_status',
 		'as' => 'job_applicant.update_status',

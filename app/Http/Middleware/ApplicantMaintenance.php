@@ -60,6 +60,12 @@ class ApplicantMaintenance
 				}
 			}
 
+			if($request->is('api/job_applicant/export_total_number_of_applicants')){
+				if($user->can('jobapplicants-export-total-count')){
+					return $next($request);
+				}
+			}
+
 			if($request->is('api/job_applicant/update_status')){
 				if($user->can('jobapplicants-change-status')){
 					return $next($request);

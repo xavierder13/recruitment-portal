@@ -144,6 +144,24 @@
                   ><h3>Export records</h3></v-toolbar>
                   <v-card-text>
                     <v-row class="mt-5">
+                      <v-col cols="3">
+                        <v-checkbox
+                          name="export_all_count"
+                          v-model="export_all_count"
+                          dense
+                          hide-details
+                          class="ma-0 pa-0"
+                          v-if="userPermissions.jobapplicants_export_total_count"
+                        >
+                          <template v-slot:label>
+                            <v-chip :color="export_all_count ? 'primary' : '' " class="mt-2"> 
+                              Export All Count
+                            </v-chip>
+                          </template>
+                        </v-checkbox>
+                      </v-col>
+                    </v-row>
+                    <v-row>
                       <v-col
                         cols="12"
                         sm="6"
@@ -151,6 +169,12 @@
                         <v-date-picker
                           v-model="dates"
                           range
+                          v-if="!export_all_count"
+                        ></v-date-picker>
+
+                        <v-date-picker
+                          v-model="asOfDate"
+                          v-if="export_all_count"
                         ></v-date-picker>
                       </v-col>
                       <v-col
@@ -166,10 +190,10 @@
                           @input="$v.dateRangeText.$touch()"
                           @blur="$v.dateRangeText.$touch()"
                         ></v-text-field>
-                      <span class="font-weight-bold">From - to: </span>
-                      <p>{{ dates }}</p>
+                        <!-- <span class="font-weight-bold"> {{ export_all_count ? 'As Of: ' : 'From - to:' }}  </span>
+                        <p>{{ export_all_count ? asOfDate : dates }}</p> -->
 
-                       <v-autocomplete
+                        <v-autocomplete
                           v-model="branch_id"
                           :items="branches"
                           item-text="name"
@@ -193,8 +217,8 @@
                       v-if="export_btn"
                     >
                       <export-excel
-                        :fields = "json_fields"
-                        :data = "json_data"
+                        :fields = "exportJSONFields"
+                        :data = "exportJSONData"
                         :meta = "json_meta"
                         name = "applicants.xls"
                       >
@@ -1214,7 +1238,7 @@
               dark
             >
               <v-card-text>
-                <p class="text-center">
+                <p class="text-center pt-4">
                   Please stand by...
                 </p>
                 <v-progress-linear
@@ -1507,6 +1531,7 @@ import { required, requiredIf, maxLength, email } from "vuelidate/lib/validators
 import { mapState, mapGetters } from "vuex";
 import ApplicantFiles from './components/ApplicantFiles.vue';
 import ApplicantDetailsPDF from './components/ApplicantDetailsPDF.vue';
+import moment from "moment";
 
 export default {
   components: {
@@ -1565,6 +1590,7 @@ export default {
 
       // parameters
       dates: [],
+      asOfDate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
       branch_id: "",
       
       // json_fields: {
@@ -1759,6 +1785,7 @@ export default {
       ],
       dialog_preview: true,
       componentKey: 0, // use to force refresh component contents
+      export_all_count: false,
     };
   },
   methods: {
@@ -1999,9 +2026,21 @@ export default {
       const date_from = this.dates[0];
       const date_to = this.dates[1];
       const branch_id = this.branch_id;
-      
-      if(date_from === undefined || branch_id === ''){
+      let invalidDate = false;
 
+      if(!this.export_all_count && !date_from)
+      {
+        if(!date_from && !date_to)
+        {
+          invalidDate = true;
+        }
+      }
+
+      // date_to is required when export_all_count is 'false'
+      
+      
+      if(invalidDate || branch_id === ''){
+        
         this.loader_dialog = false;
         
         this.$toaster.error('Please select a date and branch.', {
@@ -2012,7 +2051,7 @@ export default {
       }
 
       if(date_from > date_to){
-
+        invalidDate = true;
         this.loader_dialog = false;
         
         this.$toaster.error('Date from must be lesser than Date to.', {
@@ -2022,23 +2061,26 @@ export default {
         return;
       }
 
-      if(date_from < date_to || date_from != undefined){
+      if(!invalidDate){
 
         let formData = new FormData();
         formData.append('date_from', date_from);
         formData.append('date_to', date_to);
+        formData.append('asOfDate', this.asOfDate);
         formData.append('branch_id', branch_id);
         
         // formData.append('progress', this.progress_items[this.step]); // progress_items index 3 (Final Interview)
         // formData.append('step', this.step); // step 3 (Final Interview)
 
-        axios.post("/api/job_applicant/export_applicants_new", formData, {
+        let api = "/api/job_applicant/" + (this.export_all_count ? "export_total_number_of_applicants" : "export_applicants_new");
+        
+        axios.post(api, formData, {
           headers: {
             'Content-Type': 'multipart/form-data' 
           }
         }).then(
           (response) => {
-            console.log(response);
+            console.log(response.data);
 
             if(response.data.success){
               this.loader_dialog = false;
@@ -2051,6 +2093,7 @@ export default {
               this.export_btn = true;
 
               this.json_data = response.data.resp;
+              // console.log(this.json_data);
               
             }else{
 
@@ -2164,6 +2207,8 @@ export default {
       this.export_btn = false;
 
       this.dates = [];
+      this.asOfDate = (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10);
+      this.export_all_count = false;
       this.branch_id = this.user.branch_id;
 
       this.$v.$reset();
@@ -2322,14 +2367,14 @@ export default {
         }
         else if (initial_interview_status == 3)
         {
-          progress = "Did Not Comply - IQ Test";
+          progress = "Did Not Comply - Initial Interview";
           color = "error";
         }
       }
       else if(status == 2) // not qualified
       {
         progress = "Not Qualified";
-        color = "red";
+        color = "error";
       }
 
       return { progress: progress, color: color, step: step };
@@ -2451,6 +2496,14 @@ export default {
         
     },
 
+    formatDate(date) {
+
+      var date_val = moment(date, 'YYYY-MM-DD',true);
+      if (!date || !date_val.isValid()) return null;
+
+      return moment(date).format('MM/DD/YYYY');
+    },
+
     downloadPDF() {
       this.$refs.ApplicantDetailsPDF.handleClickDownload();
     },
@@ -2467,7 +2520,13 @@ export default {
   },
   computed: {
     dateRangeText () {
-      return this.dates.join(' ~ ')
+      let dates = [];
+
+      this.dates.forEach(value => {
+        dates.push(this.formatDate(value));
+      });
+
+      return this.export_all_count ? this.formatDate(this.asOfDate) : dates.join(' ~ ');
     },
 
     // validations
@@ -2572,6 +2631,72 @@ export default {
       return isEditable;
 
     },
+    exportJSONData() {
+      let json_data = this.json_data;
+      
+      if(this.export_all_count)
+      {
+        console.log(this.json_data);
+        json_data = [];
+        let fields = Object.keys(this.json_data); // fields are branches
+
+        fields.forEach((field, i) => {
+          json_data.push({
+            branch: field,
+          });
+          
+          let sub_fields = Object.keys(this.json_data[field]);
+
+          sub_fields.forEach(sub_field => { // sub_fields are positions/branch/total_count field name
+
+            let key_sub_field = sub_field.split('.').join(''); // remove '.' character
+
+            Object.assign(json_data[i], { [key_sub_field.toLowerCase()]: this.json_data[field][sub_field] })  
+
+          });
+
+        });
+
+      }
+
+      return json_data;
+    },
+
+    exportJSONFields() {
+      let json_fields = this.json_fields;
+      
+      if(this.export_all_count)
+      { 
+        json_fields = { Branch: 'branch' };
+        let fields = Object.keys(this.exportJSONData[0]);
+        let position_fields = ['beg_bal', 'end_bal', 'expired', 'hired', 'qualified'];
+        let total_count_fields = ['total_applicants', 'total_initial_passed', 'total_initial_failed'];
+
+        fields.forEach(field => {
+          if(field != 'branch')
+          {
+            if(field != 'total_count')
+            {
+              position_fields.forEach(position_field => {
+                Object.assign(json_fields, { [field.toUpperCase() + '.' + position_field]: field + '.' + position_field });
+              });
+            }
+            else
+            {
+              total_count_fields.forEach(total_count_field => {
+                Object.assign(json_fields, { [field.toUpperCase() + '.' + total_count_field]: field + '.' + total_count_field });
+              });
+            }
+          }
+          
+        });
+      }
+
+      console.log(json_fields);
+      console.log(this.exportJSONData);
+
+      return json_fields;
+    },
 
     ...mapState("userRolesPermissions", ["userRoles", "userPermissions"]),
     ...mapState("auth", ["user", "userIsLoaded"]),
@@ -2666,6 +2791,11 @@ export default {
 
     tab() {
       this.componentKey += 1;
+    },
+
+    export_all_count() {
+      this.data = [];
+      this.$v.dateRangeText.$reset();
     }
 
   },

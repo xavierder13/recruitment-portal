@@ -111,6 +111,7 @@ const state = {
     jobapplicants_view : false,
     jobapplicants_delete : false,
     jobapplicants_export : false,
+    jobapplicants_export_total_count: false,
   },
   userRoles: {
     administrator: false,
@@ -293,6 +294,7 @@ const mutations = {
     permission.jobapplicants_view = permissions.includes("jobapplicants-view");
     permission.jobapplicants_delete = permissions.includes("jobapplicants-delete");
     permission.jobapplicants_export = permissions.includes("jobapplicants-export");
+    permission.jobapplicants_export_total_count = permissions.includes("jobapplicants-export-total-count");
 
     // set true if user roles and permissions value successfully assigned
     state.userRolesPermissionsIsLoaded = true;
