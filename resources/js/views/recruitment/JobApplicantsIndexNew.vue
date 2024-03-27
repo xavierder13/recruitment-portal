@@ -2667,28 +2667,38 @@ export default {
       
       if(this.export_all_count)
       { 
-        json_fields = { Branch: 'branch' };
-        let fields = Object.keys(this.exportJSONData[0]);
-        let position_fields = ['beg_bal', 'end_bal', 'expired', 'hired', 'qualified'];
-        let total_count_fields = ['total_applicants', 'total_initial_passed', 'total_initial_failed'];
+        json_fields = { 
+          Branch: 'branch',
+          'TOTAL_COUNT.total_applicants': 'total_count.total_applicants',  
+          'TOTAL_COUNT.total_initial_failed': 'total_count.total_initial_failed', 
+          'TOTAL_COUNT.total_initial_passed': 'total_count.total_initial_passed', 
+        };
+        let fields = Object.keys(this.exportJSONData[0]); // keys are position names
+        let position_names = [
+          'Branch Manager', 
+          'Sales Supervisor', 
+          'Credit & Collection Supervisor', 
+          'Management System Supervisor',
+          'Encoder',
+          'Cashier',
+          'Account Analyst',
+          'Warehouseman',
+          'Sales Specialist',
+          'Technician',
+          'Delivery/ Logistics Driver',
+          'Delivery/Logistics Helper',
+        ];
 
-        fields.forEach(field => {
-          if(field != 'branch')
-          {
-            if(field != 'total_count')
-            {
-              position_fields.forEach(position_field => {
-                Object.assign(json_fields, { [field.toUpperCase() + '.' + position_field]: field + '.' + position_field });
-              });
-            }
-            else
-            {
-              total_count_fields.forEach(total_count_field => {
-                Object.assign(json_fields, { [field.toUpperCase() + '.' + total_count_field]: field + '.' + total_count_field });
-              });
-            }
-          }
-          
+        position_names.forEach(position => {
+
+          Object.assign(json_fields, { 
+            [ position.toUpperCase() + '.beg_bal' ]: position.toLowerCase() + '.beg_bal', 
+            [ position.toUpperCase() + '.qualified' ]: position.toLowerCase() + '.qualified',
+            [ position.toUpperCase() + '.hired' ]: position.toLowerCase() + '.hired',
+            [ position.toUpperCase() + '.expired' ]: position.toLowerCase() + '.expired',
+            [ position.toUpperCase() + '.end_bal' ]: position.toLowerCase() + '.end_bal',
+          });
+ 
         });
       }
 

@@ -15,6 +15,7 @@ use App\ApplicantDependent;
 use App\ApplicantFile;
 use App\Position;
 use App\Branch;
+use App\JobVacancy;
 use Validator;
 use Excel;
 use Mail;
@@ -1000,7 +1001,12 @@ class ApplicantController extends Controller
 		$fifty_days_diff = Carbon::parse($asOfDate)->addDay(-50)->format('Y-m-d');
 
 		$arrApplicants = [];
-		$positions = Position::all();
+		$positions = Position::with('job_vacancies')
+												 ->whereHas('job_vacancies', function($query) {
+													$query->where('branch_type', 0); // branch_type = 0 -> position for branch, branch_type = 1 -> positions for admin
+												 })
+												 ->get();
+
 		$branches = Branch::where( function($query) use ($branch_id) {
 													if($branch_id <> 1000) // not 'ALL BRANCHES'
 													{
