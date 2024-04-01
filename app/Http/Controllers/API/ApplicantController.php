@@ -1027,7 +1027,8 @@ class ApplicantController extends Controller
 															 ->count();
 			$initial_interview_passed = $this->all_job_applicants()
 																			 ->whereDate('applicants.created_at', '<=', $asOfDate)																
-																		   ->where('branch_id', $branch->id)->where('initial_interview_status', 1);
+																		   ->where('branch_id', $branch->id)
+																			 ->where('initial_interview_status', 1);
 
 			// failed in screening and initial interview																 
 			$screening_initial_failed = $this->all_job_applicants()
@@ -1049,15 +1050,17 @@ class ApplicantController extends Controller
 			foreach ($positions as $position) {
 				
 				// get data from previous month
-				$total_initial_passed_per_position_last_month = $this->all_job_applicants()->whereDate('applicants.created_at', '<=', $lastDayofPreviousMonth)																
+				$total_initial_passed_per_position_last_month = $this->all_job_applicants()
+																														->whereDate('applicants.created_at', '<=', $lastDayofPreviousMonth)																
 																														->where('branch_id', $branch->id)
 																														->where('positions.name', $position->name)
+																														->where('initial_interview_status', 1)
 																														->count();
 
 				$applicants = $this->all_job_applicants()->whereDate('applicants.created_at', '<=', $asOfDate)																
-																								 ->where('branch_id', $branch->id)
-																								 ->where('positions.name', $position->name);
-				$qualified_per_position = $applicants->where('final_interview_status', 1)->count();
+																								 ->where('employment_branch.id', $branch->id)
+																								 ->where('employment_position.name', $position->name);
+				$qualified_per_position = $applicants->whereIn('final_interview_status', [1, 4])->count(); // qualified status(Hired and Reserved)
 				$hired_per_position = $this->all_job_applicants()->whereDate('signing_of_contract_date', '<=', $asOfDate)		
 																	 ->where('employment_branch.id', $branch->id)
 																	 ->where('employment_position.name', $position->name)
