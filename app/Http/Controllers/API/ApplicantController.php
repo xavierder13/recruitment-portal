@@ -1028,16 +1028,21 @@ class ApplicantController extends Controller
 			$initial_interview_passed = $this->all_job_applicants()
 																			 ->whereDate('applicants.created_at', '<=', $asOfDate)																
 																		   ->where('branch_id', $branch->id)->where('initial_interview_status', 1);
-			$initial_interview_failed = $this->all_job_applicants()
+
+			// failed in screening and initial interview																 
+			$screening_initial_failed = $this->all_job_applicants()
 																			 ->whereDate('applicants.created_at', '<=', $asOfDate)																
 																			 ->where('branch_id', $branch->id)
-																			 ->whereIn('initial_interview_status', [2, 3]);
+																			 ->where(function($query) {
+																					$query->whereIn('initial_interview_status', [2, 3]) //initial interview
+																								->orWhereIn('applicants.status', [2, 3]); //screening
+																			 });
 
 			$arrApplicants[$branch->name] = [
 				'total_count' => [
 														'total_applicants' => $total_applicants,
 														'total_initial_passed' => $initial_interview_passed->count(),
-														'total_initial_failed' => $initial_interview_failed->count(),
+														'total_screening_initial_failed' => $screening_initial_failed->count(),
 													]
 			];
 

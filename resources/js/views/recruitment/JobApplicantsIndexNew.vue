@@ -2028,12 +2028,11 @@ export default {
       const branch_id = this.branch_id;
       let invalidDate = false;
 
-      if(!this.export_all_count && !date_from)
+      if(!this.export_all_count && (!date_from || !date_to))
       {
-        if(!date_from && !date_to)
-        {
-          invalidDate = true;
-        }
+
+        invalidDate = true;
+        
       }
 
       // date_to is required when export_all_count is 'false'
@@ -2670,7 +2669,7 @@ export default {
         json_fields = { 
           Branch: 'branch',
           'TOTAL_COUNT.total_applicants': 'total_count.total_applicants',  
-          'TOTAL_COUNT.total_initial_failed': 'total_count.total_initial_failed', 
+          'TOTAL_COUNT.total_screening_initial_failed': 'total_count.total_screening_initial_failed', 
           'TOTAL_COUNT.total_initial_passed': 'total_count.total_initial_passed', 
         };
         let fields = Object.keys(this.exportJSONData[0]); // keys are position names
