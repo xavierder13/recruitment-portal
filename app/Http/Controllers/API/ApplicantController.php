@@ -753,12 +753,12 @@ class ApplicantController extends Controller
 														)
 										->where(function($result) use ($branch_id, $date_from, $date_to){
 											if($branch_id === "1000"){
-												$result->whereDate('applicants.created_at', '>=', $date_from);
-												$result->whereDate('applicants.created_at', '<=', $date_to);
+												$result->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from);
+												$result->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
 											}else{
 												$result->where('branches.id', '=', $branch_id);
-												$result->whereDate('applicants.created_at', '>=', $date_from);
-												$result->whereDate('applicants.created_at', '<=', $date_to);
+												$result->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from);
+												$result->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
 											}
 										})
 										->where(function($result) use ($step, $field) {
@@ -795,8 +795,8 @@ class ApplicantController extends Controller
 																						
 		$user = Auth::user();
 		$applicantsData = $this->all_job_applicants()->where(function($result) use ($date_from, $date_to){
-														$result->whereDate('applicants.created_at', '>=', $date_from);
-														$result->whereDate('applicants.created_at', '<=', $date_to);																
+														$result->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from);
+														$result->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);																
 												});
 		$applicants = [];
 
@@ -1019,20 +1019,20 @@ class ApplicantController extends Controller
 		foreach ($branches as $branch) {
 
 			// get data from current month
-			$applicants = $this->all_job_applicants()->whereDate('applicants.created_at', '<=', $asOfDate)																
+			$applicants = $this->all_job_applicants()->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfDate)																
 																							 ->where('branch_id', $branch->id);
 			$total_applicants = $this->all_job_applicants()
-															 ->whereDate('applicants.created_at', '<=', $asOfDate)																
+															 ->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfDate)																
 			 											   ->where('branch_id', $branch->id)
 															 ->count();
 			$initial_interview_passed = $this->all_job_applicants()
-																			 ->whereDate('applicants.created_at', '<=', $asOfDate)																
+																			 ->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfDate)																
 																		   ->where('branch_id', $branch->id)
 																			 ->where('initial_interview_status', 1);
 
 			// failed in screening and initial interview																 
 			$screening_initial_failed = $this->all_job_applicants()
-																			 ->whereDate('applicants.created_at', '<=', $asOfDate)																
+																			 ->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfDate)																
 																			 ->where('branch_id', $branch->id)
 																			 ->where(function($query) {
 																					$query->whereIn('initial_interview_status', [2, 3]) //initial interview
@@ -1051,23 +1051,23 @@ class ApplicantController extends Controller
 				
 				// get data from previous month
 				$total_initial_passed_per_position_last_month = $this->all_job_applicants()
-																														->whereDate('applicants.created_at', '<=', $lastDayofPreviousMonth)																
+																														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $lastDayofPreviousMonth)																
 																														->where('branch_id', $branch->id)
 																														->where('positions.name', $position->name)
 																														->where('initial_interview_status', 1)
 																														->count();
 
-				$applicants = $this->all_job_applicants()->whereDate('applicants.created_at', '<=', $asOfDate)																
+				$applicants = $this->all_job_applicants()->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfDate)																
 																								 ->where('employment_branch.id', $branch->id)
 																								 ->where('employment_position.name', $position->name);
-				$qualified_per_position = $applicants->whereIn('final_interview_status', [1, 4])->count(); // qualified status(Hired and Reserved)
-				$hired_per_position = $this->all_job_applicants()->whereDate('signing_of_contract_date', '<=', $asOfDate)		
+				$qualified_per_position = $applicants->whereIn('final_interview_status', [1, 4])->count(); // qualified status(Final Interview Passed and Reserved)
+				$hired_per_position = $this->all_job_applicants()->whereDate('signing_of_contract_date', '<=', $asOfDate)// Hired if signing of contract has value		
 																	 ->where('employment_branch.id', $branch->id)
 																	 ->where('employment_position.name', $position->name)
 																	 ->count();
 
 				// expired means not deployed within 50 days
-				$expired_per_position = $this->all_job_applicants()->whereDate('applicants.created_at', '<', $fifty_days_diff)		
+				$expired_per_position = $this->all_job_applicants()->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<', $fifty_days_diff)		
 																		->whereNull('employment_branch.id')
 																		->whereNull('signing_of_contract_date')
 																		->where('positions.name', $position->name)
@@ -1551,7 +1551,7 @@ class ApplicantController extends Controller
 
 		$six_months_old = (Carbon::now())->addDays(-180);
 												
-		Applicant::whereDate('created_at', '<=', $six_months_old)
+		Applicant::whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $six_months_old)
 							->where(function($query){
 								$query->where('final_interview_status', '<>', 1)
 											->orWhereNull('final_interview_status');
