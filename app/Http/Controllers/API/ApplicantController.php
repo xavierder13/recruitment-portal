@@ -1067,7 +1067,7 @@ class ApplicantController extends Controller
 																	 ->count();
 
 				// expired means not deployed within 0 days
-				$expired_per_position = $this->all_job_applicants()->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<', $sixty_days_diff)		
+				$expired_per_position = $this->all_job_applicants()->whereDate('initial_interview_date', '<', $sixty_days_diff)		
 																		->whereNull('employment_branch.id')
 																		->whereNull('signing_of_contract_date')
 																		->where('positions.name', $position->name)
