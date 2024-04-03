@@ -998,7 +998,7 @@ class ApplicantController extends Controller
 		// $lastDayofPreviousMonth = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
 
 		$lastDayofPreviousMonth = Carbon::parse($asOfDate)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month
-		$fifty_days_diff = Carbon::parse($asOfDate)->addDay(-50)->format('Y-m-d');
+		$sixty_days_diff = Carbon::parse($asOfDate)->addDay(-60)->format('Y-m-d');
 
 		$arrApplicants = [];
 		$positions = Position::with('job_vacancies')
@@ -1066,8 +1066,8 @@ class ApplicantController extends Controller
 																	 ->where('employment_position.name', $position->name)
 																	 ->count();
 
-				// expired means not deployed within 50 days
-				$expired_per_position = $this->all_job_applicants()->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<', $fifty_days_diff)		
+				// expired means not deployed within 0 days
+				$expired_per_position = $this->all_job_applicants()->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<', $sixty_days_diff)		
 																		->whereNull('employment_branch.id')
 																		->whereNull('signing_of_contract_date')
 																		->where('positions.name', $position->name)
