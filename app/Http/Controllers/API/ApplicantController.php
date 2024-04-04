@@ -1072,13 +1072,13 @@ class ApplicantController extends Controller
 																		->where(function($query) {
 																				//where status values are neither 'failed' nor 'did not comply'
 																				$query->whereNotIn('initial_interview_status', [0, 2, 3])
-																							->orWhere(function($q) {
+																							->where(function($q) {
 																								$q->whereNotIn('iq_status', [2, 3]);
 																							})
-																							->orWhere(function($q) {
+																							->where(function($q) {
 																								$q->whereNotIn('bi_status', [2, 3]);
 																							})
-																							->orWhere(function($q) {
+																							->where(function($q) {
 																								$q->whereNotIn('final_interview_status', [2, 3]);
 																							});
 																			
