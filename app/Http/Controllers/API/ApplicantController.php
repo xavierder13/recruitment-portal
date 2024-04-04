@@ -1073,13 +1073,13 @@ class ApplicantController extends Controller
 																				//where status values are neither 'failed' nor 'did not comply'
 																				$query->whereNotIn('initial_interview_status', [0, 2, 3])
 																							->where(function($q) {
-																								$q->whereNotIn('iq_status', [2, 3]);
+																								$q->whereNotIn(DB::raw('IFNULL(iq_status, 0)'), [2, 3]);
 																							})
 																							->where(function($q) {
-																								$q->whereNotIn('bi_status', [2, 3]);
+																								$q->whereNotIn(DB::raw('IFNULL(bi_status, 0)'), [2, 3]);
 																							})
 																							->where(function($q) {
-																								$q->whereNotIn('final_interview_status', [2, 3]);
+																								$q->whereNotIn(DB::raw('IFNULL(final_interview_status, 0)'), [2, 3]);
 																							});
 																			
 																		})
