@@ -1071,7 +1071,7 @@ class ApplicantController extends Controller
 																		->whereNull('signing_of_contract_date')
 																		->where(function($query) {
 																				//where status values are neither 'failed' nor 'did not comply'
-																				$query->whereNotIn('initial_interview_status', [2, 3])
+																				$query->whereNotIn('initial_interview_status', [0, 2, 3])
 																							->orWhere(function($q) {
 																								$q->whereNotIn('iq_status', [2, 3]);
 																							})
