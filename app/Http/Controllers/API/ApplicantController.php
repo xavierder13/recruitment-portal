@@ -1068,10 +1068,23 @@ class ApplicantController extends Controller
 
 				// expired means not deployed within 0 days
 				$expired_per_position = $this->all_job_applicants()->whereDate('initial_interview_date', '<', $sixty_days_diff)		
-																		->whereNull('employment_branch.id')
 																		->whereNull('signing_of_contract_date')
+																		->where(function($query) {
+																				//where status values are neither 'failed' nor 'did not comply'
+																				$query->whereNotIn('initial_interview_status', [2, 3])
+																							->orWhere(function($q) {
+																								$q->whereNotIn('iq_status', [2, 3]);
+																							})
+																							->orWhere(function($q) {
+																								$q->whereNotIn('bi_status', [2, 3]);
+																							})
+																							->orWhere(function($q) {
+																								$q->whereNotIn('final_interview_status', [2, 3]);
+																							});
+																			
+																		})
 																		->where('positions.name', $position->name)
-																		->where('employment_branch.id', $branch->id)
+																		->where(DB::raw("IFNULL(IFNULL(employment_branch.id, branch_complied.id), branch_id)"), $branch->id)
 																		->count();
 
 				$end_bal_per_position = $qualified_per_position - $hired_per_position;
