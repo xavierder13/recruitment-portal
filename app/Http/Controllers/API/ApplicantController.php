@@ -1087,7 +1087,7 @@ class ApplicantController extends Controller
 																		->where(DB::raw("IFNULL(IFNULL(employment_branch.id, branch_complied.id), branch_id)"), $branch->id)
 																		->count();
 
-				$end_bal_per_position = $qualified_per_position - $hired_per_position;
+				$end_bal_per_position = $qualified_per_position - $expired_per_position - $hired_per_position;
 
 				$arrApplicants[$branch->name][$position->name] = [
 																														'beg_bal' => $total_initial_passed_per_position_last_month,
