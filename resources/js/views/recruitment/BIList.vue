@@ -2176,9 +2176,9 @@ export default {
                 progress = "Final Interview Failed";
                 color = "error";
               }
-              else if(final_interview_status == 3) //failed or did not comply
+              else if(final_interview_status == 3) //failed or Non-Compliant
               {
-                progress = "Did Not Comply - Final Interview";
+                progress = "Non-Compliant - Final Interview";
                 color = "error";
               }
               else if(final_interview_status == 4)
@@ -2194,7 +2194,7 @@ export default {
             }
             else if (bi_status == 3)
             {
-              progress = "Did Not Comply - BI";
+              progress = "Non-Compliant - BI";
               color = "error";
             }
 
@@ -2206,7 +2206,7 @@ export default {
           }
           else if (iq_status == 3)
           {
-            progress = "Did Not Comply - IQ Test";
+            progress = "Non-Compliant - IQ Test";
             color = "error";
           }
 
@@ -2219,7 +2219,7 @@ export default {
         }
         else if (initial_interview_status == 3)
         {
-          progress = "Did Not Comply - Initial Interview";
+          progress = "Non-Compliant - Initial Interview";
           color = "error";
         }
       }
@@ -2237,7 +2237,7 @@ export default {
       let color = '';
       let border_color = '';
       let icon = 'mdi-check-circle';
-      let disabled = [0, 2, 3].includes(status) && status !== null ? false : true; // if status is not null or ('on process', 'failed', 'did not comply') then enable progress item (v-chip) else disabled
+      let disabled = [0, 2, 3].includes(status) && status !== null ? false : true; // if status is not null or ('on process', 'failed', 'Non-Compliant') then enable progress item (v-chip) else disabled
       if(status == 0) // if on process
       {
         color = 'warning';
@@ -2250,7 +2250,7 @@ export default {
         border_color = 'success';
         icon = 'mdi-check-circle';
       }
-      else if(status == 2 || status == 3) // if not qualified, failed or did not comply
+      else if(status == 2 || status == 3) // if not qualified, failed or Non-Compliant
       {
         color = 'error';
         icon = 'mdi-close-circle';
@@ -2373,11 +2373,11 @@ export default {
         { value: 2, text: 'Failed' },
       ];
 
-      if(this.step > 0)
+      if(this.currentProgress > 0)
       {
-        status_items.push({ value: 3, text: 'Did not Comply' });
+        status_items.push({ value: 3, text: 'Non-Compliant' });
 
-        if(this.step == 4)
+        if(this.currentProgress == 4)
         {
           status_items.push({ value: 4, text: 'Reserved' });
         }
@@ -2389,7 +2389,7 @@ export default {
     currentProgress() {
       let index = this.progressItems.length - 1; // default index is progress(Final Interview)  
 
-      // get the index of status value not 0; status with value not 0 is the current progress/step of applicant's application status with either On Process, Failed, Did not Comply
+      // get the index of status value not 0; status with value not 0 is the current progress/step of applicant's application status with either On Process, Failed, Non-Compliant
       this.progressItems.forEach((value, i) => {
         if(value.status != 1 && value.status != null)
         {

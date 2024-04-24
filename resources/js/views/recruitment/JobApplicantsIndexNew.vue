@@ -994,9 +994,8 @@
                               <v-spacer></v-spacer>
                               <v-toolbar-title>
                                 {{ applicationProgress(applicant).progress }}
-                                
                               </v-toolbar-title>
-                              <v-tooltip top v-if="progressIsEditable">
+                              <v-tooltip top v-if="progressIsEditable && userHasPermissionToUpdateStatus">
                                 <template v-slot:activator="{ on, attrs }">
                                   <v-icon 
                                     dark
@@ -1151,6 +1150,16 @@
                               ></v-autocomplete>
                             </v-col>
                           </v-row>
+                          <v-row v-if="applicant.final_interview_status == 3">
+                            <v-col class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Final Interview Non-Compliant Reason"
+                                v-model="applicant.final_interview_remarks"
+                                readonly
+                              ></v-text-field>
+                            </v-col>
+                          </v-row>
                           <v-row>
                             <v-col class="my-0 py-0">
                               <v-autocomplete
@@ -1213,6 +1222,29 @@
                                 type="date"
                                 prepend-icon="mdi-calendar"
                                 v-model="applicant.signing_of_contract_date"
+                                readonly
+                              ></v-text-field>
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col class="my-2 py-0">
+                              <v-autocomplete
+                                class="ma-0 pa-0"
+                                :items="statusItems"
+                                item-value="value"
+                                item-text="text"
+                                label="Orientation Status"
+                                v-model="applicant.orientation_status"
+                                readonly
+                              ></v-autocomplete>
+                            </v-col>
+                          </v-row>
+                          <v-row v-if="applicant.orientation_status == 3">
+                            <v-col class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                label="Orientation Non-Compliant Reason"
+                                v-model="applicant.orientation_remarks"
                                 readonly
                               ></v-text-field>
                             </v-col>
@@ -1408,12 +1440,32 @@
                       :items="statusItems"
                       item-value="value"
                       item-text="text"
-                      label="Status"
+                      label="Final Interview Status"
                       v-model="editedItem.final_interview_status"
                       :disabled="editedItem.final_interview_date ? false : true"
                     ></v-autocomplete>
                   </v-col>
                 </v-row>
+                <!-- if final_interview_status value is non-compliant -->
+                <template v-if="editedItem.final_interview_status == 3">
+                  <v-row>
+                    <v-col class="my-0 py-0">
+                      <v-autocomplete
+                        :items="non_compliant_reasons"
+                        label="Non-Compliant Reason"
+                        v-model="selected_non_compliant_final_reason"
+                      ></v-autocomplete>
+                    </v-col>
+                  </v-row>
+                  <v-row v-if="selected_non_compliant_final_reason == 'Others (Specify)'">
+                    <v-col class="my-0 py-0">
+                      <v-text-field
+                        label="Specify Non-Compliant Reason"
+                        v-model="specified_non_compliant_final_reason"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </template>
                 <v-row>
                   <v-col class="my-0 py-0">
                     <v-autocomplete
@@ -1457,6 +1509,8 @@
                     ></v-text-field>
                   </v-col>
                 </v-row>
+              </template>
+              <template v-if="step == 5">
                 <v-row>
                   <v-col class="my-0 py-0">
                     <v-text-field
@@ -1485,6 +1539,41 @@
                     ></v-text-field>
                   </v-col>
                 </v-row>
+                <v-row>
+                  <v-col class="my-0 py-0">
+                    <v-autocomplete
+                      :items="statusItems"
+                      item-value="value"
+                      item-text="text"
+                      label="Orientation Status"
+                      v-model="editedItem.orientation_status"
+                      :disabled="editedItem.orientation_date ? false : true"
+                      :readonly="hasRole('Branch Manager')"
+                    ></v-autocomplete>
+                  </v-col>
+                </v-row>
+                <!-- if final_interview_status value is non-compliant -->
+                <template v-if="editedItem.orientation_status == 3">
+                  <v-row>
+                    <v-col class="my-0 py-0">
+                      <v-autocomplete
+                        :items="non_compliant_reasons"
+                        label="Non-Compliant Reason"
+                        v-model="selected_non_compliant_orientation_reason"
+                        :readonly="hasRole('Branch Manager')"
+                      ></v-autocomplete>
+                    </v-col>
+                  </v-row>
+                  <v-row v-if="selected_non_compliant_orientation_reason == 'Others (Specify)'">
+                    <v-col class="my-0 py-0">
+                      <v-text-field
+                        label="Specify Non-Compliant Reason"
+                        v-model="specified_non_compliant_orientation_reason"
+                        :readonly="hasRole('Branch Manager')"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </template>
               </template>
             </v-card-text>
             <v-divider class="mb-3 mt-0"></v-divider>
@@ -1681,11 +1770,14 @@ export default {
         branch_preference: [],
         final_interview_date: "",
         final_interview_status: "",
+        final_interview_remarks: "",
         employment_position: "",
         employment_branch: "",
         hiring_officer_position: "",
         hiring_officer_name: "",
         orientation_date: "",
+        orientation_status: "",
+        orientation_remarks: "",
         hired_date: "",
       },
 
@@ -1739,11 +1831,14 @@ export default {
         branch_preference: [],
         final_interview_date: "",
         final_interview_status: "",
+        final_interview_remarks: "",
         employment_position: "",
         employment_branch: "",
         hiring_officer_position: "",
         hiring_officer_name: "",
         orientation_date: "",
+        orientation_status: "",
+        orientation_remarks: "",
         signing_of_contract_date: "",
       },
 
@@ -1759,15 +1854,18 @@ export default {
         branch_preference: [],
         final_interview_date: "",
         final_interview_status: "",
+        final_interview_remarks: "",
         employment_position: "",
         employment_branch: "",
         hiring_officer_position: "",
         hiring_officer_name: "",
         orientation_date: "",
+        orientation_status: "",
+        orientation_remarks: "",
         signing_of_contract_date: "",
       },
       disabled: false,
-      progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'B.I & Basic Req', 'Final Interview'],
+      progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'B.I & Basic Req', 'Final Interview', 'Orientation'],
       dateErrors: {
         final_interview_date: { status: false, msg: "" },
         orientation_date: { status: false, msg: "" },
@@ -1786,6 +1884,16 @@ export default {
       dialog_preview: true,
       componentKey: 0, // use to force refresh component contents
       export_all_count: false,
+      non_compliant_reasons: [
+        'Hired in other organization',
+        'Back out due to Training',
+        'Others (Specify)'
+      ],
+      selected_non_compliant_final_reason: "",
+      specified_non_compliant_final_reason: "",
+      selected_non_compliant_orientation_reason: "",
+      specified_non_compliant_orientation_reason: "",
+      
     };
   },
   methods: {
@@ -2079,7 +2187,6 @@ export default {
           }
         }).then(
           (response) => {
-            console.log(response.data);
 
             if(response.data.success){
               this.loader_dialog = false;
@@ -2224,11 +2331,13 @@ export default {
         step: this.step,
         position_preference: position_preference,
         branch_preference: branch_preference,
+        final_interview_remarks: this.selected_non_compliant_final_reason == 'Others (Specify)' ? this.specified_non_compliant_final_reason : '',
+        orientation_remarks: this.selected_non_compliant_orientation_reason == 'Others (Specify)' ? this.specified_non_compliant_orientation_reason : '',
       })
 
       axios.post("/api/job_applicant/update_status", data).then(
         (response) => {
-          console.log(response.data);
+  
           this.application_status_dialog = false;
           if(response.data.success){
             
@@ -2291,6 +2400,7 @@ export default {
       let iq_status = applicant.iq_status;
       let bi_status = applicant.bi_status;
       let final_interview_status = applicant.final_interview_status;
+      let orientation_status = applicant.orientation_status;
       let step = 0;
       
       if(status == 1)
@@ -2314,8 +2424,25 @@ export default {
 
               if(final_interview_status == 1 ) // Final Interview passed then set new progress
               {
-                progress = "Hired";
-                color = "success";
+                progress = "Orientation " + text;
+                color = "secondary";
+
+                if(orientation_status == 1 ) // Orientation passed then set new progress
+                {
+                  progress = "Hired";
+                  color = "success";
+                  
+                }
+                else if(orientation_status == 2)
+                {
+                  progress = "Orientation Failed";
+                  color = "error";
+                }
+                else if(orientation_status == 3) //failed or Non-Compliant
+                {
+                  progress = "Non-Compliant - Orientation";
+                  color = "error";
+                }
                 
               }
               else if(final_interview_status == 2)
@@ -2323,9 +2450,9 @@ export default {
                 progress = "Final Interview Failed";
                 color = "error";
               }
-              else if(final_interview_status == 3) //failed or did not comply
+              else if(final_interview_status == 3) //failed or Non-Compliant
               {
-                progress = "Did Not Comply - Final Interview";
+                progress = "Non-Compliant - Final Interview";
                 color = "error";
               }
               else if(final_interview_status == 4)
@@ -2341,7 +2468,7 @@ export default {
             }
             else if (bi_status == 3)
             {
-              progress = "Did Not Comply - BI";
+              progress = "Non-Compliant - BI";
               color = "error";
             }
 
@@ -2353,7 +2480,7 @@ export default {
           }
           else if (iq_status == 3)
           {
-            progress = "Did Not Comply - IQ Test";
+            progress = "Non-Compliant - IQ Test";
             color = "error";
           }
 
@@ -2366,7 +2493,7 @@ export default {
         }
         else if (initial_interview_status == 3)
         {
-          progress = "Did Not Comply - Initial Interview";
+          progress = "Non-Compliant - Initial Interview";
           color = "error";
         }
       }
@@ -2397,7 +2524,7 @@ export default {
         border_color = 'success';
         icon = 'mdi-check-circle';
       }
-      else if(status == 2 || status == 3) // if not qualified, failed or did not comply
+      else if(status == 2 || status == 3) // if not qualified, failed or Non-Compliant
       {
         color = 'error';
         icon = 'mdi-close-circle';
@@ -2545,7 +2672,6 @@ export default {
       return errors;
     },
 
-
     progressItems() {
       let progress_items = [
         this.progressStatus('Screening', this.applicant.status),
@@ -2553,6 +2679,7 @@ export default {
         this.progressStatus('IQ Test', this.applicant.iq_status),
         this.progressStatus('B.I & Basic Req', this.applicant.bi_status),
         this.progressStatus('Final Interview', this.applicant.final_interview_status),
+        this.progressStatus('Orientation', this.applicant.orientation_status),
       ];
 
       return progress_items;
@@ -2565,11 +2692,11 @@ export default {
         { value: 2, text: 'Failed' },
       ];
 
-      if(this.step > 0)
+      if(this.currentProgress > 0)
       {
-        status_items.push({ value: 3, text: 'Did not Comply' });
+        status_items.push({ value: 3, text: 'Non-Compliant' });
 
-        if(this.step == 4)
+        if(this.currentProgress == 4)
         {
           status_items.push({ value: 4, text: 'Reserved' });
         }
@@ -2593,9 +2720,9 @@ export default {
     },
 
     currentProgress() {
-      let index = this.progressItems.length - 1; // default index is progress(Final Interview)  
+      let index = this.progressItems.length - 1; // default index is progress(Orientation)  
 
-      // get the index of status value not 0; status with value not 0 is the current progress/step of applicant's application status with either On Process, Failed, Did not Comply
+      // get the index of status value not 0; status with value not 0 is the current progress/step of applicant's application status with either On Process, Failed, Non-Compliant
       this.progressItems.forEach((value, i) => {
         if(value.status != 1 && value.status != null)
         {
@@ -2610,12 +2737,15 @@ export default {
       let fields = [
         'final_interview_date',
         'final_interview_status',
+        'final_interview_remarks',
         'employment_position',
         'employment_branch',
         'hiring_officer_position',
         'hiring_officer_name',
         'orientation_date',
-        'signing_of_contract_date'
+        'orientation_status',
+        'signing_of_contract_date',
+        'orientation_remarks',
       ];
 
       let isEditable = false;
@@ -2630,12 +2760,23 @@ export default {
       return isEditable;
 
     },
+    userHasPermissionToUpdateStatus() {
+      let hasPermission = true;
+
+      // if user has rol Branch Manager and current phase or progress is final interview or orientation then restrict user to edit status
+      if(this.hasRole('Branch Manager') && [4, 5].includes(this.currentProgress))
+      {
+        hasPermission = false;
+      }
+
+      return hasPermission;
+    },
     exportJSONData() {
       let json_data = this.json_data;
       
       if(this.export_all_count)
       {
-        console.log(this.json_data);
+       
         json_data = [];
         let fields = Object.keys(this.json_data); // fields are branches
 
@@ -2700,9 +2841,6 @@ export default {
  
         });
       }
-
-      console.log(json_fields);
-      console.log(this.exportJSONData);
 
       return json_fields;
     },
