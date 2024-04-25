@@ -189,11 +189,14 @@
                           :error-messages="datefieldErrors"
                           @input="$v.dateRangeText.$touch()"
                           @blur="$v.dateRangeText.$touch()"
+                          hint="From (MM/DD/YYY) ~ To (MM/DD/YYY)"
+                          persistent-hint
                         ></v-text-field>
                         <!-- <span class="font-weight-bold"> {{ export_all_count ? 'As Of: ' : 'From - to:' }}  </span>
                         <p>{{ export_all_count ? asOfDate : dates }}</p> -->
 
                         <v-autocomplete
+                          class="mt-4"
                           v-model="branch_id"
                           :items="branches"
                           item-text="name"
@@ -1049,6 +1052,8 @@
                     ></v-autocomplete>
                   </v-col>
                 </v-row>
+              </template>
+              <template v-if="step == 1">
                 <v-row>
                   <v-col class="my-0 py-0">
                     <v-text-field
@@ -1056,12 +1061,11 @@
                       type="date"
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.initial_interview_date"
-                      :disabled="editedItem.status != 1"
+                      :error-messages="applicantError.initial_interview_date + dateErrors.initial_interview_date.msg"
+                      @input="validateDate('initial_interview_date')"
                     ></v-text-field>
                   </v-col>
                 </v-row>
-              </template>
-              <template v-if="step == 1">
                 <v-row>
                   <v-col class="my-0 py-0">
                     <v-autocomplete
@@ -1070,6 +1074,7 @@
                       item-text="text"
                       label="Status"
                       v-model="editedItem.initial_interview_status"
+                      :disabled="editedItem.initial_interview_date ? false : true"
                     ></v-autocomplete>
                   </v-col>
                 </v-row>
@@ -1367,8 +1372,8 @@ import { required, requiredIf, maxLength, email } from "vuelidate/lib/validators
 import { mapState, mapGetters } from "vuex";
 import ApplicantFiles from './components/ApplicantFiles.vue';
 import ApplicantDetailsPDF from './components/ApplicantDetailsPDF.vue';
-import moment from "moment";
 import ApplicationProgressCard from "./components/ApplicationProgressCard.vue";
+import moment from "moment";
 
 export default {
   components: {
@@ -1616,6 +1621,7 @@ export default {
       disabled: false,
       progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'B.I & Basic Req', 'Final Interview', 'Orientation'],
       dateErrors: {
+        initial_interview_date: { status: false, msg: "" },
         final_interview_date: { status: false, msg: "" },
         orientation_date: { status: false, msg: "" },
         signing_of_contract_date: { status: false, msg: "" },
@@ -2318,6 +2324,7 @@ export default {
       this.application_status_dialog = false;
       this.step = null;
       this.dateErrors = {
+        initial_interview_date: { status: false, msg: "" },
         final_interview_date: { status: false, msg: "" },
         orientation_date: { status: false, msg: "" },
         signing_of_contract_date: { status: false, msg: "" },
