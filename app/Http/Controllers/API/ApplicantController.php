@@ -1064,13 +1064,14 @@ class ApplicantController extends Controller
 																								 ->where('employment_position.name', $position->name);
 				$qualified_per_position = $applicants->whereIn('final_interview_status', [1, 4])->count(); // qualified status(Final Interview Passed and Reserved)
 				$hired_per_position = $this->all_job_applicants()->whereDate('signing_of_contract_date', '<=', $asOfDate)// Hired if signing of contract has value		
+																	 ->where('orientation_status', 1)
 																	 ->where('employment_branch.id', $branch->id)
 																	 ->where('employment_position.name', $position->name)
 																	 ->count();
 
 				// expired means not deployed within 0 days
 				$expired_per_position = $this->all_job_applicants()->whereDate('initial_interview_date', '<=', $sixty_days_diff)		
-																		->whereNull('signing_of_contract_date')
+																		// ->whereNull('signing_of_contract_date')
 																		->where(function($query) {
 																				//where status values are neither 'failed' nor 'Non-Compliant'
 																				$query->whereNotIn('initial_interview_status', [0, 2, 3])
@@ -1082,8 +1083,11 @@ class ApplicantController extends Controller
 																							})
 																							->where(function($q) {
 																								$q->whereNotIn(DB::raw('IFNULL(final_interview_status, 0)'), [2, 3]);
+																							})
+																							->where(function($q) {
+																								$q->where('orientation_status', 0)
+																									->orWhereNull('orientation_status');
 																							});
-																			
 																		})
 																		->where('positions.name', $position->name)
 																		->where(DB::raw("IFNULL(IFNULL(employment_branch.id, branch_complied.id), branch_id)"), $branch->id)
