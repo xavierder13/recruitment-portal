@@ -545,15 +545,15 @@ class ApplicantController extends Controller
 									<span>Human Resource Team</span>
 								</html>';
 	
-				if($email_name)
-				{
-					Mail::send([], [], function ($message) use ($html, $email_name) {
-						$message->to($email_name)
-										->subject('Addessa Online Job Application')
-										->from('addessa.corporation2013@gmail.com', 'Addessa Corporation')
-										->setBody($html, 'text/html');
-					});
-				}
+				// if($email_name)
+				// {
+				// 	Mail::send([], [], function ($message) use ($html, $email_name) {
+				// 		$message->to($email_name)
+				// 						->subject('Addessa Online Job Application')
+				// 						->from('addessa.corporation2013@gmail.com', 'Addessa Corporation')
+				// 						->setBody($html, 'text/html');
+				// 	});
+				// }
    
 				// Mail::send([], [], function($message) {
 				// 	$message->to('jeremiahherreria19@gmail.com', 'Tutorials Point');
