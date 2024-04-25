@@ -1123,8 +1123,6 @@ class ApplicantController extends Controller
 		{
 
 			$applicant->status = $req->status;
-			$applicant->initial_interview_date = $req->initial_interview_date;
-			$applicant->initial_interview_status = 0;
 			
 			if(in_array($req->status, [0, 2]))
 			{
@@ -1135,7 +1133,7 @@ class ApplicantController extends Controller
 		}
 		else if($step == 1) //initial interview
 		{
-
+			$applicant->initial_interview_date = $req->initial_interview_date;
 			$applicant->initial_interview_status = $req->initial_interview_status;
 			$applicant->position_preference = $req->position_preference;
 			$applicant->branch_preference = $req->branch_preference;
@@ -1199,8 +1197,6 @@ class ApplicantController extends Controller
 			$applicant->employment_branch = $req->employment_branch;
 			$applicant->hiring_officer_position = $req->hiring_officer_position;
 			$applicant->hiring_officer_name = $req->hiring_officer_name;
-			$applicant->orientation_date = $req->orientation_date;
-			$applicant->signing_of_contract_date = $req->signing_of_contract_date;
 
 			// if final_interview_status value is 1 (Passed) then set orientation_status to 0 (On Process) else null
 			$applicant->orientation_status = $req->final_interview_status == 1 ? 0 : null;
@@ -1228,6 +1224,9 @@ class ApplicantController extends Controller
 		{
 			$applicant->orientation_status = $req->orientation_status;
 			$applicant->orientation_remarks = "";
+			$applicant->orientation_date = $req->orientation_date;
+			$applicant->signing_of_contract_date = $req->signing_of_contract_date;
+
 			if($req->orientation_status == 3)
 			{
 				$applicant->orientation_remarks = $req->orientation_remarks;
@@ -1327,6 +1326,12 @@ class ApplicantController extends Controller
 																												$query->where('applicants.branch_id', $user->branch_id);
 																											}
 																									})
+																									->where(function($query){
+																											$query->where(function($qry) {
+																																$qry->whereDate('applicants.initial_interview_date', '>=', Carbon::now()->format('Y-m-d'))
+																																		->orWhereNull('applicants.initial_interview_date');
+																														});			
+																									})
 																									->orderBy('applicants.initial_interview_date', 'DESC')
 																									->get()
 																									->each(function ($row, $index) {
@@ -1416,7 +1421,7 @@ class ApplicantController extends Controller
 
 	public function get_orientation_list() 
 	{
-		$job_applicants = $this->all_job_applicants()->where('applicants.final_interview_status', 1)
+		$job_applicants = $this->all_job_applicants()->where('applicants.orientation_status', 0)
 																				    // ->whereIn('final_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or Non-Compliant)
 																						->where(function($query) {
 																							$user = Auth::user();
@@ -1431,9 +1436,7 @@ class ApplicantController extends Controller
 																								$query->where(function($qry) {
 																													$qry->whereDate('applicants.orientation_date', '>=', Carbon::now()->format('Y-m-d'))
 																															->orWhereNull('applicants.orientation_date');
-																											})
-																											->whereIn('applicants.final_interview_status', [1, 4]); //Passed or Reserved
-																										
+																											});	
 																						})
 																						->orderBy('applicants.orientation_date', 'DESC')
 																						->get()

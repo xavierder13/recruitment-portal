@@ -2232,7 +2232,6 @@ export default {
           this.dateErrors[field].msg = 'Enter a valid date';
         }  
       }
-      console.log(this.dateErrors);
         
     },
 
