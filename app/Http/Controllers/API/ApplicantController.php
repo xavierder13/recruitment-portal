@@ -1123,7 +1123,7 @@ class ApplicantController extends Controller
 		{
 
 			$applicant->status = $req->status;
-			
+			$applicant->initial_interview_status = 0;
 			if(in_array($req->status, [0, 2]))
 			{
 				$applicant->initial_interview_date = null;
