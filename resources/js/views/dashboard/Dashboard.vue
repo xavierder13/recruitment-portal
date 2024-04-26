@@ -184,7 +184,7 @@ export default {
           link: '/jobapplicants/initial-interview-list'
         },
         { 
-          text: 'IQ Test', 
+          text: 'Exam', 
           color: 'teal', 
           hasPermission: this.hasPermission('jobapplicants-iq-test-list'), 
           count: this.iq_test_ctr, 
