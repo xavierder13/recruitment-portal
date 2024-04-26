@@ -2453,7 +2453,7 @@ export default {
       
       if (!this.$v.editedItem.signing_of_contract_date.$dirty) return errors;
       !this.$v.editedItem.signing_of_contract_date.required &&
-        errors.push("Please select a date range.");
+        errors.push("Please enter date.");
       
       if(this.applicantError.signing_of_contract_date.length)
       {
