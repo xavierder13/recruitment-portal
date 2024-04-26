@@ -866,7 +866,12 @@
                           </v-card>
                         </v-tab-item>
                         <v-tab-item>
-                          <ApplicantFiles :applicant="applicant" :key="componentKey"/>
+                          <ApplicantFiles 
+                            :applicant="applicant" 
+                            @refreshApplicantFiles="refreshApplicantFiles" 
+                            :key="componentKey" 
+                            ref="ApplicantFiles"
+                          />
                         </v-tab-item>
                       </v-tabs-items>
                     </v-col>
@@ -1018,6 +1023,11 @@
                 </v-row>
               </template>
               <template v-if="step == 2">
+                <v-row v-if="IQFilesIsRequired">
+                  <v-col class="my-2 py-0">
+                    <span class="font-italic font-weight-bold red--text">Please upload {{ iq_required_files.join(', ') }} files</span>
+                  </v-col>
+                </v-row>
                 <v-row>
                   <v-col class="my-0 py-0">
                     <v-autocomplete
@@ -1043,6 +1053,11 @@
                 </v-row>
               </template>
               <template v-if="step == 3">
+                <v-row v-if="BIFilesIsRequired">
+                  <v-col class="my-2 py-0">
+                    <span class="font-italic font-weight-bold red--text">Please upload {{ bi_required_files.join(', ') }} files</span>
+                  </v-col>
+                </v-row>
                 <v-row>
                   <v-col class="my-0 py-0">
                     <v-autocomplete
@@ -1166,10 +1181,11 @@
                       type="date"
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.signing_of_contract_date"
-                      :error-messages="applicantError.signing_of_contract_date + dateErrors.signing_of_contract_date.msg"
+                      :error-messages="signingContractErrors"
                       :disabled="![1, 4].includes(editedItem.final_interview_status)"
                       :readonly="hasRole('Branch Manager')"
                       @input="(applicantError.signing_of_contract_date = []) + validateDate('signing_of_contract_date')"
+                      @blur="$v.editedItem.signing_of_contract_date.$touch()"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -1270,6 +1286,11 @@ export default {
     branch_id: { required },
     editedItem: {
       status: { required },
+      signing_of_contract_date: {
+        required: requiredIf(function () {
+          return this.signingContractDateIsRequired;
+        }),
+      },
     }
   },
 
@@ -1501,6 +1522,8 @@ export default {
       specified_non_compliant_final_reason: "",
       selected_non_compliant_orientation_reason: "",
       specified_non_compliant_orientation_reason: "",
+      iq_required_files: ['Exam'],
+      bi_required_files: ['Birth Certificate', 'Diploma/Copy of Grades', 'Background Investigation'],
     };
   },
   methods: {
@@ -2184,15 +2207,20 @@ export default {
         orientation_date: { status: false, msg: "" },
         signing_of_contract_date: { status: false, msg: "" },
       };
+      this.$v.editedItem.$reset();
     },
 
 
     showConfirmAlert() {
-      let progress_items = ['Screening', 'Initial Interview', 'IQ Test', 'B.I & Basic Req', 'Final Interview'];
 
       let progress = this.progress_items[this.step];
 
-      if(!this.dateHasError)
+      if(this.signingContractDateIsRequired)
+      {
+        this.$v.editedItem.signing_of_contract_date.$touch();
+      }
+
+      if(!this.dateHasError && !this.$v.editedItem.signing_of_contract_date.$error)
       {
         this.$swal({
           title: "Are you sure?",
@@ -2247,6 +2275,10 @@ export default {
       this.$refs.ApplicantDetailsPDF.handleClickDownload();
     },
 
+    refreshApplicantFiles(files) {
+      this.applicant_files = files;
+    },
+
     websocket() {
       // Socket.IO fetch data
       this.$options.sockets.sendData = (data) => {
@@ -2266,6 +2298,26 @@ export default {
       });
 
       return dates.join(' ~ ');
+    },
+
+    signingContractErrors () {
+      const errors = [];
+      
+      if (!this.$v.editedItem.signing_of_contract_date.$dirty) return errors;
+      !this.$v.editedItem.signing_of_contract_date.required &&
+        errors.push("Please select a date range.");
+      
+      if(this.applicantError.signing_of_contract_date.length)
+      {
+        errors = this.applicantError.signing_of_contract_date;
+      }
+
+      if(this.dateErrors.signing_of_contract_date.msg)
+      {
+        errors.push(this.dateErrors.signing_of_contract_date.msg);
+      }
+      return errors;
+
     },
 
     // validations
@@ -2346,6 +2398,10 @@ export default {
       return index;
     },
 
+    signingContractDateIsRequired() {
+      return this.editedItem.orientation_status == 1; // if this.editedItem.status == 1 (passed) then signing contract date is required
+    },
+
     progressIsEditable() {
       let fields = [
         'final_interview_date',
@@ -2382,6 +2438,40 @@ export default {
       }
 
       return hasPermission;
+    },
+
+    IQFilesIsRequired() {
+      let isRequired = false;
+      let hasAllRequiredFiles = this.iq_required_files.every(value => this.applicantDocuments.includes(value));
+
+      if(this.editedItem.iq_status == 1 && !hasAllRequiredFiles)
+      {
+        isRequired = true;
+      }
+
+      return isRequired;
+    },
+
+    BIFilesIsRequired() {
+      let isRequired = false;
+      let hasAllRequiredFiles = this.bi_required_files.every(value => this.applicantDocuments.includes(value));
+
+      if(this.editedItem.bi_status == 1 && !hasAllRequiredFiles)
+      {
+        isRequired = true;
+      }
+
+      return isRequired;
+    },
+
+    applicantDocuments () {
+      let files = [];
+
+      this.applicant_files.forEach(value => {
+        files.push(value.title)
+      });
+
+      return files;
     },
 
     ...mapState("userRolesPermissions", ["userRoles", "userPermissions"]),

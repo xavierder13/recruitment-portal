@@ -182,7 +182,21 @@ export default {
       file: [],
       selected_doc_type: "",
       specified_doc_type: "",
-      doc_types: ["Exam", "Background Investigation", "Diploma/Copy of Grades", "Birth Certificate", "Others"],
+      doc_types: [
+        "Exam", 
+        "Background Investigation", 
+        "Diploma/Copy of Grades", 
+        "Birth Certificate", 
+        "Police Clearance",
+        "Health Declaration",
+        "SSS",
+        "Pag-IBIG",
+        "PhilHealth",
+        "TIN",
+        "Driver's License",
+        "Drive Test Result",
+        "Others"
+      ],
       dialog: false,
       file: [],
       loading: true,
@@ -244,6 +258,8 @@ export default {
                 this.closeDialog();
 
                 this.applicant_files.push(data.applicant_file);
+
+                this.refreshApplicantFiles();
 
               }
               else
@@ -349,6 +365,9 @@ export default {
       // let url = "https://recruitmentportal.addessa.com" + "/wysiwyg/resume_files/" + file;    
       // window.open(url, 'Download');
 
+    },
+    refreshApplicantFiles() {
+      this.$emit('refreshApplicantFiles', this.applicant_files);
     },
     isUnauthorized(error) {
       // if unauthenticated (401)
