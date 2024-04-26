@@ -1329,7 +1329,7 @@ export default {
         'Position Preference': 'position_preference',
         'Branch Preference': 'branch_preference',
         'Branch Complied': 'branch_complied',
-        'IQ Test': 'iq_status',
+        'Exam': 'iq_status',
         'B.I & Basic Req': 'bi_status',
         'Final Interview Date': 'final_interview_date',
         'Final Interview Status': 'final_interview_status',
@@ -1468,7 +1468,7 @@ export default {
         hired_date: "",
       },
       disabled: false,
-      progress_items: ['Screening', 'Initial Interview', 'IQ Test', 'B.I & Basic Req', 'Final Interview', 'Orientation'],
+      progress_items: ['Screening', 'Initial Interview', 'Exam', 'B.I & Basic Req', 'Final Interview', 'Orientation'],
       dateErrors: {
         initial_interview_date: { status: false, msg: "" },
         final_interview_date: { status: false, msg: "" },
@@ -2012,10 +2012,10 @@ export default {
         color = "purple";
         if(initial_interview_status == 1) // initial interview passed then set new progress
         {
-          progress = "IQ Test " + text;
+          progress = "Exam " + text;
           color = "teal";
 
-          if(iq_status == 1)// IQ Test passed then set new progress
+          if(iq_status == 1)// Exam passed then set new progress
           {
             progress = "BI " + text;
             color = "lime";
@@ -2078,12 +2078,12 @@ export default {
           }
           else if (iq_status == 2)
           {
-            progress = "IQ Test Failed";
+            progress = "Exam Failed";
             color = "error";
           }
           else if (iq_status == 3)
           {
-            progress = "Non-Compliant - IQ Test";
+            progress = "Non-Compliant - Exam";
             color = "error";
           }
 
@@ -2181,7 +2181,7 @@ export default {
     },
 
     showConfirmAlert() {
-      let progress_items = ['Screening', 'Initial Interview', 'IQ Test', 'B.I & Basic Req', 'Final Interview'];
+      let progress_items = ['Screening', 'Initial Interview', 'Exam', 'B.I & Basic Req', 'Final Interview'];
 
       let progress = this.progress_items[this.step];
 
@@ -2286,7 +2286,7 @@ export default {
       let progress_items = [
         this.progressStatus('Screening', this.applicant.status),
         this.progressStatus('Initial Interview', this.applicant.initial_interview_status),
-        this.progressStatus('IQ Test', this.applicant.iq_status),
+        this.progressStatus('Exam', this.applicant.iq_status),
         this.progressStatus('B.I & Basic Req', this.applicant.bi_status),
         this.progressStatus('Final Interview', this.applicant.final_interview_status),
         this.progressStatus('Orientation', this.applicant.orientation_status),
