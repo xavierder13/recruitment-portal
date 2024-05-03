@@ -414,7 +414,7 @@ export default {
         date_from: false,
         date_to: false,
       };
-      this.branch_id = "";
+      this.branch_id = this.user.branch_id;
       this.branch_field_param = "";
       this.date_field_param = "";
       this.get_empty_date = false;
@@ -749,6 +749,8 @@ export default {
       this.report_group = this.report_groups[1];
       this.report_type = this.page_view;
     }
+
+    this.branch_id = this.user.branch_id;
   }
 }
 </script>
