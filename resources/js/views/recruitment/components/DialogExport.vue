@@ -45,20 +45,6 @@
                 ></v-autocomplete>
               </v-col>
             </v-row>
-            <v-row v-if="report_group.group == 'Detailed Report'">
-              <v-col class="my-0 py-0">
-                <v-autocomplete
-                  v-model="branch_field_param"
-                  :items="branchFieldParameters"
-                  label="Branch Field Parameter"
-                  item-text="description"
-                  item-value="field_name"
-                  :error-messages="branchFieldParameterErrors"
-                  @input="$v.branch_field_param.$touch()"
-                  @blur="$v.branch_field_param.$touch()"
-                ></v-autocomplete>
-              </v-col>
-            </v-row>
             <v-row>
               <v-col class="my-0 py-0">
                 <v-autocomplete
@@ -74,21 +60,37 @@
                 ></v-autocomplete>
               </v-col>
             </v-row>
-            <v-row v-if="report_group.group == 'Detailed Report'">
-              <v-col class="my-0 py-0">
-                <v-autocomplete
-                  v-model="date_field_param"
-                  :items="dateFieldParameters"
-                  label="Date Field Parameter"
-                  item-text="description"
-                  item-value="field_name"
-                  :error-messages="dateFieldParameterErrors"
-                  :disabled="report_type ? false : true"
-                  @input="$v.date_field_param.$touch()"
-                  @blur="$v.date_field_param.$touch()"
-                ></v-autocomplete>
-              </v-col>
-            </v-row>
+            <template v-if="report_group.group == 'Detailed Report'">
+              <v-row>
+                <v-col class="my-0 py-0">
+                  <v-autocomplete
+                    v-model="branch_field_param"
+                    :items="branchFieldParameters"
+                    label="Branch Field Parameter"
+                    item-text="description"
+                    item-value="field_name"
+                    :error-messages="branchFieldParameterErrors"
+                    @input="$v.branch_field_param.$touch()"
+                    @blur="$v.branch_field_param.$touch()"
+                  ></v-autocomplete>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col class="my-0 py-0">
+                  <v-autocomplete
+                    v-model="date_field_param"
+                    :items="dateFieldParameters"
+                    label="Date Field Parameter"
+                    item-text="description"
+                    item-value="field_name"
+                    :error-messages="dateFieldParameterErrors"
+                    :disabled="report_type ? false : true"
+                    @input="$v.date_field_param.$touch()"
+                    @blur="$v.date_field_param.$touch()"
+                  ></v-autocomplete>
+                </v-col>
+              </v-row>
+            </template>
             <v-row>
               <v-col class="my-0 py-0" v-if="report_type != 'Overall Count'">
                 <v-text-field
