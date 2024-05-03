@@ -108,6 +108,12 @@ class ApplicantMaintenance
 				}
 			}
 
+			if($request->is('api/job_applicant/hired_list')){
+				if($user->can('jobapplicants-hired-list')){
+					return $next($request);
+				}
+			}
+
 			if($request->is('api/job_applicant/get_all_status_count')){
 				if($user->can('jobapplicants-list')){
 					return $next($request);

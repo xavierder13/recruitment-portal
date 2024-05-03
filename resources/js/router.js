@@ -14,6 +14,7 @@ import IQTestList from './views/recruitment/IQTestList.vue';
 import BIList from './views/recruitment/BIList.vue';
 import FinalInterviewList from './views/recruitment/FinalInterviewList.vue';
 import OrientationList from './views/recruitment/OrientationList.vue';
+import HiredList from './views/recruitment/HiredList.vue';
 import UserIndex from './views/user/UserIndex.vue';
 import UserCreate from './views/user/UserCreate.vue';
 import UserProfile from './views/user/UserProfile.vue';
@@ -87,6 +88,11 @@ const routes = [
         path: '/jobapplicants/orientation-list',
         name: 'jobapplicants.orientation.list',
         component: OrientationList
+      },
+      {
+        path: '/jobapplicants/hired-list',
+        name: 'jobapplicants.hired.list',
+        component: HiredList
       },
       {
         path: '/user/index',

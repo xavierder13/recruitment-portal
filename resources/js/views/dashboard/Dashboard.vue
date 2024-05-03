@@ -79,6 +79,7 @@ export default {
       bi_ctr: 0,
       final_interview_ctr: 0,
       orientation_ctr: 0,
+      hired_ctr: 0,
     };
   },
 
@@ -97,6 +98,7 @@ export default {
           this.bi_ctr = data.bi_ctr;
           this.final_interview_ctr = data.final_interview_ctr;
           this.orientation_ctr = data.orientation_ctr;
+          this.hired_ctr = data.hired_ctr;
           
         },
         (error) => {
@@ -210,6 +212,13 @@ export default {
           hasPermission: this.hasPermission('jobapplicants-orientation-list'), 
           count: this.orientation_ctr, 
           link: '/jobapplicants/orientation-list'
+        },
+        { 
+          text: 'Hired (This Month)', 
+          color: 'success', 
+          hasPermission: this.hasPermission('jobapplicants-hired-list'), 
+          count: this.hired_ctr, 
+          link: '/jobapplicants/hired-list'
         },
        ];
 

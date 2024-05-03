@@ -11,7 +11,7 @@
         </v-breadcrumbs>
         <v-card>
           <v-card-title>
-            Job Applicant Lists (For Exam)
+            Job Applicant Lists (Hired)
             <v-spacer></v-spacer>
             <v-text-field
               v-model="search"
@@ -68,6 +68,7 @@
               >  
                 {{ applicationProgress(item).progress }}
               </v-chip>
+            
             </template>
             <template v-slot:item.actions="{ item }">
               <v-icon
@@ -93,7 +94,7 @@
         <DialogExport
           :branches="branches"
           :dialog="dialog"
-          :page_view="'Exam'"
+          :page_view="'Hired'"
           @closeDialog="closeExportDialog"
           ref="DialogExport"
         />
@@ -804,6 +805,7 @@
             </v-card-text>
           </v-card>
         </v-dialog>
+
         <!-- loader-dialog -->
         <v-dialog
           v-model="loader_dialog"
@@ -1003,6 +1005,26 @@
                     ></v-autocomplete>
                   </v-col>
                 </v-row>
+                <!-- if final_interview_status value is non-compliant -->
+                <template v-if="editedItem.final_interview_status == 3">
+                  <v-row>
+                    <v-col class="my-0 py-0">
+                      <v-autocomplete
+                        :items="non_compliant_reasons"
+                        label="Non-Compliant Reason"
+                        v-model="selected_non_compliant_final_reason"
+                      ></v-autocomplete>
+                    </v-col>
+                  </v-row>
+                  <v-row v-if="selected_non_compliant_final_reason == 'Others (Specify)'">
+                    <v-col class="my-0 py-0">
+                      <v-text-field
+                        label="Specify Non-Compliant Reason"
+                        v-model="specified_non_compliant_final_reason"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </template>
                 <v-row>
                   <v-col class="my-0 py-0">
                     <v-autocomplete
@@ -1069,10 +1091,11 @@
                       type="date"
                       prepend-icon="mdi-calendar"
                       v-model="editedItem.signing_of_contract_date"
-                      :error-messages="applicantError.signing_of_contract_date + dateErrors.signing_of_contract_date.msg"
+                      :error-messages="signingContractErrors"
                       :disabled="![1, 4].includes(editedItem.final_interview_status)"
                       :readonly="hasRole('Branch Manager')"
                       @input="(applicantError.signing_of_contract_date = []) + validateDate('signing_of_contract_date')"
+                      @blur="$v.editedItem.signing_of_contract_date.$touch()"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -1174,9 +1197,10 @@ export default {
     dateRangeText: { required },
     branch_id: { required },
     editedItem: {
-      initial_interview_date: {
+      status: { required },
+      signing_of_contract_date: {
         required: requiredIf(function () {
-          return this.initialInterviewDateIsRequired;
+          return this.signingContractDateIsRequired;
         }),
       },
     }
@@ -1199,7 +1223,9 @@ export default {
         { text: "Full name", value: "name" },
         { text: "Position Applied", value: "position_name" },
         { text: "Branch Applied", value: "branch_name" },
-        { text: "Date Submitted", value: "created_at" },
+        { text: "Branch Complied", value: "branch_complied" },
+        { text: "Employment Branch", value: "employment_branch" },
+        { text: "Orientation Date", value: "orientation_date" },
         { text: "Status", value: "progress_status" },
         { text: "Actions", value: "actions", sortable: false, width: "100px" },
       ],
@@ -1316,7 +1342,7 @@ export default {
         orientation_date: "",
         orientation_status: "",
         orientation_remarks: "",
-        signing_of_contract_date: "",
+        hired_date: "",
       },
 
       defaultItem: {
@@ -1329,6 +1355,7 @@ export default {
         position_preference: [],
         branch_preference: [],
         final_interview_date: "",
+        final_interview_status: "",
         final_interview_remarks: "",
         employment_position: "",
         employment_branch: "",
@@ -1337,10 +1364,10 @@ export default {
         orientation_date: "",
         orientation_status: "",
         orientation_remarks: "",
-        signing_of_contract_date: "",
+        hired_date: "",
       },
       disabled: false,
-      progress_items: ['Screening', 'Initial Interview', 'Exam', 'B.I & Basic Req', 'Final Interview', 'Orientation'],
+      progress_items: ['Screening', 'Initial Interview', 'Exam', 'B.I & Basic Req', 'Final Interview', 'Orientation', 'Orientation'],
       dateErrors: {
         initial_interview_date: { status: false, msg: "" },
         final_interview_date: { status: false, msg: "" },
@@ -1380,14 +1407,24 @@ export default {
       }
     },
 
+    // getBranch() {
+    //   axios.get("/api/branch/index").then(
+    //     (response) => {
+    //       this.branches = response.data.branches;
+    //     },
+    //     (error) => {
+    //       this.isUnauthorized(error);
+    //     }
+    //   );
+    // },
+
     getApplicants() {
       this.v_table = false;
       this.loading = true;
       this.table_loader = true;
-      axios.get("/api/job_applicant/iq_test_list").then(
+      axios.get("/api/job_applicant/hired_list").then(
         (response) => {
           let data = response.data
-         
           this.v_table = true;
           this.table_loader = false;
           this.loading = false;
@@ -1395,6 +1432,7 @@ export default {
           this.branches = data.branches;
           this.positions = data.positions;
 
+          console.log(data);
         },
         (error) => {
           this.isUnauthorized(error);
@@ -1404,8 +1442,8 @@ export default {
 
     view_applicant(id){
       
-      this.applicant_id = id;
       this.view_applicant_loading = true;
+      this.applicant_id = id;
 
       const url = `/api/job_applicant/view_applicants_new/${id}`;
       axios.get(url).then(
@@ -1414,99 +1452,102 @@ export default {
 
           if (response.data.success) {
             const data = response.data;
+              console.log(data);
+            // // refresh data when there are some upated status/records detected
+            // if(data.applicant.final_interview_status > 0)
+            // {
+            //   this.$swal({
+            //     title: "Updated Data Detected.",
+            //     text: "There are some updated data detected. Refresh record List",
+            //     icon: "info",
+            //     showCancelButton: true,
+            //     confirmButtonColor: "primary",
+            //     cancelButtonColor: "#6c757d",
+            //     confirmButtonText: "Confirm",
+            //   }).then((result) => {
+            //       if(result.value)
+            //       {
+            //         this.getApplicants();
+            //       }
+            //   });
+            // }
+            // else
+            // {
+              
+
+            // }
+
+            this.applicant = data.applicant;
+            this.view_dialog = true;
+            // this.educ_attains = data.educ_attains;
+            // this.experiences = data.experiences;
+            this.references = data.references;
+            this.fam_members = data.fam_members;
+            this.dependents = data.dependents;
+            this.applicant_files = data.applicant_files;
+            this.download_file = data.file;
             
-            // refresh data when there are some upated status/records detected
-            if(data.applicant.iq_status > 0)
+            data.educ_attains.forEach(value => {
+              let sy_attended = value.sy_attended;
+              if(sy_attended)
+              {
+                if(sy_attended.split(' to ').length > 1)
+                {
+                  let [start, end] = sy_attended.split(' to ');
+                  let sy_start = new Date(start);
+                  let sy_end = new Date(end);
+
+                  sy_attended = sy_attended ? sy_start.toLocaleDateString("en-US") + ' to ' +  sy_end.toLocaleDateString("en-US") : null;
+                }
+              }
+              
+              this.educ_attains.push(Object.assign(value, { sy_attended: sy_attended }));
+              
+            });
+
+            data.experiences.forEach(value => {
+              let date_of_service = value.date_of_service;
+
+              if(date_of_service)
+              {
+                if(date_of_service.split(' to ').length > 1)// if has value format like '1900-01-01 to 1900-01-01'
+                {
+                  let [start, end] = date_of_service.split(' to ');
+                  let service_start = new Date(start);
+                  let service_end = new Date(end);
+
+                  date_of_service = date_of_service ? service_start.toLocaleDateString("en-US") + ' to ' +  service_end.toLocaleDateString("en-US") : null;
+                }
+              }
+          
+              this.experiences.push(Object.assign(value, { date_of_service: date_of_service }));
+              
+            });   
+            
+            let position_preference = this.applicant.position_preference;
+            
+            if(position_preference)
             {
-              this.$swal({
-                title: "Updated Data Detected.",
-                text: "There are some updated data detected. Refresh record List",
-                icon: "info",
-                showCancelButton: true,
-                confirmButtonColor: "primary",
-                cancelButtonColor: "#6c757d",
-                confirmButtonText: "Confirm",
-              }).then((result) => {
-                  if(result.value)
-                  {
-                    this.getApplicants();
-                  }
-              });
+              let positionsIdArr = position_preference.split(',');
+              let positions = positionsIdArr.map(Number);
+              this.applicant.position_preference = positions;
             }
             else
             {
-              this.applicant = data.applicant;
-              this.view_dialog = true;
-              // this.educ_attains = data.educ_attains;
-              // this.experiences = data.experiences;
-              this.references = data.references;
-              this.fam_members = data.fam_members;
-              this.dependents = data.dependents;
-              this.applicant_files = data.applicant_files;
-              this.download_file = data.file;
-              
-              data.educ_attains.forEach(value => {
-                let sy_attended = value.sy_attended;
-                if(sy_attended)
-                {
-                  if(sy_attended.split(' to ').length > 1)
-                  {
-                    let [start, end] = sy_attended.split(' to ');
-                    let sy_start = new Date(start);
-                    let sy_end = new Date(end);
+              this.applicant.position_preference = [];
+            }
 
-                    sy_attended = sy_attended ? sy_start.toLocaleDateString("en-US") + ' to ' +  sy_end.toLocaleDateString("en-US") : null;
-                  }
-                }
-                
-                this.educ_attains.push(Object.assign(value, { sy_attended: sy_attended }));
-                
-              });
+            let branch_preference = this.applicant.branch_preference;
 
-              data.experiences.forEach(value => {
-                let date_of_service = value.date_of_service;
-
-                if(date_of_service)
-                {
-                  if(date_of_service.split(' to ').length > 1)// if has value format like '1900-01-01 to 1900-01-01'
-                  {
-                    let [start, end] = date_of_service.split(' to ');
-                    let service_start = new Date(start);
-                    let service_end = new Date(end);
-
-                    date_of_service = date_of_service ? service_start.toLocaleDateString("en-US") + ' to ' +  service_end.toLocaleDateString("en-US") : null;
-                  }
-                }
-            
-                this.experiences.push(Object.assign(value, { date_of_service: date_of_service }));
-                
-              });     
-              
-              let position_preference = this.applicant.position_preference;
-              
-              if(position_preference)
-              {
-                let positionsIdArr = position_preference.split(',');
-                let positions = positionsIdArr.map(Number);
-                this.applicant.position_preference = positions;
-              }
-              else
-              {
-                this.applicant.position_preference = [];
-              }
-
-              let branch_preference = this.applicant.branch_preference;
-
-              if(branch_preference)
-              {
-                let branchesIdArr = branch_preference.split(',');
-                let branches = branchesIdArr.map(Number);
-                this.applicant.branch_preference = branches;
-              }
-              else
-              {
-                this.applicant.branch_preference = [];
-              }
+            if(branch_preference)
+            {
+              let branchesIdArr = branch_preference.split(',');
+              let branches = branchesIdArr.map(Number);
+              this.applicant.branch_preference = branches;
+            }
+            else
+            {
+              this.applicant.branch_preference = [];
             }
   
           }
@@ -1626,8 +1667,8 @@ export default {
         formData.append('date_from', date_from);
         formData.append('date_to', date_to);
         formData.append('branch_id', branch_id);
-        formData.append('progress', this.progress_items[2]); // progress_items index 3 (Final Interview)
-        formData.append('step', 2); // step 3 (Final Interview)
+        formData.append('progress', this.progress_items[5]); // progress_items index 5 (Orientation)
+        formData.append('step', 5); // step 5 (Orientation)
 
         axios.post("/api/job_applicant/export_applicants_new", formData, {
           headers: {
@@ -1673,6 +1714,27 @@ export default {
       }
     },
 
+    // viewStatus(id){
+    //   this.status_dialog = true;
+
+    //   const url = `/api/job_applicant/view_applicants/${id}`;
+    //   axios.get(url).then(
+    //     (response) => {
+    //       if (response.data.success) {
+
+    //         const data = response.data.resp;
+            
+    //         this.edit_applicant = data;
+    //         this.appl_status = data[0].status;
+    //         this.applicant_id = data[0].id;
+    //       }
+    //     },
+    //     (error) => {
+    //       this.isUnauthorized(error);
+    //     }
+    //   );
+    // },
+
     updateStatus(status){
 
       let formData = new FormData();
@@ -1685,8 +1747,7 @@ export default {
         }
       }).then(
         (response) => {
-          let data = response.data;
-          if(data.success){
+          if(response.data.success){
 
             // this.status_dialog = false;
             this.view_dialog = false;
@@ -1695,7 +1756,7 @@ export default {
               timeout: 3000
             });
 
-            var applicant = data.applicant;
+            var applicant = response.data.applicant;
             var updatedIndex = -1;
             for(var index = 0; index < this.job_applicants.length; index++) {
               var oldApplicant = this.job_applicants[index]
@@ -1708,16 +1769,17 @@ export default {
             if(updatedIndex > -1) {
               this.job_applicants.splice(updatedIndex, 1, applicant)
             }
+            // var updatedList = this.job_applicants.map(function(item){
+            //   if(item.id == applicant.id) {
+            //     applicant.cnt_id = item.cnt_id;
+            //     return applicant;
+            //   }
+            //   return item;
+            // });
+            // this.job_applicants = updatedList;
 
             this.applicant_id = "";
-          }
-          else if(data.warning)
-          {
-            this.$toaster.warning(data.warning, {
-              timeout: 3000
-            });
-          }
-          else{
+          }else{
             // this.status_dialog = false;
             
             this.$toaster.error('You have errors updating the status of the applicant.', {
@@ -1778,11 +1840,13 @@ export default {
         step: this.step,
         position_preference: position_preference,
         branch_preference: branch_preference,
+        final_interview_remarks: this.selected_non_compliant_final_reason == 'Others (Specify)' ? this.specified_non_compliant_final_reason : '',
+        orientation_remarks: this.selected_non_compliant_orientation_reason == 'Others (Specify)' ? this.specified_non_compliant_orientation_reason : '',
       })
 
       axios.post("/api/job_applicant/update_status", data).then(
         (response) => {
-        
+          console.log(response.data);
           this.application_status_dialog = false;
           if(response.data.success){
             
@@ -1968,7 +2032,12 @@ export default {
 
       let progress = this.progress_items[this.step];
 
-      if(!this.IQFilesIsRequired)
+      if(this.signingContractDateIsRequired)
+      {
+        this.$v.editedItem.signing_of_contract_date.$touch();
+      }
+
+      if(!this.dateHasError && !this.$v.editedItem.signing_of_contract_date.$error)
       {
         this.$swal({
           title: "Are you sure?",
@@ -2052,6 +2121,26 @@ export default {
       return dates.join(' ~ ');
     },
 
+    signingContractErrors () {
+      const errors = [];
+      
+      if (!this.$v.editedItem.signing_of_contract_date.$dirty) return errors;
+      !this.$v.editedItem.signing_of_contract_date.required &&
+        errors.push("Please enter date.");
+      
+      if(this.applicantError.signing_of_contract_date.length)
+      {
+        errors = this.applicantError.signing_of_contract_date;
+      }
+
+      if(this.dateErrors.signing_of_contract_date.msg)
+      {
+        errors.push(this.dateErrors.signing_of_contract_date.msg);
+      }
+      return errors;
+
+    },
+
     // validations
     datefieldErrors() {
       const errors = [];
@@ -2068,7 +2157,6 @@ export default {
         errors.push("Please select a branch.");
       return errors;
     },
-
 
     progressItems() {
       let progress_items = [
@@ -2101,6 +2189,20 @@ export default {
       }
 
       return status_items
+    },
+
+    dateHasError() {
+      let hasError = false;
+      let fields = Object.keys(this.dateErrors)
+
+      fields.forEach(field => {
+        if(this.dateErrors[field].status)
+        {
+          hasError = true;
+        }
+      });
+
+      return hasError;
     },
 
     currentProgress() {

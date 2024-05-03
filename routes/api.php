@@ -322,6 +322,11 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
         'as' => 'job_applicant.orientation_list',
     ]);
 
+    Route::get('/hired_list', [
+        'uses' => 'API\ApplicantController@hired_list',
+        'as' => 'job_applicant.hired_list',
+    ]);
+
     Route::get('/get_all_status_count', [
         'uses' => 'API\ApplicantController@get_all_status_count',
         'as' => 'job_applicant.get_all_status_count',

@@ -59,7 +59,7 @@
             :search="search"
             :loading="loading"
           >
-            <template v-slot:item.status="{ item }">
+            <template v-slot:item.progress_status="{ item }">
               <v-chip
                 small
                 dark
@@ -67,38 +67,6 @@
               >  
                 {{ applicationProgress(item).progress }}
               </v-chip>
-              <!-- <v-chip
-                color="orange"
-                dark
-                small
-                v-if="item.status === 1"
-              >  
-                Qualified
-              </v-chip>
-              <v-chip
-                color="#37474f"
-                dark
-                small
-                v-if="item.status === 2"
-              >  
-                Not Qualified
-              </v-chip>
-              <v-chip
-                color="#009688"
-                dark
-                small
-                v-if="item.status === 3"
-              >  
-                Hired
-              </v-chip>
-              <v-chip
-                color="#f44336"
-                dark
-                small
-                v-if="item.status === 4"
-              >  
-                Failed
-              </v-chip> -->
             </template>
             <template v-slot:item.actions="{ item }">
               <!-- <v-icon
@@ -128,916 +96,765 @@
         </v-card>
 
         <!-- Dialogs -->
-        <v-row justify="space-around">
-          <v-col cols="auto">
-            <v-dialog
-              transition="dialog-top-transition"
-              max-width="600"
-              v-model="dialog"
-              persistent
-            >
-              <template v-slot:default="dialog">
-                <v-card>
-                  <v-toolbar
-                    color="#009688"
-                    dark
-                  ><h3>Export records</h3></v-toolbar>
-                  <v-card-text>
-                    <v-row class="mt-5">
-                      <v-col cols="3">
-                        <v-checkbox
-                          name="export_all_count"
-                          v-model="export_all_count"
-                          dense
-                          hide-details
-                          class="ma-0 pa-0"
-                          v-if="userPermissions.jobapplicants_export_total_count"
-                        >
-                          <template v-slot:label>
-                            <v-chip :color="export_all_count ? 'primary' : '' " class="mt-2"> 
-                              Export All Count
-                            </v-chip>
-                          </template>
-                        </v-checkbox>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col
-                        cols="12"
-                        sm="6"
-                      >
-                        <v-date-picker
-                          v-model="dates"
-                          range
-                          v-if="!export_all_count"
-                        ></v-date-picker>
+        <DialogExport
+          :branches="branches"
+          :dialog="dialog"
+          :page_view="'All Status'"
+          @closeDialog="closeExportDialog"
+          ref="DialogExport"
+        />
 
-                        <v-date-picker
-                          v-model="asOfDate"
-                          v-if="export_all_count"
-                        ></v-date-picker>
-                      </v-col>
-                      <v-col
-                        cols="12"
-                        sm="6"
-                      >
-                        <v-text-field
-                          v-model="dateRangeText"
-                          label="Date parameter"
-                          prepend-icon="mdi-calendar"
-                          readonly
-                          :error-messages="datefieldErrors"
-                          @input="$v.dateRangeText.$touch()"
-                          @blur="$v.dateRangeText.$touch()"
-                          hint="From (MM/DD/YYY) ~ To (MM/DD/YYY)"
-                          persistent-hint
-                        ></v-text-field>
-                        <!-- <span class="font-weight-bold"> {{ export_all_count ? 'As Of: ' : 'From - to:' }}  </span>
-                        <p>{{ export_all_count ? asOfDate : dates }}</p> -->
-
-                        <v-autocomplete
-                          class="mt-4"
-                          v-model="branch_id"
-                          :items="branches"
-                          item-text="name"
-                          item-value="id"
-                          label="Branch parameter"
-                          :error-messages="branchIdErrors"
-                          @input="$v.branch_id.$touch()"
-                          @blur="$v.branch_id.$touch()"
-                          :readonly="hasRole('Branch Manager')"
-                        ></v-autocomplete>
-                      </v-col>
-                    </v-row>
-                  </v-card-text>
-                  <v-divider class="my-0"></v-divider>
-                  <v-card-actions class="pr-4 py-4">
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      color="success"
-                      transition="scale-transition"
-                      @click="(generate_btn = true) + (export_btn = false)"
-                      v-if="export_btn"
-                    >
-                      <export-excel
-                        :fields = "exportJSONFields"
-                        :data = "exportJSONData"
-                        :meta = "json_meta"
-                        name = "applicants.xls"
-                      >
-                        Export Data
-                      </export-excel>
-                    </v-btn>  
-
-                    <v-btn
-                      color="primary"
-                      @click="export_applications()"
-                      transition="scale-transition"
-                      v-if="generate_btn"
-                    >
-                      Generate
-                    </v-btn>
-                    <v-btn
-                      text
-                      @click="(dialog.value = false), clear_export()"
-                    >Close</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </template>
-            </v-dialog>
-          </v-col>  
-          <v-row justify="center">
-            <v-dialog
-              v-model="view_dialog"
-              fullscreen
-              hide-overlay
-              transition="dialog-bottom-transition"
-            >
-              <v-card>
-                <v-toolbar
-                  dark
-                  color="primary"
-                >
-                  <v-btn
-                    icon
-                    dark
-                    @click="closeApplicantDialog()"
-                  >
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
-                  <v-toolbar-title> Applicant's Details </v-toolbar-title>
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-btn
-                        icon 
-                        dark 
-                        v-bind="attrs" v-on="on"
-                        @click="downloadPDF()"
-                      > 
-                        <v-icon>mdi-file-pdf</v-icon> 
-                      </v-btn>
-                    </template>
-                    <span>Download PDF</span>
-                  </v-tooltip>  
-                  
-                  <!-- <v-spacer></v-spacer>
-                  <v-toolbar-items>
-                    <v-btn
-                      dark
-                      text
-                      @click="updateStatus(status = 1)"
-                      v-if="applicant.status < 1 && hasPermission('jobapplicants-approve')"
-                    >
-                      Approve
-                    </v-btn>
-                    <v-btn
-                      dark
-                      text
-                      @click="updateStatus(status = 2)"
-                      v-if="applicant.status < 1 && hasPermission('jobapplicants-approve')"
-                    >
-                      Deny
-                    </v-btn>
-
-                    <v-btn
-                      dark
-                      text
-                      @click="updateStatus(status = 3)"
-                      v-if="applicant.status === 1 && hasPermission('jobapplicants-hire')"
-                    >
-                      Hired
-                    </v-btn>
-                    <v-btn
-                      dark
-                      text
-                      @click="updateStatus(status = 4)"
-                      v-if="applicant.status === 1 && hasPermission('jobapplicants-hire')"
-                    >
-                      Failed
-                    </v-btn>
-                  </v-toolbar-items> -->
-                </v-toolbar>
-                <v-card-text>
-                  <v-row>
-                    <v-col class="mt-8">
-                      <div class="d-flex justify-center mb-6 bg-surface-variant">
-                        <v-spacer></v-spacer>
-                        <template v-for="(progress, i) in progressItems" v-if="!view_applicant_loading">
-                          <v-chip 
-                            class="ma-0" 
-                            :color="progress.color" 
-                            :ripple="false"
-                          > 
-                            <!-- @click="progress.text == 'Final Interview' && applicant.final_interview_status == 1 && hasPermission('jobapplicants-update-hired-details') ? viewProgress(progress) : ''"  -->
-                            <v-icon class="mr-1"> {{ progress.icon }} </v-icon> 
-                            {{ progress.text }}
-                          </v-chip>
-                          <v-divider :class="'mt-4 thick-divider ' + progress.border_color" v-if="progressItems.length - 1 > i "></v-divider>
-                        </template>
-                        <v-spacer></v-spacer>
-                      </div>
-                    </v-col>
-                  </v-row>
-                  <v-divider></v-divider>
-                  <v-row>
-                    <v-col cols="8" class="mt-4">
-                      <v-tabs 
-                        background-color="cyan darken-3" 
-                        dark 
-                        v-model="tab" 
-                        class="mb-2 px-2"
-                        show-arrows
-                        slider-color="teal-lighten-3"
-                      >
-                        <v-tab v-for="item in tabs" :key="item.tab">
-                          {{ item.description }}
-                        </v-tab>
-                      </v-tabs>
-                      <v-tabs-items v-model="tab">
-                        <v-tab-item class="mt-2">
-                          <v-card class="mx-2">
-                            <v-card-title class="justify-center mb-0 pb-0">
-                              <strong>Personal Information</strong>  
-                            </v-card-title>
-                            <v-divider></v-divider>
-                            <v-card-text>
-                              <v-row>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.name"
-                                    label="Full name"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.address"
-                                    label="Present Address"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.address2"
-                                    label="Home Address"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.birth_place"
-                                    label="Birth Place"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.birthdate"
-                                    label="Birthday"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.age"
-                                    label="Age"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.gender"
-                                    label="Gender"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.civil_status"
-                                    label="Civil Status"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.contact_no"
-                                    label="Contact Number"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.email"
-                                    label="Email Address"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.educ_attain"
-                                    label="Highest Educational Attainment"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <!-- <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.course"
-                                    label="Course"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.school_grad"
-                                    label="School Graduated"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col> -->
-                                <v-col cols="4" class="my-2 py-0">
-                                  <v-text-field
-                                    class="ma-0 pa-0"
-                                    v-model="applicant.how_learn"
-                                    label="Job Application learned from"
-                                    readonly
-                                  >
-                                  </v-text-field>
-                                </v-col>
-                              </v-row>
-                            </v-card-text>
-                          </v-card>
-                          <v-card class="mt-2 mx-2">
-                            <v-card-title class="justify-center mb-0 pb-0">
-                              <strong>Educational Background</strong>
-                            </v-card-title>
-                            <v-divider class="mb-0"></v-divider>
-                            <v-card-text>
-                              <template v-for="(item, i) in educ_attains">
-                                <v-row>
-                                  <v-col>
-                                    <span class="text-h6">
-                                      <strong>{{ item.educ_level.charAt(0).toUpperCase() + item.educ_level.slice(1) }}</strong> 
-                                    </span>
-                                  </v-col>
-                                </v-row>
-                                <v-row>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="School"
-                                      v-model="item.school"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Course/Specialization"
-                                      v-model="item.course"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      :label=" item.educ_level == 'Senior HighSchool' ? 'Strand' : 'Major'"
-                                      v-model="item.major"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="S.Y Attended"
-                                      v-model="item.sy_attended"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Honors Received"
-                                      v-model="item.honors"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                </v-row>
-                                <v-row>
-                                  <v-col class="my-2 py-0">
-                                    <v-divider v-if="educ_attains.length > i + 1" class="my-0"></v-divider>
-                                  </v-col>
-                                </v-row>
-                              </template>
-                            </v-card-text>
-                          </v-card>
-                          <v-card class="mt-2 mx-2">
-                            <v-card-title class="justify-center mb-0 pb-0">
-                              <strong>Parents/Guardian/Spouse</strong>
-                            </v-card-title>
-                            <v-divider class="mb-0"></v-divider>
-                            <v-card-text>
-                              <template v-for="(item, i) in fam_members">
-                                <v-row>
-                                  <v-col>
-                                    <span class="text-h6">
-                                      <strong>{{ item.relationship.charAt(0).toUpperCase() + item.relationship.slice(1) }}</strong> 
-                                    </span>
-                                  </v-col>
-                                </v-row>
-                                <v-row>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Name"
-                                      v-model="item.name"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Age"
-                                      v-model="item.age"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Address"
-                                      v-model="item.address"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Contact"
-                                      v-model="item.contact"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Occupation"
-                                      v-model="item.occupation"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                </v-row>
-                                <v-row>
-                                  <v-col class="my-2 py-0">
-                                    <v-divider v-if="fam_members.length > i + 1" class="my-0"></v-divider>
-                                  </v-col>
-                                </v-row>
-                              </template>
-                            </v-card-text>
-                          </v-card>
-                          <v-card class="mt-4 mx-2">
-                            <v-card-title class="justify-center mb-0 pb-0">
-                              <strong>Dependents</strong>  
-                            </v-card-title>
-                            <v-divider class="mb-0"></v-divider>
-                            <v-card-text>
-                              <template v-for="(item, i) in dependents">
-                                <v-row>
-                                  <v-col>
-                                    <span class="text-h6">
-                                      <strong>Dependent {{ i + 1 }}</strong> 
-                                    </span>
-                                  </v-col>
-                                </v-row>
-                                <v-row>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Name"
-                                      v-model="item.name"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Relationship"
-                                      v-model="item.relationship"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                    class="ma-0 pa-0"
-                                    label="Age"
-                                    v-model="item.age"
-                                    readonly
-                                  ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Address"
-                                      v-model="item.address"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Occupation"
-                                      v-model="item.occupation"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                </v-row>
-                                <v-row>
-                                  <v-col class="my-2 py-0">
-                                    <v-divider v-if="dependents.length > i + 1" class="my-0"></v-divider>
-                                  </v-col>
-                                </v-row>
-                              </template>
-                            </v-card-text>
-                          </v-card>
-                        </v-tab-item>
-                        <v-tab-item class="mt-2">
-                          <v-card class="mx-2">
-                            <v-card-text>
-                              <template v-for="(item, i) in experiences">
-                                <v-row>
-                                  <v-col>
-                                    <span class="text-h6">
-                                      <strong>Work Experience {{ item.length > 1 ? i + 1 : ''}}</strong> 
-                                    </span>
-                                  </v-col>
-                                </v-row>
-                                <v-row>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Company/Employer"
-                                      v-model="item.employer"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Position"
-                                      v-model="item.position"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Salary"
-                                      v-model="item.salary"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Date of Service"
-                                      v-model="item.date_of_service"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Job Description"
-                                      v-model="item.job_description"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                </v-row>
-                                <v-row>
-                                  <v-col class="my-2 py-0">
-                                    <v-divider v-if="item.length > 1" class="my-0"></v-divider>
-                                  </v-col>
-                                </v-row>
-                              </template>
-                            </v-card-text>
-                          </v-card>
-                        </v-tab-item>
-                        <v-tab-item class="mt-2">
-                          <v-card class="mx-2">
-                            <v-card-text>
-                              <template v-for="(item, i) in references">
-                                <v-row>
-                                  <v-col>
-                                    <span class="text-h6">
-                                      <strong>Reference {{ i + 1 }}</strong> 
-                                    </span>
-                                  </v-col>
-                                </v-row>
-                                <v-row>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Name"
-                                      v-model="item.name"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Address"
-                                      v-model="item.address"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Contact"
-                                      v-model="item.contact"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Company"
-                                      v-model="item.company"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                  <v-col 
-                                    class="my-2 py-0"
-                                    cols="12"
-                                    xs="12"
-                                    sm="6"
-                                    md="6"
-                                    lg="4"
-                                  >
-                                    <v-text-field
-                                      class="ma-0 pa-0"
-                                      label="Position"
-                                      v-model="item.position"
-                                      readonly
-                                    ></v-text-field>
-                                  </v-col>
-                                </v-row>
-                                <v-row>
-                                  <v-col class="my-2 py-0">
-                                    <v-divider class="my-0"></v-divider>
-                                  </v-col>
-                                </v-row>
-                              </template>
-                            </v-card-text>
-                          </v-card>
-                        </v-tab-item>
-                        <v-tab-item>
-                          <ApplicantFiles 
-                            :applicant="applicant" 
-                            @refreshApplicantFiles="refreshApplicantFiles" 
-                            :key="componentKey" 
-                            ref="ApplicantFiles"
-                          />
-                        </v-tab-item>
-                      </v-tabs-items>
-                    </v-col>
-                    <v-divider vertical></v-divider>
-                    <v-col cols="4" class="mt-4 px-6">
-                      <ApplicationProgressCard 
-                        :applicant="applicant"
-                        :color="applicationProgress(applicant).color"
-                        :progress="applicationProgress(applicant).progress"
-                        :progressIsEditable="progressIsEditable"
-                        :userHasPermissionToUpdateStatus="userHasPermissionToUpdateStatus"
-                        :statusItems="statusItems"
-                        :branches="branches"
-                        :positions="positions"
-                        @viewProgress="viewProgress"
-                      />
-                    </v-col>
-                  </v-row>
-                </v-card-text>
-              </v-card>
-            </v-dialog>
-          </v-row>
-
-          <!-- loader-dialog -->
-          <v-dialog
-            v-model="loader_dialog"
-            hide-overlay
-            persistent
-            width="300"
-          >
-            <v-card
-              color="primary"
+        <v-dialog
+          v-model="view_dialog"
+          fullscreen
+          hide-overlay
+          transition="dialog-bottom-transition"
+        >
+          <v-card>
+            <v-toolbar
               dark
+              color="primary"
             >
-              <v-card-text>
-                <p class="text-center pt-4">
-                  Please stand by...
-                </p>
-                <v-progress-linear
-                  indeterminate
-                  color="white"
-                  class="mb-0"
-                ></v-progress-linear>
-              </v-card-text>
-            </v-card>
-          </v-dialog>
-        </v-row>
+              <v-btn
+                icon
+                dark
+                @click="closeApplicantDialog()"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+              <v-toolbar-title> Applicant's Details </v-toolbar-title>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    icon 
+                    dark 
+                    v-bind="attrs" v-on="on"
+                    @click="downloadPDF()"
+                  > 
+                    <v-icon>mdi-file-pdf</v-icon> 
+                  </v-btn>
+                </template>
+                <span>Download PDF</span>
+              </v-tooltip>  
+            </v-toolbar>
+            <v-card-text>
+              <v-row>
+                <v-col class="mt-8">
+                  <div class="d-flex justify-center mb-6 bg-surface-variant">
+                    <v-spacer></v-spacer>
+                    <template v-for="(progress, i) in progressItems" v-if="!view_applicant_loading">
+                      <v-chip 
+                        class="ma-0" 
+                        :color="progress.color" 
+                        :ripple="false"
+                      > 
+                        <!-- @click="progress.text == 'Final Interview' && applicant.final_interview_status == 1 && hasPermission('jobapplicants-update-hired-details') ? viewProgress(progress) : ''"  -->
+                        <v-icon class="mr-1"> {{ progress.icon }} </v-icon> 
+                        {{ progress.text }}
+                      </v-chip>
+                      <v-divider :class="'mt-4 thick-divider ' + progress.border_color" v-if="progressItems.length - 1 > i "></v-divider>
+                    </template>
+                    <v-spacer></v-spacer>
+                  </div>
+                </v-col>
+              </v-row>
+              <v-divider></v-divider>
+              <v-row>
+                <v-col cols="8" class="mt-4">
+                  <v-tabs 
+                    background-color="cyan darken-3" 
+                    dark 
+                    v-model="tab" 
+                    class="mb-2 px-2"
+                    show-arrows
+                    slider-color="teal-lighten-3"
+                  >
+                    <v-tab v-for="item in tabs" :key="item.tab">
+                      {{ item.description }}
+                    </v-tab>
+                  </v-tabs>
+                  <v-tabs-items v-model="tab">
+                    <v-tab-item class="mt-2">
+                      <v-card class="mx-2">
+                        <v-card-title class="justify-center mb-0 pb-0">
+                          <strong>Personal Information</strong>  
+                        </v-card-title>
+                        <v-divider></v-divider>
+                        <v-card-text>
+                          <v-row>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.name"
+                                label="Full name"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.address"
+                                label="Present Address"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.address2"
+                                label="Home Address"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.birth_place"
+                                label="Birth Place"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.birthdate"
+                                label="Birthday"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.age"
+                                label="Age"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.gender"
+                                label="Gender"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.civil_status"
+                                label="Civil Status"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.contact_no"
+                                label="Contact Number"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.email"
+                                label="Email Address"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.educ_attain"
+                                label="Highest Educational Attainment"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <!-- <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.course"
+                                label="Course"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.school_grad"
+                                label="School Graduated"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col> -->
+                            <v-col cols="4" class="my-2 py-0">
+                              <v-text-field
+                                class="ma-0 pa-0"
+                                v-model="applicant.how_learn"
+                                label="Job Application learned from"
+                                readonly
+                              >
+                              </v-text-field>
+                            </v-col>
+                          </v-row>
+                        </v-card-text>
+                      </v-card>
+                      <v-card class="mt-2 mx-2">
+                        <v-card-title class="justify-center mb-0 pb-0">
+                          <strong>Educational Background</strong>
+                        </v-card-title>
+                        <v-divider class="mb-0"></v-divider>
+                        <v-card-text>
+                          <template v-for="(item, i) in educ_attains">
+                            <v-row>
+                              <v-col>
+                                <span class="text-h6">
+                                  <strong>{{ item.educ_level.charAt(0).toUpperCase() + item.educ_level.slice(1) }}</strong> 
+                                </span>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="School"
+                                  v-model="item.school"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Course/Specialization"
+                                  v-model="item.course"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  :label=" item.educ_level == 'Senior HighSchool' ? 'Strand' : 'Major'"
+                                  v-model="item.major"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="S.Y Attended"
+                                  v-model="item.sy_attended"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Honors Received"
+                                  v-model="item.honors"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col class="my-2 py-0">
+                                <v-divider v-if="educ_attains.length > i + 1" class="my-0"></v-divider>
+                              </v-col>
+                            </v-row>
+                          </template>
+                        </v-card-text>
+                      </v-card>
+                      <v-card class="mt-2 mx-2">
+                        <v-card-title class="justify-center mb-0 pb-0">
+                          <strong>Parents/Guardian/Spouse</strong>
+                        </v-card-title>
+                        <v-divider class="mb-0"></v-divider>
+                        <v-card-text>
+                          <template v-for="(item, i) in fam_members">
+                            <v-row>
+                              <v-col>
+                                <span class="text-h6">
+                                  <strong>{{ item.relationship.charAt(0).toUpperCase() + item.relationship.slice(1) }}</strong> 
+                                </span>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Name"
+                                  v-model="item.name"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Age"
+                                  v-model="item.age"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Address"
+                                  v-model="item.address"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Contact"
+                                  v-model="item.contact"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Occupation"
+                                  v-model="item.occupation"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col class="my-2 py-0">
+                                <v-divider v-if="fam_members.length > i + 1" class="my-0"></v-divider>
+                              </v-col>
+                            </v-row>
+                          </template>
+                        </v-card-text>
+                      </v-card>
+                      <v-card class="mt-4 mx-2">
+                        <v-card-title class="justify-center mb-0 pb-0">
+                          <strong>Dependents</strong>  
+                        </v-card-title>
+                        <v-divider class="mb-0"></v-divider>
+                        <v-card-text>
+                          <template v-for="(item, i) in dependents">
+                            <v-row>
+                              <v-col>
+                                <span class="text-h6">
+                                  <strong>Dependent {{ i + 1 }}</strong> 
+                                </span>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Name"
+                                  v-model="item.name"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Relationship"
+                                  v-model="item.relationship"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                class="ma-0 pa-0"
+                                label="Age"
+                                v-model="item.age"
+                                readonly
+                              ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Address"
+                                  v-model="item.address"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Occupation"
+                                  v-model="item.occupation"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col class="my-2 py-0">
+                                <v-divider v-if="dependents.length > i + 1" class="my-0"></v-divider>
+                              </v-col>
+                            </v-row>
+                          </template>
+                        </v-card-text>
+                      </v-card>
+                    </v-tab-item>
+                    <v-tab-item class="mt-2">
+                      <v-card class="mx-2">
+                        <v-card-text>
+                          <template v-for="(item, i) in experiences">
+                            <v-row>
+                              <v-col>
+                                <span class="text-h6">
+                                  <strong>Work Experience {{ item.length > 1 ? i + 1 : ''}}</strong> 
+                                </span>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Company/Employer"
+                                  v-model="item.employer"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Position"
+                                  v-model="item.position"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Salary"
+                                  v-model="item.salary"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Date of Service"
+                                  v-model="item.date_of_service"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Job Description"
+                                  v-model="item.job_description"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col class="my-2 py-0">
+                                <v-divider v-if="item.length > 1" class="my-0"></v-divider>
+                              </v-col>
+                            </v-row>
+                          </template>
+                        </v-card-text>
+                      </v-card>
+                    </v-tab-item>
+                    <v-tab-item class="mt-2">
+                      <v-card class="mx-2">
+                        <v-card-text>
+                          <template v-for="(item, i) in references">
+                            <v-row>
+                              <v-col>
+                                <span class="text-h6">
+                                  <strong>Reference {{ i + 1 }}</strong> 
+                                </span>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Name"
+                                  v-model="item.name"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Address"
+                                  v-model="item.address"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Contact"
+                                  v-model="item.contact"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Company"
+                                  v-model="item.company"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                              <v-col 
+                                class="my-2 py-0"
+                                cols="12"
+                                xs="12"
+                                sm="6"
+                                md="6"
+                                lg="4"
+                              >
+                                <v-text-field
+                                  class="ma-0 pa-0"
+                                  label="Position"
+                                  v-model="item.position"
+                                  readonly
+                                ></v-text-field>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col class="my-2 py-0">
+                                <v-divider class="my-0"></v-divider>
+                              </v-col>
+                            </v-row>
+                          </template>
+                        </v-card-text>
+                      </v-card>
+                    </v-tab-item>
+                    <v-tab-item>
+                      <ApplicantFiles 
+                        :applicant="applicant" 
+                        @refreshApplicantFiles="refreshApplicantFiles" 
+                        :key="componentKey" 
+                        ref="ApplicantFiles"
+                      />
+                    </v-tab-item>
+                  </v-tabs-items>
+                </v-col>
+                <v-divider vertical></v-divider>
+                <v-col cols="4" class="mt-4 px-6">
+                  <ApplicationProgressCard 
+                    :applicant="applicant"
+                    :color="applicationProgress(applicant).color"
+                    :progress="applicationProgress(applicant).progress"
+                    :progressIsEditable="progressIsEditable"
+                    :userHasPermissionToUpdateStatus="userHasPermissionToUpdateStatus"
+                    :statusItems="statusItems"
+                    :branches="branches"
+                    :positions="positions"
+                    @viewProgress="viewProgress"
+                  />
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
 
+        <!-- loader-dialog -->
+        <v-dialog
+          v-model="loader_dialog"
+          hide-overlay
+          persistent
+          width="300"
+        >
+          <v-card
+            color="primary"
+            dark
+          >
+            <v-card-text>
+              <p class="text-center pt-4">
+                Please stand by...
+              </p>
+              <v-progress-linear
+                indeterminate
+                color="white"
+                class="mb-0"
+              ></v-progress-linear>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
         <v-dialog v-model="application_status_dialog" max-width="500px" persistent>
          <v-card>
             <v-card-title class="mb-0 pb-0">
@@ -1389,6 +1206,7 @@ import { mapState, mapGetters } from "vuex";
 import ApplicantFiles from './components/ApplicantFiles.vue';
 import ApplicantDetailsPDF from './components/ApplicantDetailsPDF.vue';
 import ApplicationProgressCard from "./components/ApplicationProgressCard.vue";
+import DialogExport from "./components/DialogExport";
 import moment from "moment";
 
 export default {
@@ -1396,6 +1214,7 @@ export default {
     ApplicantFiles,
     ApplicantDetailsPDF,
     ApplicationProgressCard,
+    DialogExport
   },
   mixins: [validationMixin],
 
@@ -1432,7 +1251,7 @@ export default {
         { text: "Branch Complied", value: "branch_complied" },
         { text: "Employment Branch", value: "employment_branch" },
         { text: "Date Submitted", value: "created_at" },
-        { text: "Status", value: "status" },
+        { text: "Status", value: "progress_status" },
         { text: "Actions", value: "actions", sortable: false, width: "100px" },
       ],
 
@@ -1456,67 +1275,6 @@ export default {
       dates: [],
       asOfDate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
       branch_id: "",
-      
-      // json_fields: {
-      //   '#': 'cnt_id',
-      //   'Last Name': 'lastname',
-      //   'First Name': 'firstname',
-      //   'Middle Name': 'middlename',
-      //   'Complete Address': 'address',
-      //   'Age': 'age',
-      //   'Gender': 'gender',
-      //   'Contact No.': 'contact_no',
-      //   'Civil Status': 'civil_status',
-      //   'Position Applied': 'position_name',
-      //   'Educational Attainment': 'educ_attain',
-      //   'Course/Specialization': 'course',
-      //   'Date Applied': 'date_applied',
-      //   'Branch Applied': 'branch_name',
-      //   'Birthday': 'birthdate',
-      //   'Email Address': 'email',
-      //   'School graduated': 'school_grad',
-      //   'How did you learn about job vacancy?': 'how_learn',
-      //   'Status': 'status',
-      // },
-      json_fields: {
-        // '#': 'cnt_id',
-        'Last Name': 'lastname',
-        'First Name': 'firstname',
-        'Middle Name': 'middlename',
-        'Poistion Applied': 'position_name',
-        'Branch Applied': 'branch_name',
-        'Gender': 'gender',
-        'Contact': 'contact_no',
-        'Date Applied': 'date_applied',
-        'Source' : 'how_learn',
-        'Screening': 'screening_status',
-        'Interview Schedule': 'initial_interview_date',
-        'Initial Interview': 'initial_interview_status',
-        'Position Preference': 'position_preference',
-        'Branch Preference': 'branch_preference',
-        'Branch Complied': 'branch_complied',
-        'Exam': 'iq_status',
-        'B.I & Basic Req': 'bi_status',
-        'Final Interview Date': 'final_interview_date',
-        'Final Interview Status': 'final_interview_status',
-        'Employment Position' : 'employment_position',
-        'Employment Branch' : 'employment_branch',
-        'Requirements' : 'requirements',
-        'Hiring Officer Position': 'hiring_officer_position',
-        'Hiring Officer Name': 'hiring_officer_name',
-        'Date of Orientation & Training' : 'orientation_date',
-        'Date of Contract Signing' : 'signing_of_contract_date',
-      },
-
-      json_data: [],
-      json_meta: [
-        [
-          {
-            'key': 'charset',
-            'value': 'utf-8'
-          }
-        ]
-      ],
 
       applicant: {
         name: "",
@@ -1700,7 +1458,7 @@ export default {
       axios.get("/api/job_applicant/get_applicants_new").then(
         (response) => {
           let data = response.data
-    
+          console.log(data);
           this.v_table = true;
           this.table_loader = false;
           this.loading = false;
@@ -1726,7 +1484,7 @@ export default {
           const data = response.data;
           if (data.success) {
             let step = this.applicationProgress(data.applicant).step;
-            let progress_fields = ['status', 'initial_interview_status', 'iq_status', 'bi_status', 'final_interview_status'];
+            let progress_fields = ['status', 'initial_interview_status', 'iq_status', 'bi_status', 'final_interview_status', 'orientation_status'];
             let field = progress_fields[step];
 
             // refresh data when there are some upated status/records detected
@@ -1889,19 +1647,21 @@ export default {
     },
 
     openExportDialog() {
-      this.dialog = true;
-      this.branch_id = this.user.branch_id;
-      // if(this.job_applicants.length)
-      // {
-      //   this.dialog = true;
-      //   this.branch_id = this.user.branch_id;
-      // }
-      // else
-      // {
-      //   this.$toaster.warning('No record found.', {
-      //     timeout: 2000
-      //   });
-      // }
+      // this.dialog = true;
+      // this.branch_id = this.user.branch_id;
+      
+      if(this.job_applicants.length)
+      {
+        this.dialog = true;
+        this.branch_id = this.user.branch_id;
+        // this.$refs.DialogExport.clearData();
+      }
+      else
+      {
+        this.$toaster.warning('No record found.', {
+          timeout: 2000
+        });
+      }
     },
 
     export_applications(){
@@ -1976,7 +1736,7 @@ export default {
               this.export_btn = true;
 
               this.json_data = response.data.resp;
-              // console.log(this.json_data);
+              console.log(this.json_data);
               
             }else{
 
@@ -2083,8 +1843,6 @@ export default {
       );
     },
 
-    
-    
     clear_export(){
       this.generate_btn = true;
       this.export_btn = false;
@@ -2169,8 +1927,6 @@ export default {
 
     applicationProgress(applicant) {
       
-      let text = "On Process";
-      let progress = "Screening " + text;
       let color = "warning";
       let status = applicant.status;
       let initial_interview_status = applicant.initial_interview_status;
@@ -2179,108 +1935,51 @@ export default {
       let final_interview_status = applicant.final_interview_status;
       let orientation_status = applicant.orientation_status;
       let step = 0;
+      let statusArr = [status, initial_interview_status, iq_status, bi_status, final_interview_status, orientation_status];
+      let statusErrorValues = [2, 3]; // failed, non-compliant
       
-      if(status == 1)
+      if(statusArr.some(value => statusErrorValues.includes(value)))
       {
-        progress = "Initial Interview " + text;
+        color = "error";
+      }
+      else if(status == 1)
+      {
         color = "purple";
         if(initial_interview_status == 1) // initial interview passed then set new progress
         {
-          progress = "Exam " + text;
           color = "teal";
 
           if(iq_status == 1)// Exam passed then set new progress
           {
-            progress = "BI " + text;
             color = "lime";
 
             if(bi_status == 1) // BI passed then set new progress
             {
-              progress = "Final Interview " + text;
               color = "cyan";
 
               if(final_interview_status == 1 ) // Final Interview passed then set new progress
               {
-                progress = "Orientation " + text;
                 color = "secondary";
 
                 if(orientation_status == 1 ) // Orientation passed then set new progress
                 {
-                  progress = "Hired";
                   color = "success";
-                  
                 }
-                else if(orientation_status == 2)
-                {
-                  progress = "Orientation Failed";
-                  color = "error";
-                }
-                else if(orientation_status == 3) //failed or Non-Compliant
-                {
-                  progress = "Non-Compliant - Orientation";
-                  color = "error";
-                }
-                
               }
-              else if(final_interview_status == 2)
+              else if(final_interview_status == 4) // Final Interview Reserved
               {
-                progress = "Final Interview Failed";
-                color = "error";
-              }
-              else if(final_interview_status == 3) //failed or Non-Compliant
-              {
-                progress = "Non-Compliant - Final Interview";
-                color = "error";
-              }
-              else if(final_interview_status == 4)
-              {
-                progress = "Reserved";
                 color = "#1A237E";
               }
             }
-            else if(bi_status == 2)
-            {
-              progress = "BI Failed";
-              color = "error";
-            }
-            else if (bi_status == 3)
-            {
-              progress = "Non-Compliant - BI";
-              color = "error";
-            }
-
           }
-          else if (iq_status == 2)
-          {
-            progress = "Exam Failed";
-            color = "error";
-          }
-          else if (iq_status == 3)
-          {
-            progress = "Non-Compliant - Exam";
-            color = "error";
-          }
-
-        }
-        else if(initial_interview_status == 2) // Initial Interview Failed
-        {
-          progress = "Initial Interview Failed";
-          color = "error";
-          
-        }
-        else if (initial_interview_status == 3)
-        {
-          progress = "Non-Compliant - Initial Interview";
-          color = "error";
         }
       }
       else if(status == 2) // not qualified
       {
-        progress = "Not Qualified";
         color = "error";
       }
 
-      return { progress: progress, color: color, step: step };
+      return { progress: applicant.progress_status, color: color, step: step };
 
     },
 
@@ -2425,6 +2124,10 @@ export default {
 
     refreshApplicantFiles(files) {
       this.applicant_files = files;
+    },
+
+    closeExportDialog() {
+      this.dialog = false;
     },
 
     websocket() {
@@ -2588,85 +2291,12 @@ export default {
       return hasPermission;
     },
     
-    exportJSONData() {
-      let json_data = this.json_data;
-      
-      if(this.export_all_count)
-      {
-       
-        json_data = [];
-        let fields = Object.keys(this.json_data); // fields are branches
-
-        fields.forEach((field, i) => {
-          json_data.push({
-            branch: field,
-          });
-          
-          let sub_fields = Object.keys(this.json_data[field]);
-
-          sub_fields.forEach(sub_field => { // sub_fields are positions/branch/total_count field name
-
-            let key_sub_field = sub_field.split('.').join(''); // remove '.' character
-
-            Object.assign(json_data[i], { [key_sub_field.toLowerCase()]: this.json_data[field][sub_field] })  
-
-          });
-
-        });
-
-      }
-
-      return json_data;
-    },
-
-    exportJSONFields() {
-      let json_fields = this.json_fields;
-      
-      if(this.export_all_count)
-      { 
-        json_fields = { 
-          Branch: 'branch',
-          'TOTAL_COUNT.total_applicants': 'total_count.total_applicants',  
-          'TOTAL_COUNT.total_screening_initial_failed': 'total_count.total_screening_initial_failed', 
-          'TOTAL_COUNT.total_initial_passed': 'total_count.total_initial_passed', 
-        };
-        let fields = Object.keys(this.exportJSONData[0]); // keys are position names
-        let position_names = [
-          'Branch Manager', 
-          'Sales Supervisor', 
-          'Credit & Collection Supervisor', 
-          'Management System Supervisor',
-          'Encoder',
-          'Cashier',
-          'Account Analyst',
-          'Warehouseman',
-          'Sales Specialist',
-          'Technician',
-          'Delivery/ Logistics Driver',
-          'Delivery/Logistics Helper',
-        ];
-
-        position_names.forEach(position => {
-
-          Object.assign(json_fields, { 
-            [ position.toUpperCase() + '.beg_bal' ]: position.toLowerCase() + '.beg_bal', 
-            [ position.toUpperCase() + '.qualified' ]: position.toLowerCase() + '.qualified',
-            [ position.toUpperCase() + '.hired' ]: position.toLowerCase() + '.hired',
-            [ position.toUpperCase() + '.expired' ]: position.toLowerCase() + '.expired',
-            [ position.toUpperCase() + '.end_bal' ]: position.toLowerCase() + '.end_bal',
-          });
- 
-        });
-      }
-
-      return json_fields;
-    },
 
     IQFilesIsRequired() {
       let isRequired = false;
       let hasAllRequiredFiles = this.iq_required_files.every(value => this.applicantDocuments.includes(value));
 
-      if(this.editedItem.iq_status == 1 && !hasAllRequiredFiles)
+      if(this.editedItem.iq_status == 1 && !hasAllRequiredFiles && this.applicant.progress_status == 'Exam on Process')
       {
         isRequired = true;
       }
@@ -2678,7 +2308,7 @@ export default {
       let isRequired = false;
       let hasAllRequiredFiles = this.bi_required_files.every(value => this.applicantDocuments.includes(value));
       
-      if(this.editedItem.bi_status == 1 && !hasAllRequiredFiles)
+      if(this.editedItem.bi_status == 1 && !hasAllRequiredFiles && this.applicant.progress_status == 'B.I & Basic Req')
       {
         isRequired = true;
       }

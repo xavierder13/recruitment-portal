@@ -109,6 +109,30 @@ class ApplicantController extends Controller
 														 		 DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%m/%d/%Y") as signing_of_contract_date'),
 																 'applicants.orientation_status',
 																 'applicants.orientation_remarks',
+																 DB::raw("
+																 	CASE 
+																		WHEN applicants.status = 0 THEN 'Screening on Process' 
+																		WHEN applicants.status = 2 THEN 'Not Qualified'
+																		WHEN applicants.status = 3 THEN 'Non-Compliant - Screening'
+																		WHEN applicants.initial_interview_status = 0 THEN 'Initial Interview on Process'
+																		WHEN applicants.initial_interview_status = 2 THEN 'Initial Interview Failed'
+																		WHEN applicants.initial_interview_status = 3 THEN 'Non-Compliant - Initial Interview'
+																		WHEN applicants.iq_status = 0 THEN 'Exam on Process'
+																		WHEN applicants.iq_status = 2 THEN 'Exam Failed'
+																		WHEN applicants.iq_status = 3 THEN 'Non-Compliant - Exam'
+																		WHEN applicants.bi_status = 0 THEN 'B.I & Basic Req on Process'
+																		WHEN applicants.bi_status = 2 THEN 'B.I & Basic Req Failed'
+																		WHEN applicants.bi_status = 3 THEN 'Non-Compliant - B.I & Basic Req'
+																		WHEN applicants.final_interview_status = 0 THEN 'Final Interview on Process'
+																		WHEN applicants.final_interview_status = 2 THEN 'Final Interview Failed'
+																		WHEN applicants.final_interview_status = 3 THEN 'Non-Compliant - Final Interview'
+																		WHEN applicants.final_interview_status = 4 THEN 'Reserved'
+																		WHEN applicants.orientation_status = 0 || (applicants.final_interview_status = 1 && applicants.orientation_status IS NULL) THEN 'Orientation on Process'  
+																		WHEN applicants.orientation_status = 2 THEN 'Orientation Failed' 
+																		WHEN applicants.orientation_status = 3 THEN 'Non-Compliant - Orientation' 
+																		WHEN applicants.orientation_status = 1 && applicants.signing_of_contract_date IS NOT NULL THEN 'Hired' 
+																	END as progress_status
+																 ")
 																);	
 
 		return $job_applicants;
@@ -689,7 +713,31 @@ class ApplicantController extends Controller
 																 'applicants.orientation_date',
 																 'applicants.signing_of_contract_date',
 																 'applicants.orientation_status',
-																 'applicants.orientation_remarks'
+																 'applicants.orientation_remarks',
+																 DB::raw("
+																 	CASE 
+																		WHEN applicants.status = 0 THEN 'Screening on Process' 
+																		WHEN applicants.status = 2 THEN 'Not Qualified'
+																		WHEN applicants.status = 3 THEN 'Non-Compliant - Screening'
+																		WHEN applicants.initial_interview_status = 0 THEN 'Initial Interview on Process'
+																		WHEN applicants.initial_interview_status = 2 THEN 'Initial Interview Failed'
+																		WHEN applicants.initial_interview_status = 3 THEN 'Non-Compliant - Initial Interview'
+																		WHEN applicants.iq_status = 0 THEN 'Exam on Process'
+																		WHEN applicants.iq_status = 2 THEN 'Exam Failed'
+																		WHEN applicants.iq_status = 3 THEN 'Non-Compliant - Exam'
+																		WHEN applicants.bi_status = 0 THEN 'B.I & Basic Req on Process'
+																		WHEN applicants.bi_status = 2 THEN 'B.I & Basic Req Failed'
+																		WHEN applicants.bi_status = 3 THEN 'Non-Compliant - B.I & Basic Req'
+																		WHEN applicants.final_interview_status = 0 THEN 'Final Interview on Process'
+																		WHEN applicants.final_interview_status = 2 THEN 'Final Interview Failed'
+																		WHEN applicants.final_interview_status = 3 THEN 'Non-Compliant - Final Interview'
+																		WHEN applicants.final_interview_status = 4 THEN 'Reserved'
+																		WHEN applicants.orientation_status = 0 || (applicants.final_interview_status = 1 && applicants.orientation_status IS NULL) THEN 'Orientation on Process'  
+																		WHEN applicants.orientation_status = 2 THEN 'Orientation Failed' 
+																		WHEN applicants.orientation_status = 3 THEN 'Non-Compliant - Orientation' 
+																		WHEN applicants.orientation_status = 1 && applicants.signing_of_contract_date IS NOT NULL THEN 'Hired' 
+																	END as progress_status
+																 ")
 																)
 												->where('applicants.id', $id)					
 												->get()->first();
@@ -781,20 +829,61 @@ class ApplicantController extends Controller
 		$date_to = $req->date_to;
 		$fields = ['status', 'initial_interview_status', 'iq_status', 'bi_status', 'final_interview_status', 'orientation_status'];
 		$step = $req->step;
-		// $field = $fields[$step];
+		$report_group = $req->report_group;
+		$date_field = $req->date_field_param;
+		$report_type = $req->report_type;
+		$get_empty_date = $req->get_empty_date;
+
+		$status_field = '';
+
+		if($report_type == 'Screening')
+		{
+			$status_field = 'status';
+		}
+		else if($report_type == 'Initial Interview')
+		{
+			$status_field = 'initial_interview_status';
+		}
+		else if($report_type == 'Exam')
+		{
+			$status_field = 'iq_status';
+		}
+		else if($report_type == 'B.I & Basic Req')
+		{
+			$status_field = 'bi_status';
+		}
+		else if($report_type == 'Final Interview')
+		{
+			$status_field = 'final_interview_status';
+		}
+		else if($report_type == 'Orientation')
+		{
+			$status_field = 'orientation_status';
+		}
 		
 		// id: 1000 - Admin
 		// else branch - branches
-		// $applicants = $this->get_initial_interview_list()->toArray();
 		
-
 		// START IQ test list
 																						
 		$user = Auth::user();
-		$applicantsData = $this->all_job_applicants()->where(function($result) use ($user, $date_from, $date_to){
-														$result->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from);
-														$result->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);	
-														
+		$applicantsData = $this->all_job_applicants()->where(function($result) use ($user, $date_from, $date_to, $date_field, $get_empty_date){
+															
+														$result->where(function($query) use ($date_from, $date_to, $date_field, $get_empty_date) {
+																				$query->whereDate(DB::raw('DATE_FORMAT(applicants.'.$date_field.', "%Y-%m-%d")'), '>=', $date_from);
+																				$query->whereDate(DB::raw('DATE_FORMAT(applicants.'.$date_field.', "%Y-%m-%d")'), '<=', $date_to);
+
+																				// consider empty or null date field
+																				if($get_empty_date)
+																				{
+																					$query->orWhereNull('applicants.'.$date_field);
+																				}
+																				else
+																				{
+																					$query->whereNotNull('applicants.'.$date_field);
+																				}
+														});
+
 														if($user->hasRole('Branch Manager'))// if user is manager then exclude all screening on process and failed
 														{
 															$result->where('applicants.status', 1);
@@ -803,10 +892,10 @@ class ApplicantController extends Controller
 												});
 		$applicants = [];
 
-		// if $step has value then get the data per progress
-		if(isset($step))
+		// if report_type value is not 'ALL', means per phase/progress e.g (Screening, Initial Interview ...)
+		if($report_type != 'ALL')
 		{
-			if($step == 2)//IQ Test
+			if($report_type == 'Exam')//IQ Test
 			{
 				$applicantsData->whereIn('applicants.iq_status', [0, 2, 3])
 											 ->orderBy('applicants.created_at', 'DESC');
@@ -820,7 +909,7 @@ class ApplicantController extends Controller
 					if($branch_preference)
 					{
 						$branch_ids = explode(',', $branch_preference);
-
+						// find branch_id from branch_preference value e.g (1, 2, 3, 4)
 						if($branch_id != 1000 && in_array($branch_id, $branch_ids)) //$branch_id with value 1000 means 'ALL'
 						{
 							$applicantsArr[] = $applicant;
@@ -839,17 +928,24 @@ class ApplicantController extends Controller
 			}
 			else
 			{
-				$applicantsData->where(function($result) use ($step, $fields) {
-													if(isset($step))
-													{
-														$result->whereNotNull('applicants.'.$fields[$step])
-																	 ->whereIn('applicants.'.$fields[$step], [0, 2, 3]); //where status is on process or failed
-													}
+				$applicantsData->where(function($result) use ($status_field, $report_type) {
+
+														if($report_type == 'Hired')
+														{
+															$result->whereNotNull('applicants.signing_of_contract_date')
+																		 ->where('applicants.orientation_status', 1);
+														}
+														else
+														{
+															$result->whereNotNull('applicants.'.$status_field)
+																		 ->whereIn('applicants.'.$status_field, [0, 2, 3]); 
+														}
+														
 												})
-												->where(function($query) use ($user, $branch_id, $step) {
+												->where(function($query) use ($branch_id, $step) {
 
 													//status 0 = on process, 1 = passed
-													$query->where(function($qry) use ($user, $branch_id, $step) {
+													$query->where(function($qry) use ($branch_id, $step) {
 																		if($branch_id != 1000)
 																		{
 																			if($step == 0 || $step == 1) // Screening or Initial Interview
@@ -863,12 +959,7 @@ class ApplicantController extends Controller
 																		}
 																	});
 											})
-											->orderBy('applicants.created_at', 'DESC')
-											->get()
-											->each(function ($row, $index) {
-												$row->cnt_id = $index + 1;
-											})
-											->toArray();	
+											->orderBy('applicants.created_at', 'DESC');
 
 				$applicants = $applicantsData->get();
 			}
@@ -924,7 +1015,6 @@ class ApplicantController extends Controller
 	
 		}
 
-	
 		$branches = Branch::get();
 		$positions = Position::get();
 		
@@ -965,12 +1055,14 @@ class ApplicantController extends Controller
 				$iq_status = $applicant->iq_status;
 				$bi_status = $applicant->bi_status;
 				$final_interview_status = $applicant->final_interview_status;
+				$orientation_status = $applicant->orientation_status;
 
 				$arrApplicants[$key]['screening_status'] = !is_null($screening_status) ? $status[$screening_status] : null;
 				$arrApplicants[$key]['initial_interview_status'] = !is_null($initial_interview_status) ? $status[$initial_interview_status] : null;
 				$arrApplicants[$key]['iq_status'] = !is_null($iq_status) ? $status[$iq_status] : null;
 				$arrApplicants[$key]['bi_status'] = !is_null($bi_status) ? $status[$bi_status] : null;
 				$arrApplicants[$key]['final_interview_status'] = !is_null($final_interview_status) ? $status[$final_interview_status] : null;
+				$arrApplicants[$key]['orientation_status'] = !is_null($orientation_status) ? $status[$orientation_status] : null;
 				$arrApplicants[$key]['requirements'] = implode(", ", $applicant_files);
 				$arrApplicants[$key]['position_preference'] = $position_preference;
 				$arrApplicants[$key]['branch_preference'] = $branch_preference;
@@ -990,7 +1082,6 @@ class ApplicantController extends Controller
 
 	public function export_total_number_of_applicants (Request $request)
 	{
-
 		$date_from = $request->date_from;
 		$date_to = $request->date_to;
 		$asOfDate = $request->asOfDate;
@@ -1288,6 +1379,7 @@ class ApplicantController extends Controller
 		$bi_ctr = count($this->get_bi_list());
 		$final_interview_ctr = count($this->get_final_interview_list());
 		$orientation_ctr = count($this->get_orientation_list());
+		$hired_ctr = count($this->get_hired_list());
 
 		return response()->json([
 			'screening_ctr' => $screening_ctr,
@@ -1296,6 +1388,7 @@ class ApplicantController extends Controller
 			'bi_ctr' => $bi_ctr,
 			'final_interview_ctr' => $final_interview_ctr,
 			'orientation_ctr' => $orientation_ctr,
+			'hired_ctr' => $hired_ctr,
 		]);
 	}
 
@@ -1451,6 +1544,33 @@ class ApplicantController extends Controller
 		return $job_applicants;
 	}
 
+	public function get_hired_list() 
+	{
+		$job_applicants = $this->all_job_applicants()->where('applicants.orientation_status', 1)
+																						->where(function($query) {
+																							$user = Auth::user();
+																							if($user->hasRole('Branch Manager'))
+																							{
+																								$query->where('applicants.employment_branch', $user->branch_id);
+																							}
+																						})
+																						->where(function($query){
+																								$query->where(function($qry) {
+																													$dateNow = Carbon::now()->format('Y-m-d');
+																													$firstDayOfMonth = Carbon::now()->startOfMonth()->format('Y-m-d');
+																													$qry->whereDate('applicants.signing_of_contract_date', '>=', $firstDayOfMonth)
+																															->whereDate('applicants.signing_of_contract_date', '<=', $dateNow);
+																											});	
+																						})
+																						->orderBy('applicants.signing_of_contract_date', 'DESC')
+																						->get()
+																						->each(function ($row, $index) {
+																								$row->cnt_id = $index + 1;
+																						});
+
+		return $job_applicants;
+	}
+
 
 	public function screening_list() 
 	{
@@ -1520,6 +1640,19 @@ class ApplicantController extends Controller
 	public function orientation_list() 
 	{
 		$job_applicants = $this->get_orientation_list();
+
+		$branches = DB::table('branches')
+		->orderBy('id', 'ASC')
+		->get();
+
+		$positions = Position::orderBy('name', 'Asc')->get();
+
+		return response()->json(['job_applicants' => $job_applicants, 'branches' => $branches, 'positions' => $positions], 200);
+	}
+
+	public function hired_list() 
+	{
+		$job_applicants = $this->get_hired_list();
 
 		$branches = DB::table('branches')
 		->orderBy('id', 'ASC')
