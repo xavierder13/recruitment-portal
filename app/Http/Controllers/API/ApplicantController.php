@@ -1074,6 +1074,27 @@ class ApplicantController extends Controller
 		return response()->json(['success' => 'Record has been exported', 'applicants' => $arrApplicants], 200);
 	}
 
+	public function branches($branch_id)
+	{
+		return Branch::where( function($query) use ($branch_id) {
+													if($branch_id <> 1000) // not 'ALL BRANCHES'
+													{
+														$query->where('id', $branch_id);
+													}
+											})
+											->where('name', '<>', 'ALL BRANCHES')
+											->get();
+	}
+
+	public function positions()
+	{
+		return Position::with('job_vacancies')
+										->whereHas('job_vacancies', function($query) {
+												$query->where('branch_type', 0); // branch_type = 0 -> position for branch, branch_type = 1 -> positions for admin
+										})
+										->get();
+	}
+
 	public function export_total_number_of_applicants (Request $request)
 	{
 		$date_from = $request->date_from;
@@ -1088,20 +1109,8 @@ class ApplicantController extends Controller
 		$sixty_days_diff = Carbon::parse($asOfDate)->addDay(-60)->format('Y-m-d');
 
 		$arrApplicants = [];
-		$positions = Position::with('job_vacancies')
-												 ->whereHas('job_vacancies', function($query) {
-													$query->where('branch_type', 0); // branch_type = 0 -> position for branch, branch_type = 1 -> positions for admin
-												 })
-												 ->get();
-
-		$branches = Branch::where( function($query) use ($branch_id) {
-													if($branch_id <> 1000) // not 'ALL BRANCHES'
-													{
-														$query->where('id', $branch_id);
-													}
-											})
-											->where('name', '<>', 'ALL BRANCHES')
-											->get();
+		$positions = $this->positions();
+		$branches = $this->branches($branch_id);
 
 		foreach ($branches as $branch) {
 
@@ -1214,7 +1223,7 @@ class ApplicantController extends Controller
 								->count();
 	}
 
-	public function balance(Request $request, $status_field, $branch_id, $position, $type) 
+	public function on_process_quantity(Request $request, $status_field, $branch_id, $position, $type) 
 	{
 		$date_from = $request->date_from;
 		$date_to = $request->date_to;
@@ -1278,26 +1287,37 @@ class ApplicantController extends Controller
 								->count();
 	}
 
+	public function recruitment_failed_quantity(Request $request, $branch_id, $position) 
+	{
+		$date_from = $request->date_from;
+		$date_to = $request->date_to;
+
+		return $this->all_job_applicants()
+								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)																	
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->where(function($query){
+										$query->whereIn('applicants.initial_interview_status', [2, 3])
+													->orWhereIn('applicants.iq_status', [2, 3])
+													->orWhereIn('applicants.bi_status', [2, 3]);
+								})
+								->count();
+	}
+
 	public function export_sourcing(Request $request) 
 	{
 
 		$branch_id = $request->branch_id;
 
 		$arrApplicants = [];
-		$positions = Position::with('job_vacancies')
-												 ->whereHas('job_vacancies', function($query) {
-													$query->where('branch_type', 0); // branch_type = 0 -> position for branch, branch_type = 1 -> positions for admin
-												 })
-												 ->get();
-
-		$branches = Branch::where( function($query) use ($branch_id) {
-													if($branch_id <> 1000) // not 'ALL BRANCHES'
-													{
-														$query->where('id', $branch_id);
-													}
-											})
-											->where('name', '<>', 'ALL BRANCHES')
-											->get();
+		$positions = $this->positions();
+		$branches = $this->branches($branch_id);
 
 		foreach ($branches as $branch) {
 
@@ -1305,7 +1325,7 @@ class ApplicantController extends Controller
 			$total_applicants = $this->total_applicants($request, $branch->id, null);
 															 
 			// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
-			$beg_bal = $this->balance($request, 'applicants.status', $branch->id, null, 'Beginning Balance');
+			$beg_bal = $this->on_process_quantity($request, 'applicants.status', $branch->id, null, 'Beginning Balance');
 
 			// failed in screening														 
 			$screening_failed = $this->failed_quantity($request, 'applicants.status', $branch->id, null); 
@@ -1313,8 +1333,8 @@ class ApplicantController extends Controller
 			// passed in screening params(request, status_field, branch_id, position)												 
 			$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, null); 
 
-			// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
-			$end_bal = $this->balance($request, 'applicants.status', $branch->id, null, 'Ending Balance');
+			// screening on process, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
+			$end_bal = $this->on_process_quantity($request, 'applicants.status', $branch->id, null, 'Ending Balance');
 																			
 			$arrApplicants[$branch->name] = [
 				'total_count' => [
@@ -1332,7 +1352,7 @@ class ApplicantController extends Controller
 				$total_applicants = $this->total_applicants($request, $branch->id, $position->name);
 																
 				// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
-				$beg_bal = $this->balance($request, 'applicants.status', $branch->id, $position->name, 'Beginning Balance');
+				$beg_bal = $this->on_process_quantity($request, 'applicants.status', $branch->id, $position->name, 'Beginning Balance');
 
 				// failed in screening														 
 				$screening_failed = $this->failed_quantity($request, 'applicants.status', $branch->id, $position->name); 
@@ -1340,8 +1360,8 @@ class ApplicantController extends Controller
 				// passed in screening params(request, status_field, branch_id, position)												 
 				$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, $position->name); 
 
-				// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
-				$end_bal = $this->balance($request, 'applicants.status', $branch->id, $position->name, 'Ending Balance');
+				// screening on process, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
+				$end_bal = $this->on_process_quantity($request, 'applicants.status', $branch->id, $position->name, 'Ending Balance');
 
 				$arrApplicants[$branch->name][$position->name] = [
 																														'beg_bal' => $beg_bal,
@@ -1349,7 +1369,7 @@ class ApplicantController extends Controller
 																														'total_screening_failed' => $screening_failed,
 																														'total_screening_passed' => $screening_passed,
 																														'end_bal' => $end_bal,
-				];
+																													];
 				
 			}
 		}
@@ -1359,7 +1379,67 @@ class ApplicantController extends Controller
 
 	public function export_recruitment(Request $request) 
 	{
+		$branch_id = $request->branch_id;
+
 		$arrApplicants = [];
+		$positions = $this->positions();
+		$branches = $this->branches($branch_id);
+
+		foreach ($branches as $branch) {
+															 
+			// initial interview on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
+			$beg_bal = $this->on_process_quantity($request, 'applicants.initial_interview_status', $branch->id, null, 'Beginning Balance');
+
+			// failed in initial interview or exam or bi														 
+			$recruitment_failed = $this->recruitment_failed_quantity($request, $branch->id, null); 
+
+			// passed in screening params(request, status_field, branch_id, position)												 
+			$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, null); 
+
+			// qualified: passed in BI (Final Interview on process)														 
+			$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, null); 
+
+			// initial interview on process, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
+			$end_bal = $this->on_process_quantity($request, 'applicants.initial_interview_status', $branch->id, null, 'Ending Balance');
+																			
+			$arrApplicants[$branch->name] = [
+				'total_count' => [
+														'beg_bal' => $beg_bal,
+														'total_screening_passed' => $screening_passed,
+														'total_recruitment_failed' => $recruitment_failed,
+														'total_qualified' => $bi_passed,
+														'end_bal' => $end_bal,
+													]
+			];
+
+			foreach ($positions as $position) {
+																
+				// initial interview on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
+				$beg_bal = $this->on_process_quantity($request, 'applicants.initial_interview_status', $branch->id, $position->name, 'Beginning Balance');
+
+				// failed in initial interview or exam or bi														 
+				$recruitment_failed = $this->recruitment_failed_quantity($request, $branch->id, $position->name); 
+
+				// passed in screening params(request, status_field, branch_id, position)												 
+				$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, $position->name); 
+				
+				// qualified: passed in BI (Final Interview on process)														 
+				$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, $position->name);		
+
+				// initial interview on process , params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
+				$end_bal = $this->on_process_quantity($request, 'applicants.initial_interview_status', $branch->id, $position->name, 'Ending Balance');
+
+				$arrApplicants[$branch->name][$position->name] = [
+																														'beg_bal' => $beg_bal,
+																														'total_screening_passed' => $screening_passed,
+																														'total_recruitment_failed' => $recruitment_failed,
+																														'total_qualified' => $bi_passed,
+																														'end_bal' => $end_bal,
+																													];
+				
+			}
+		}
+
 		return response()->json(['success' => 'Record has been exported', 'applicants' => $arrApplicants], 200);
 	}
 

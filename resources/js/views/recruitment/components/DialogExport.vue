@@ -153,7 +153,7 @@
                 :fields = "exportJSONFields"
                 :data = "exportJSONData"
                 :meta = "json_meta"
-                name = "applicants.xls"
+                :name = "fileName"
               >
                 Export Data
               </export-excel>
@@ -457,12 +457,12 @@ export default {
       this.export_btn = false;
       this.generate_btn = true;
       this.loading = false;
-      this.report_group = this.report_groups[0];
+      this.report_group = this.reportGroups[0];
       this.report_type = "";
 
       if(this.page_view != 'All Status')
       {
-        this.report_group = this.report_groups[1];
+        this.report_group = this.reportGroups[1];
         this.report_type = this.report_group.types.find((value) => { return value.text == this.page_view });
       }
 
@@ -602,10 +602,18 @@ export default {
 
           if(this.report_type.text == 'Sourcing/Screening')
           {
-             Object.assign(json_fields, { 
+            Object.assign(json_fields, { 
               'TOTAL_COUNT.total_applicants': 'total_count.total_applicants', 
               'TOTAL_COUNT.total_screening_failed': 'total_count.total_screening_failed', 
               'TOTAL_COUNT.total_screening_passed': 'total_count.total_screening_passed', 
+            });
+          }
+          else if(this.report_type.text == 'Recruitment')
+          {
+            Object.assign(json_fields, {  
+              'TOTAL_COUNT.total_screening_passed': 'total_count.total_screening_passed', 
+              'TOTAL_COUNT.total_recruitment_failed': 'total_count.total_recruitment_failed', 
+              'TOTAL_COUNT.total_qualified': 'total_count.total_qualified',
             });
           }
 
@@ -623,6 +631,14 @@ export default {
                 [ position.toUpperCase() + '.total_applicants' ]: position.toLowerCase() + '.total_applicants',
                 [ position.toUpperCase() + '.total_screening_failed' ]: position.toLowerCase() + '.total_screening_failed',
                 [ position.toUpperCase() + '.total_screening_passed' ]: position.toLowerCase() + '.total_screening_passed',
+              });
+            }
+            else if(this.report_type.text == 'Recruitment')
+            {
+              Object.assign(json_fields, { 
+                [ position.toUpperCase() + '.total_screening_passed' ]: position.toLowerCase() + '.total_screening_passed',
+                [ position.toUpperCase() + '.total_recruitment_failed' ]: position.toLowerCase() + '.total_recruitment_failed',
+                [ position.toUpperCase() + '.total_qualified' ]: position.toLowerCase() + '.total_qualified',
               });
             }
 
@@ -826,6 +842,12 @@ export default {
 
       return fields;
 
+    },
+
+    fileName() {
+      let branch = this.branches.find((value) => { return value.id == this.branch_id });
+      let report_type = this.report_group.group == 'Detailed Report' ? this.report_type.text + ' - Breakdown' : this.report_type.text;
+      return report_type + ' (' + branch.name + ')';
     },
     
     ...mapState("userRolesPermissions", ["userRoles", "userPermissions"]),
