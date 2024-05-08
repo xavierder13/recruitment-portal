@@ -981,6 +981,11 @@
                 </v-row>
               </template>
               <template v-if="step == 4">
+                <v-row v-if="FinalFilesIsRequired">
+                  <v-col class="my-2 py-0">
+                    <span class="font-italic font-weight-bold red--text">Please upload {{ final_interview_required_files.join(', ') }} files</span>
+                  </v-col>
+                </v-row>
                 <v-row>
                   <v-col class="my-0 py-0">
                     <v-text-field
@@ -1374,6 +1379,7 @@ export default {
       specified_non_compliant_orientation_reason: "",
       iq_required_files: ['Exam'],
       bi_required_files: ['Birth Certificate', 'Diploma/Copy of Grades', 'Background Investigation'],
+      final_interview_required_files: ['Final Interview Result'],
     };
   },
   methods: {
@@ -1392,7 +1398,7 @@ export default {
       axios.get("/api/job_applicant/screening_list").then(
         (response) => {
           let data = response.data
-          console.log(data);
+          
           this.v_table = true;
           this.table_loader = false;
           this.loading = false;
@@ -1691,7 +1697,7 @@ export default {
 
       axios.post("/api/job_applicant/update_status", data).then(
         (response) => {
-          console.log(response.data);
+         
           this.application_status_dialog = false;
           if(response.data.success){
             
@@ -2099,6 +2105,18 @@ export default {
       let hasAllRequiredFiles = this.bi_required_files.every(value => this.applicantDocuments.includes(value));
 
       if(this.editedItem.bi_status == 1 && !hasAllRequiredFiles)
+      {
+        isRequired = true;
+      }
+
+      return isRequired;
+    },
+
+    FinalFilesIsRequired() {
+      let isRequired = false;
+      let hasAllRequiredFiles = this.final_interview_required_files.every(value => this.applicantDocuments.includes(value));
+
+      if(this.editedItem.final_interview_status == 1 && !hasAllRequiredFiles)
       {
         isRequired = true;
       }

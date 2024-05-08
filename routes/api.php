@@ -242,7 +242,8 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
 		'uses' => 'API\ApplicantController@get_applicants_old',
 		'as' => 'job_applicant.get_applicants_old',
 	]);
-  Route::get('/get_applicants_new', [
+
+    Route::get('/get_applicants_new', [
 		'uses' => 'API\ApplicantController@get_applicants_new',
 		'as' => 'job_applicant.get_applicants_new',
 	]);
@@ -252,7 +253,7 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
 		'as' => 'job_applicant.view_applicants'
 	]);
 
-  Route::get('/view_applicants_new/{id}', [
+    Route::get('/view_applicants_new/{id}', [
 		'uses' => 'API\ApplicantController@view_applicants_new',
 		'as' => 'job_applicant.view_applicants_new'
 	]);
@@ -275,6 +276,26 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
     Route::post('/export_total_number_of_applicants', [
         'uses' => 'API\ApplicantController@export_total_number_of_applicants',
         'as' => 'job_applicant.export_total_number_of_applicants',
+    ]);
+
+    Route::post('/export_sourcing', [
+        'uses' => 'API\ApplicantController@export_sourcing',
+        'as' => 'job_applicant.export_sourcing',
+    ]);
+
+    Route::post('/export_recruitment', [
+        'uses' => 'API\ApplicantController@export_recruitment',
+        'as' => 'job_applicant.export_recruitment',
+    ]);
+
+    Route::post('/export_hiring', [
+        'uses' => 'API\ApplicantController@export_hiring',
+        'as' => 'job_applicant.export_hiring',
+    ]);
+
+    Route::post('/export_signing_contract', [
+        'uses' => 'API\ApplicantController@export_signing_contract',
+        'as' => 'job_applicant.export_signing_contract',
     ]);
 
 	Route::post('/update_status', [

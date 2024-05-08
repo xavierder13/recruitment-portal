@@ -988,6 +988,11 @@
                 </v-row>
               </template>
               <template v-if="step == 4">
+                <v-row v-if="FinalFilesIsRequired">
+                  <v-col class="my-2 py-0">
+                    <span class="font-italic font-weight-bold red--text">Please upload {{ final_interview_required_files.join(', ') }} files</span>
+                  </v-col>
+                </v-row>
                 <v-row>
                   <v-col class="my-0 py-0">
                     <v-text-field
@@ -1382,6 +1387,7 @@ export default {
       specified_non_compliant_orientation_reason: "",
       iq_required_files: ['Exam'],
       bi_required_files: ['Birth Certificate', 'Diploma/Copy of Grades', 'Background Investigation'],
+      final_interview_required_files: ['Final Interview Result'],
     };
   },
   methods: {
@@ -1602,89 +1608,6 @@ export default {
       // }
     },
 
-    export_applications(){
-
-      this.loader_dialog = true;
-
-      const date_from = this.dates[0];
-      const date_to = this.dates[1];
-      const branch_id = this.branch_id;
-      
-      if(date_from === undefined || branch_id === ''){
-
-        this.loader_dialog = false;
-        
-        this.$toaster.error('Please select a date and branch.', {
-          timeout: 5000
-        });
-
-        return;
-      }
-
-      if(date_from > date_to){
-
-        this.loader_dialog = false;
-        
-        this.$toaster.error('Date from must be lesser than Date to.', {
-          timeout: 5000
-        });
-
-        return;
-      }
-
-      if(date_from < date_to || date_from != undefined){
-
-        let formData = new FormData();
-        formData.append('date_from', date_from);
-        formData.append('date_to', date_to);
-        formData.append('branch_id', branch_id);
-        formData.append('progress', this.progress_items[1]); // progress_items index 1 (Initial Interview)
-        formData.append('step', 1); // step 1 (Initial Interview)
-
-        axios.post("/api/job_applicant/export_applicants_new", formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data' 
-          }
-        }).then(
-          (response) => {
-            // console.log(response);
-
-            if(response.data.success){
-              this.loader_dialog = false;
-
-              this.$toaster.success('Success generating excel file.', {
-                timeout: 2000
-              });
-
-              this.generate_btn = false;
-              this.export_btn = true;
-
-              this.json_data = response.data.resp;
-            }else{
-
-              this.generate_btn = true;
-              this.export_btn = false;
-              this.loader_dialog = false;
-
-               this.$toaster.error('No records found.', {
-                timeout: 2000
-              });
-            }
-          },
-          (error) => {
-            console.log(error);
-            this.isUnauthorized(error);
-          }
-        );
-      }else{
-        this.loader_dialog = false;
-
-        this.$toaster.error('Error generating excel file.', {
-          timeout: 5000
-        });
-      }
-    },
-
     updateStatus(status){
 
       let formData = new FormData();
@@ -1794,7 +1717,7 @@ export default {
 
       axios.post("/api/job_applicant/update_status", data).then(
         (response) => {
-          console.log(response.data);
+          
           this.application_status_dialog = false;
           if(response.data.success){
             
@@ -2223,6 +2146,18 @@ export default {
       let hasAllRequiredFiles = this.bi_required_files.every(value => this.applicantDocuments.includes(value));
 
       if(this.editedItem.bi_status == 1 && !hasAllRequiredFiles)
+      {
+        isRequired = true;
+      }
+
+      return isRequired;
+    },
+
+    FinalFilesIsRequired() {
+      let isRequired = false;
+      let hasAllRequiredFiles = this.final_interview_required_files.every(value => this.applicantDocuments.includes(value));
+
+      if(this.editedItem.final_interview_status == 1 && !hasAllRequiredFiles)
       {
         isRequired = true;
       }

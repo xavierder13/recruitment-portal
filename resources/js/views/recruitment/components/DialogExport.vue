@@ -22,7 +22,7 @@
                   item-text="group"
                   label="Report Group"
                   return-object
-                  :readonly="hasRole('Branch Manager') || page_view != 'All Status'"
+                  :readonly="page_view != 'All Status'"
                   :error-messages="reportGroupErrors"
                   @input="$v.report_group.$touch()"
                   @blur="$v.report_group.$touch()"
@@ -37,6 +37,7 @@
                   label="Report Type"
                   item-text="text"
                   item-value="text"
+                  return-object
                   :error-messages="reportTypeErrors"
                   @input="$v.report_type.$touch()"
                   @blur="$v.report_type.$touch()"
@@ -92,7 +93,7 @@
               </v-row>
             </template>
             <v-row>
-              <v-col class="my-0 py-0" v-if="report_type != 'Overall Count'">
+              <v-col class="my-0 py-0" v-if="report_type.text != 'Overall Count'">
                 <v-text-field
                   label="From"
                   hint="MM/DD/YYYY"
@@ -214,7 +215,7 @@ export default {
     branch_id: { required },
     date_from: {   
       required: requiredIf(function () {
-        return this.report_type != 'Overall Count';
+        return this.report_type.text != 'Overall Count';
       }),
     },
     date_to: { required },
@@ -225,7 +226,11 @@ export default {
         return this.report_group.group == 'Detailed Report';
       }),
     },
-    branch_field_param: { required },
+    branch_field_param: { 
+      required: requiredIf(function () {
+        return this.report_group.group == 'Detailed Report';
+      }),
+     },
   },
   data() {
     return {
@@ -326,51 +331,63 @@ export default {
           'asOfDate': this.date_to,
           'branch_id': this.branch_id,
           'report_group': this.report_group.group,
-          'report_type': this.report_type,
+          'report_type': this.report_type.text,
           'date_field_param': this.date_field_param,
           'get_empty_date': this.get_empty_date, 
         };
-
-        let strURL = '';
-
-        if(this.report_group.group == 'Detailed Report')
-        {
-          strURL = 'export_applicants_new';
-        }
-        else
-        {
-          if(this.report_type == 'Overall Count')
-          {
-            strURL = 'export_total_number_of_applicants';
-          }
-        }
     
-        let api = "/api/job_applicant/" + strURL;
+        let api = "/api/job_applicant/" + this.report_type.api;
         
         axios.post(api, data).then(
           (response) => {
-            console.log(response.data);
 
-            if(response.data.success){
-              this.loading = false;
+            this.generate_btn = true;
+            this.export_btn = false;
+            this.loading = false;
+            let data = response.data;
+            if(data.success){
+              
+              if(this.report_group.group == 'Detailed Report')
+              {
+                if(data.applicants.length)
+                {
 
-              this.$toaster.success('Success generating excel file.', {
-                timeout: 2000
-              });
+                  this.$toaster.success('Success generating excel file.', {
+                    timeout: 2000
+                  });
 
-              this.generate_btn = false;
-              this.export_btn = true;
+                  this.generate_btn = false;
+                  this.export_btn = true;
 
-              this.json_data = response.data.resp;
-              // console.log(this.json_data);
+                  this.json_data = data.applicants;
+                  // console.log(this.json_data);
+                }
+                else
+                {
+                  this.$toaster.error('No records found.', {
+                    timeout: 2000
+                  });
+                }
+              }
+              else
+              {
+                this.loading = false;
+
+                this.$toaster.success('Success generating excel file.', {
+                  timeout: 2000
+                });
+
+                this.generate_btn = false;
+                this.export_btn = true;
+
+                console.log(data);
+
+                this.json_data = data.applicants;
+              }
+              
               
             }else{
-
-              this.generate_btn = true;
-              this.export_btn = false;
-              this.loading = false;
-
-               this.$toaster.error('No records found.', {
+              this.$toaster.error('There are some error fetching data.', {
                 timeout: 2000
               });
             }
@@ -427,7 +444,7 @@ export default {
       if(this.page_view != 'All Status')
       {
         this.report_group = this.report_groups[1];
-        this.report_type = this.page_view;
+        this.report_type = this.report_group.types.find((value) => { return value.text == this.page_view });
       }
 
     },
@@ -499,7 +516,7 @@ export default {
     exportJSONData() {
       let json_data = this.json_data;
       
-      if(this.export_all_count)
+      if(this.report_type.text == 'Overall Count')
       {
        
         json_data = [];
@@ -530,7 +547,7 @@ export default {
     exportJSONFields() {
       let json_fields = this.json_fields;
       
-      if(this.export_all_count)
+      if(this.report_type.text == 'Overall Count')
       { 
         json_fields = { 
           Branch: 'branch',
@@ -575,25 +592,77 @@ export default {
         { 
           group: 'Front Page Report', 
           types: [
-                  { text: 'Sourcing/Screening', hasPermission: this.hasPermission('sourcing-report') },
-                  { text: 'Recruitment', hasPermission: this.hasPermission('recruitment-report') },
-                  { text: 'Hiring', hasPermission: this.hasPermission('hiring-report') },
-                  { text: 'Signing of Contract', hasPermission: this.hasPermission('signing-of-contract-report') },
-                  { text: 'Overall Count', hasPermission: this.hasPermission('overall-count-report') }
+                  { 
+                    text: 'Sourcing/Screening', 
+                    hasPermission: this.hasPermission('sourcing-report'), 
+                    api: 'export_sourcing',
+                  },
+                  { 
+                    text: 'Recruitment', 
+                    hasPermission: this.hasPermission('recruitment-report'),
+                    api: 'export_recruitment', 
+                  },
+                  { 
+                    text: 'Hiring', 
+                    hasPermission: this.hasPermission('hiring-report'),
+                    api: 'export_hiring', 
+                  },
+                  { 
+                    text: 'Signing of Contract', 
+                    hasPermission: this.hasPermission('signing-of-contract-report'),
+                    api: 'export_signing_contract', 
+                  },
+                  { 
+                    text: 'Overall Count', 
+                    hasPermission: this.hasPermission('overall-count-report'),
+                    api: 'export_total_number_of_applicants', 
+                  }
                 ],
           hasPermission: this.hasPermission('front-page-report'),
         },
         { 
           group: 'Detailed Report', 
           types: [  
-                    { text: 'ALL', hasPermission: true },
-                    { text: 'Screening', hasPermission: this.hasPermission('jobapplicants-screening-list') },
-                    { text: 'Initial Interview', hasPermission: this.hasPermission('jobapplicants-initial-interview-list') },
-                    { text: 'Exam', hasPermission: this.hasPermission('jobapplicants-iq-test-list') },
-                    { text: 'B.I & Basic Req', hasPermission: this.hasPermission('jobapplicants-screening-list') },
-                    { text: 'Final Interview', hasPermission: this.hasPermission('jobapplicants-bi-list') },
-                    { text: 'Orientation', hasPermission: this.hasPermission('jobapplicants-orientation-list') },
-                    { text: 'Hired', hasPermission: this.hasPermission('jobapplicants-hired-list') },
+                    { 
+                      text: 'ALL', 
+                      hasPermission: true,
+                      api: 'export_applicants_new',
+                    },
+                    { 
+                      text: 'Screening', 
+                      hasPermission: this.hasPermission('jobapplicants-screening-list'),
+                      api: 'export_applicants_new',
+                    },
+                    {
+                      text: 'Initial Interview', 
+                      hasPermission: this.hasPermission('jobapplicants-initial-interview-list'),
+                      api: 'export_applicants_new', 
+                    },
+                    { 
+                      text: 'Exam', 
+                      hasPermission: this.hasPermission('jobapplicants-iq-test-list'),
+                      api: 'export_applicants_new', 
+                    },
+                    { 
+                      text: 'B.I & Basic Req', 
+                      hasPermission: this.hasPermission('jobapplicants-screening-list'),
+                      api: 'export_applicants_new', 
+                    },
+                    { 
+                      text: 'Final Interview', 
+                      hasPermission: this.hasPermission('jobapplicants-bi-list'),
+                      api: 'export_applicants_new', 
+                    },
+                    { 
+                      text: 'Orientation', 
+                      hasPermission: this.hasPermission('jobapplicants-orientation-list'),
+                      api: 'export_applicants_new', 
+                    },
+                    { 
+                      text: 'Hired', 
+                      hasPermission: this.hasPermission('jobapplicants-hired-list'),
+                      api: 'export_applicants_new', 
+                    },
                  ],
           hasPermission: this.hasPermission('detailed-report'),
         }
@@ -629,10 +698,10 @@ export default {
 
       let report_types = this.report_group.types;
 
-      if(this.hasRole('Branch Manager'))
-      {
-        report_types = this.report_groups[1].types;
-      }
+      // if(this.hasRole('Branch Manager'))
+      // {
+      //   report_types = this.reportGroups[1].types;
+      // }
 
       return report_types;
 
@@ -651,24 +720,24 @@ export default {
 
       if(this.report_group.group == 'Detailed Report')
       {
-        if(this.report_type == 'Screening') // if report type Screening
+        if(this.report_type.text == 'Screening') // if report type Screening
         {
           fields = [ items[0] ] ;
         }
-        else if(['Initial Interview', 'Exam', 'B.I & Basic Req'].includes(this.report_type)) // if report type value Initial Interview or Exam or 3 B.I & Basic Req
+        else if(['Initial Interview', 'Exam', 'B.I & Basic Req'].includes(this.report_type.text)) // if report type value Initial Interview or Exam or 3 B.I & Basic Req
         {
           fields = [ items[0], items[1] ];
         }
-        else if(this.report_type == 'Final Interview') // if report type value Final Interview
+        else if(this.report_type.text == 'Final Interview') // if report type value Final Interview
         {
           fields = [ items[0], items[1], items[2] ];
         }
-        else if(this.report_type == 'Orientation') // if report type Orientation
+        else if(this.report_type.text == 'Orientation') // if report type Orientation
         {
           items.splice(4, 1) // remove index 4
           fields = items;
         }
-        else if(['Hired', 'ALL'].includes(this.report_type)) // if report type value Hired or ALL
+        else if(['Hired', 'ALL'].includes(this.report_type.text)) // if report type value Hired or ALL
         {
           fields = items;
         }
@@ -689,15 +758,15 @@ export default {
 
       if(this.report_group.group == 'Detailed Report')
       {
-        if(['Screening', 'Initial Interview', 'Exam'].includes(this.report_type)) // if report type Screening', 'Initial Interview', 'Exam
+        if(['Screening', 'Initial Interview', 'Exam'].includes(this.report_type.text)) // if report type Screening', 'Initial Interview', 'Exam
         {
           fields = [ items[0] ];
         }
-        else if(['B.I & Basic Req', 'Final Interview'].includes(this.report_type)) // if report type 'B.I & Basic Req', 'Final Interview'
+        else if(['B.I & Basic Req', 'Final Interview'].includes(this.report_type.text)) // if report type 'B.I & Basic Req', 'Final Interview'
         {
           fields = fields = [ items[0], items[1] ] ;
         }
-        else if(['Orientation', 'Hired', 'ALL'].includes(this.report_type)) // if report type 'Orientation', 'Hired', 'ALL'
+        else if(['Orientation', 'Hired', 'ALL'].includes(this.report_type.text)) // if report type 'Orientation', 'Hired', 'ALL'
         {
           fields = items;
         }
@@ -731,6 +800,7 @@ export default {
       if(this.page_view != 'All Status')
       {
         this.report_type = this.page_view;
+        this.report_type = this.report_group.types.find((value) => { return value.text == this.page_view });
       }
 
     },
@@ -741,6 +811,10 @@ export default {
       this.branch_field_param = "";
     },
 
+    reportGroups() {
+      this.report_group = this.reportGroups.length ? this.reportGroups[1] : "";
+    }
+
   },
 
   mounted() {
@@ -748,8 +822,7 @@ export default {
 
     if(this.page_view != 'All Status')
     {
-      this.report_group = this.report_groups[1];
-      this.report_type = this.page_view;
+      this.report_group = this.reportGroups.length ? this.reportGroups[1] : "";
     }
 
     this.branch_id = this.user.branch_id;

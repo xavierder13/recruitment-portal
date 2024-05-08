@@ -1006,6 +1006,11 @@
                 </v-row>
               </template>
               <template v-if="step == 4">
+                <v-row v-if="FinalFilesIsRequired">
+                  <v-col class="my-2 py-0">
+                    <span class="font-italic font-weight-bold red--text">Please upload {{ final_interview_required_files.join(', ') }} files</span>
+                  </v-col>
+                </v-row>
                 <v-row>
                   <v-col class="my-0 py-0">
                     <v-text-field
@@ -1429,6 +1434,7 @@ export default {
       specified_non_compliant_orientation_reason: "",
       iq_required_files: ['Exam'],
       bi_required_files: ['Birth Certificate', 'Diploma/Copy of Grades', 'Background Investigation'],
+      final_interview_required_files: ['Final Interview Result'],
     };
   },
   methods: {
@@ -1458,7 +1464,7 @@ export default {
       axios.get("/api/job_applicant/get_applicants_new").then(
         (response) => {
           let data = response.data
-          console.log(data);
+ 
           this.v_table = true;
           this.table_loader = false;
           this.loading = false;
@@ -1663,126 +1669,6 @@ export default {
         });
       }
     },
-
-    export_applications(){
-
-      this.loader_dialog = true;
-
-      const date_from = this.dates[0];
-      const date_to = this.dates[1];
-      const branch_id = this.branch_id;
-      let invalidDate = false;
-
-      if(!this.export_all_count && (!date_from || !date_to))
-      {
-
-        invalidDate = true;
-        
-      }
-
-      // date_to is required when export_all_count is 'false'
-      
-      
-      if(invalidDate || branch_id === ''){
-        
-        this.loader_dialog = false;
-        
-        this.$toaster.error('Please select a date and branch.', {
-          timeout: 5000
-        });
-
-        return;
-      }
-
-      if(date_from > date_to){
-        invalidDate = true;
-        this.loader_dialog = false;
-        
-        this.$toaster.error('Date from must be lesser than Date to.', {
-          timeout: 5000
-        });
-
-        return;
-      }
-
-      if(!invalidDate){
-
-        let formData = new FormData();
-        formData.append('date_from', date_from);
-        formData.append('date_to', date_to);
-        formData.append('asOfDate', this.asOfDate);
-        formData.append('branch_id', branch_id);
-        
-        // formData.append('progress', this.progress_items[this.step]); // progress_items index 3 (Final Interview)
-        // formData.append('step', this.step); // step 3 (Final Interview)
-
-        let api = "/api/job_applicant/" + (this.export_all_count ? "export_total_number_of_applicants" : "export_applicants_new");
-        
-        axios.post(api, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data' 
-          }
-        }).then(
-          (response) => {
-
-            if(response.data.success){
-              this.loader_dialog = false;
-
-              this.$toaster.success('Success generating excel file.', {
-                timeout: 2000
-              });
-
-              this.generate_btn = false;
-              this.export_btn = true;
-
-              this.json_data = response.data.resp;
-              console.log(this.json_data);
-              
-            }else{
-
-              this.generate_btn = true;
-              this.export_btn = false;
-              this.loader_dialog = false;
-
-               this.$toaster.error('No records found.', {
-                timeout: 2000
-              });
-            }
-          },
-          (error) => {
-            console.log(error);
-            this.isUnauthorized(error);
-          }
-        );
-      }else{
-        this.loader_dialog = false;
-
-        this.$toaster.error('Error generating excel file.', {
-          timeout: 5000
-        });
-      }
-    },
-
-    // viewStatus(id){
-    //   this.status_dialog = true;
-
-    //   const url = `/api/job_applicant/view_applicants/${id}`;
-    //   axios.get(url).then(
-    //     (response) => {
-    //       if (response.data.success) {
-
-    //         const data = response.data.resp;
-            
-    //         this.edit_applicant = data;
-    //         this.appl_status = data[0].status;
-    //         this.applicant_id = data[0].id;
-    //       }
-    //     },
-    //     (error) => {
-    //       this.isUnauthorized(error);
-    //     }
-    //   );
-    // },
 
     updateStatus(status){
 
@@ -2066,7 +1952,8 @@ export default {
         !this.dateHasError && 
         !this.$v.editedItem.signing_of_contract_date.$error && 
         !this.IQFilesIsRequired && 
-        !this.BIFIlesIsRequired
+        !this.BIFIlesIsRequired &&
+        !this.FinalFilesIsRequired
       )
       {
         this.$swal({
@@ -2309,6 +2196,18 @@ export default {
       let hasAllRequiredFiles = this.bi_required_files.every(value => this.applicantDocuments.includes(value));
       
       if(this.editedItem.bi_status == 1 && !hasAllRequiredFiles && this.applicant.progress_status == 'B.I & Basic Req')
+      {
+        isRequired = true;
+      }
+
+      return isRequired;
+    },
+
+    FinalFilesIsRequired() {
+      let isRequired = false;
+      let hasAllRequiredFiles = this.final_interview_required_files.every(value => this.applicantDocuments.includes(value));
+
+      if(this.editedItem.final_interview_status == 1 && !hasAllRequiredFiles)
       {
         isRequired = true;
       }

@@ -195,6 +195,7 @@ export default {
         "TIN",
         "Driver's License",
         "Drive Test Result",
+        "Final Interview Result",
         "Others"
       ],
       dialog: false,

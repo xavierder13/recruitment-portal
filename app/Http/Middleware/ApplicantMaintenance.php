@@ -66,6 +66,30 @@ class ApplicantMaintenance
 				}
 			}
 
+			if($request->is('api/job_applicant/export_sourcing')){
+				if($user->can('sourcing-report')){
+					return $next($request);
+				}
+			}
+
+			if($request->is('api/job_applicant/export_recruitment')){
+				if($user->can('recruitment-report')){
+					return $next($request);
+				}
+			}
+
+			if($request->is('api/job_applicant/export_hiring')){
+				if($user->can('hiring-report')){
+					return $next($request);
+				}
+			}
+
+			if($request->is('api/job_applicant/export_signing_contract')){
+				if($user->can('signing-of-contract-report')){
+					return $next($request);
+				}
+			}
+
 			if($request->is('api/job_applicant/update_status')){
 				if($user->can('jobapplicants-change-status')){
 					return $next($request);
