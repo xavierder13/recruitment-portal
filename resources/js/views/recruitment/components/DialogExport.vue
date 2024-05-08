@@ -109,7 +109,7 @@
               </v-col>
               <v-col class="my-0 py-0">
                 <v-text-field 
-                  :label=" report_type == 'Overall Count' ? 'As Of' : 'To'"
+                  :label=" report_type.text == 'Overall Count' ? 'As Of' : 'To'"
                   hint="MM/DD/YYYY"
                   persistent-hint
                   type="date"
@@ -315,6 +315,20 @@ export default {
       report_type: "",
       report_group: "",
       get_empty_date: false,
+      position_names: [
+        'Branch Manager', 
+        'Sales Supervisor', 
+        'Credit & Collection Supervisor', 
+        'Management System Supervisor',
+        'Encoder',
+        'Cashier',
+        'Account Analyst',
+        'Warehouseman',
+        'Sales Specialist',
+        'Technician',
+        'Delivery/ Logistics Driver',
+        'Delivery/Logistics Helper',
+      ],
     }
   },
   methods: {
@@ -345,6 +359,9 @@ export default {
             this.export_btn = false;
             this.loading = false;
             let data = response.data;
+
+            console.log(data);
+
             if(data.success){
               
               if(this.report_group.group == 'Detailed Report')
@@ -440,6 +457,8 @@ export default {
       this.export_btn = false;
       this.generate_btn = true;
       this.loading = false;
+      this.report_group = this.report_groups[0];
+      this.report_type = "";
 
       if(this.page_view != 'All Status')
       {
@@ -516,7 +535,7 @@ export default {
     exportJSONData() {
       let json_data = this.json_data;
       
-      if(this.report_type.text == 'Overall Count')
+      if(this.report_group.group == 'Front Page Report')
       {
        
         json_data = [];
@@ -547,42 +566,75 @@ export default {
     exportJSONFields() {
       let json_fields = this.json_fields;
       
-      if(this.report_type.text == 'Overall Count')
-      { 
+      if(this.report_group.group == 'Front Page Report')
+      {
         json_fields = { 
           Branch: 'branch',
-          'TOTAL_COUNT.total_applicants': 'total_count.total_applicants',  
-          'TOTAL_COUNT.total_screening_initial_failed': 'total_count.total_screening_initial_failed', 
-          'TOTAL_COUNT.total_initial_passed': 'total_count.total_initial_passed', 
         };
-        let fields = Object.keys(this.exportJSONData[0]); // keys are position names
-        let position_names = [
-          'Branch Manager', 
-          'Sales Supervisor', 
-          'Credit & Collection Supervisor', 
-          'Management System Supervisor',
-          'Encoder',
-          'Cashier',
-          'Account Analyst',
-          'Warehouseman',
-          'Sales Specialist',
-          'Technician',
-          'Delivery/ Logistics Driver',
-          'Delivery/Logistics Helper',
-        ];
-
-        position_names.forEach(position => {
-
+        
+        if(this.report_type.text == 'Overall Count')
+        { 
+          
           Object.assign(json_fields, { 
-            [ position.toUpperCase() + '.beg_bal' ]: position.toLowerCase() + '.beg_bal', 
-            [ position.toUpperCase() + '.qualified' ]: position.toLowerCase() + '.qualified',
-            [ position.toUpperCase() + '.hired' ]: position.toLowerCase() + '.hired',
-            [ position.toUpperCase() + '.expired' ]: position.toLowerCase() + '.expired',
-            [ position.toUpperCase() + '.end_bal' ]: position.toLowerCase() + '.end_bal',
+            'TOTAL_COUNT.total_applicants': 'total_count.total_applicants',  
+            'TOTAL_COUNT.total_screening_initial_failed': 'total_count.total_screening_initial_failed', 
+            'TOTAL_COUNT.total_initial_passed': 'total_count.total_initial_passed', 
           });
- 
-        });
+
+          let fields = Object.keys(this.exportJSONData[0]); // keys are position names
+
+          this.position_names.forEach(position => {
+
+            Object.assign(json_fields, { 
+              [ position.toUpperCase() + '.beg_bal' ]: position.toLowerCase() + '.beg_bal', 
+              [ position.toUpperCase() + '.qualified' ]: position.toLowerCase() + '.qualified',
+              [ position.toUpperCase() + '.hired' ]: position.toLowerCase() + '.hired',
+              [ position.toUpperCase() + '.expired' ]: position.toLowerCase() + '.expired',
+              [ position.toUpperCase() + '.end_bal' ]: position.toLowerCase() + '.end_bal',
+            });
+  
+          });
+        }
+        else 
+        {
+          // assign first TOTAL_COUNT.beg_bal for ordering of data purposes
+          Object.assign(json_fields, { 'TOTAL_COUNT.beg_bal': 'total_count.beg_bal' });
+
+          if(this.report_type.text == 'Sourcing/Screening')
+          {
+             Object.assign(json_fields, { 
+              'TOTAL_COUNT.total_applicants': 'total_count.total_applicants', 
+              'TOTAL_COUNT.total_screening_failed': 'total_count.total_screening_failed', 
+              'TOTAL_COUNT.total_screening_passed': 'total_count.total_screening_passed', 
+            });
+          }
+
+          // assign last TOTAL_COUNT.end_bal for ordering of data purposes
+          Object.assign(json_fields, { 'TOTAL_COUNT.end_bal': 'total_count.end_bal' });
+
+          this.position_names.forEach(position => {
+            
+            // assign first beg_bal for ordering of data purposes
+            Object.assign(json_fields, { [ position.toUpperCase() + '.beg_bal' ]: position.toLowerCase() + '.beg_bal' });
+
+            if(this.report_type.text == 'Sourcing/Screening')
+            {
+              Object.assign(json_fields, { 
+                [ position.toUpperCase() + '.total_applicants' ]: position.toLowerCase() + '.total_applicants',
+                [ position.toUpperCase() + '.total_screening_failed' ]: position.toLowerCase() + '.total_screening_failed',
+                [ position.toUpperCase() + '.total_screening_passed' ]: position.toLowerCase() + '.total_screening_passed',
+              });
+            }
+
+            // assign last end_bal for ordering of data purposes
+            Object.assign(json_fields, { [ position.toUpperCase() + '.end_bal' ]: position.toLowerCase() + '.end_bal' });
+  
+          });
+
+        }
       }
+
+      console.log(json_fields);
 
       return json_fields;
     },

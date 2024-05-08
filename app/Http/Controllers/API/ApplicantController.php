@@ -15,7 +15,6 @@ use App\ApplicantDependent;
 use App\ApplicantFile;
 use App\Position;
 use App\Branch;
-use App\JobVacancy;
 use Validator;
 use Excel;
 use Mail;
@@ -1072,12 +1071,7 @@ class ApplicantController extends Controller
 		}		
 		
 
-		// if($applicants->count()){
-		if(count($arrApplicants)){	
-			return response()->json(['success' => true, 'resp' => $arrApplicants, 'branch_id' => $branch_id]);
-		}else{
-			return response()->json(['success' => false, 'resp' => "No records found."]);
-		}
+		return response()->json(['success' => 'Record has been exported', 'applicants' => $arrApplicants], 200);
 	}
 
 	public function export_total_number_of_applicants (Request $request)
@@ -1106,7 +1100,7 @@ class ApplicantController extends Controller
 														$query->where('id', $branch_id);
 													}
 											})
-											->where('name', '<>', 'ALL BRANHES')
+											->where('name', '<>', 'ALL BRANCHES')
 											->get();
 
 		foreach ($branches as $branch) {
@@ -1197,11 +1191,188 @@ class ApplicantController extends Controller
 				
 			}
 		}
-		if(count($arrApplicants)){	
-			return response()->json(['success' => true, 'resp' => $arrApplicants]);
-		}else{
-			return response()->json(['success' => false, 'resp' => "No records found."]);
+
+		return response()->json(['success' => 'Record has been exported', 'applicants' => $arrApplicants], 200);
+	
+	}
+
+	public function total_applicants(Request $request, $branch_id, $position)
+	{
+		$date_from = $request->date_from;
+		$date_to = $request->date_to;
+
+		return $this->all_job_applicants()
+								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)														
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->count();
+	}
+
+	public function balance(Request $request, $status_field, $branch_id, $position, $type) 
+	{
+		$date_from = $request->date_from;
+		$date_to = $request->date_to;
+		
+		if($type == 'Beginning Balance')
+		{
+			$date_from = Carbon::parse($date_to)->subMonthsNoOverflow()->startOfMonth()->toDateString(); // last day last month;
+			$date_to = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
 		}
+
+		return $this->all_job_applicants()
+								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)															
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->where($status_field, 0)
+								->count();
+			
+	}
+
+	public function passed_quantity(Request $request, $status_field, $branch_id, $position) 
+	{
+		$date_from = $request->date_from;
+		$date_to = $request->date_to;
+
+		return $this->all_job_applicants()
+								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)																	
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->where($status_field, 1)
+								->count();
+	}
+
+	public function failed_quantity(Request $request, $status_field, $branch_id, $position) 
+	{
+		$date_from = $request->date_from;
+		$date_to = $request->date_to;
+
+		return $this->all_job_applicants()
+								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)																	
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->whereIn($status_field, [2, 3])
+								->count();
+	}
+
+	public function export_sourcing(Request $request) 
+	{
+
+		$branch_id = $request->branch_id;
+
+		$arrApplicants = [];
+		$positions = Position::with('job_vacancies')
+												 ->whereHas('job_vacancies', function($query) {
+													$query->where('branch_type', 0); // branch_type = 0 -> position for branch, branch_type = 1 -> positions for admin
+												 })
+												 ->get();
+
+		$branches = Branch::where( function($query) use ($branch_id) {
+													if($branch_id <> 1000) // not 'ALL BRANCHES'
+													{
+														$query->where('id', $branch_id);
+													}
+											})
+											->where('name', '<>', 'ALL BRANCHES')
+											->get();
+
+		foreach ($branches as $branch) {
+
+			//total applicants params (request, status_field, position)
+			$total_applicants = $this->total_applicants($request, $branch->id, null);
+															 
+			// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
+			$beg_bal = $this->balance($request, 'applicants.status', $branch->id, null, 'Beginning Balance');
+
+			// failed in screening														 
+			$screening_failed = $this->failed_quantity($request, 'applicants.status', $branch->id, null); 
+
+			// passed in screening params(request, status_field, branch_id, position)												 
+			$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, null); 
+
+			// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
+			$end_bal = $this->balance($request, 'applicants.status', $branch->id, null, 'Ending Balance');
+																			
+			$arrApplicants[$branch->name] = [
+				'total_count' => [
+														'beg_bal' => $beg_bal,
+														'total_applicants' => $total_applicants,
+														'total_screening_failed' => $screening_failed,
+														'total_screening_passed' => $screening_passed,
+														'end_bal' => $end_bal,
+													]
+			];
+
+			foreach ($positions as $position) {
+
+				//total applicants params (request, status_field, position)
+				$total_applicants = $this->total_applicants($request, $branch->id, $position->name);
+																
+				// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
+				$beg_bal = $this->balance($request, 'applicants.status', $branch->id, $position->name, 'Beginning Balance');
+
+				// failed in screening														 
+				$screening_failed = $this->failed_quantity($request, 'applicants.status', $branch->id, $position->name); 
+
+				// passed in screening params(request, status_field, branch_id, position)												 
+				$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, $position->name); 
+
+				// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
+				$end_bal = $this->balance($request, 'applicants.status', $branch->id, $position->name, 'Ending Balance');
+
+				$arrApplicants[$branch->name][$position->name] = [
+																														'beg_bal' => $beg_bal,
+																														'total_applicants' => $total_applicants,
+																														'total_screening_failed' => $screening_failed,
+																														'total_screening_passed' => $screening_passed,
+																														'end_bal' => $end_bal,
+				];
+				
+			}
+		}
+
+		return response()->json(['success' => 'Record has been exported', 'applicants' => $arrApplicants], 200);
+	}
+
+	public function export_recruitment(Request $request) 
+	{
+		$arrApplicants = [];
+		return response()->json(['success' => 'Record has been exported', 'applicants' => $arrApplicants], 200);
+	}
+
+	public function export_hiring(Request $request) 
+	{
+		$arrApplicants = [];
+		return response()->json(['success' => 'Record has been exported', 'applicants' => $arrApplicants], 200);
+	}
+
+	public function export_signing_contract(Request $request) 
+	{
+		$arrApplicants = [];
+		return response()->json(['success' => 'Record has been exported', 'applicants' => $arrApplicants], 200);
 	}
 
 	public function update_status(Request $req){
