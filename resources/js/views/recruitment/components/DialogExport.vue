@@ -616,6 +616,14 @@ export default {
               'TOTAL_COUNT.total_qualified': 'total_count.total_qualified',
             });
           }
+          else if(this.report_type.text == 'Hiring')
+          {
+            Object.assign(json_fields, {  
+              'TOTAL_COUNT.total_qualified': 'total_count.total_qualified', 
+              'TOTAL_COUNT.total_final_interview_failed': 'total_count.total_final_interview_failed', 
+              'TOTAL_COUNT.total_hired': 'total_count.total_hired',
+            });
+          }
 
           // assign last TOTAL_COUNT.end_bal for ordering of data purposes
           Object.assign(json_fields, { 'TOTAL_COUNT.end_bal': 'total_count.end_bal' });
@@ -639,6 +647,14 @@ export default {
                 [ position.toUpperCase() + '.total_screening_passed' ]: position.toLowerCase() + '.total_screening_passed',
                 [ position.toUpperCase() + '.total_recruitment_failed' ]: position.toLowerCase() + '.total_recruitment_failed',
                 [ position.toUpperCase() + '.total_qualified' ]: position.toLowerCase() + '.total_qualified',
+              });
+            }
+            else if(this.report_type.text == 'Hiring')
+            {
+              Object.assign(json_fields, { 
+                [ position.toUpperCase() + '.total_qualified' ]: position.toLowerCase() + '.total_qualified',
+                [ position.toUpperCase() + '.total_final_interview_failed' ]: position.toLowerCase() + '.total_final_interview_failed',
+                [ position.toUpperCase() + '.total_hired' ]: position.toLowerCase() + '.total_hired',
               });
             }
 
@@ -844,7 +860,7 @@ export default {
 
     },
 
-    fileName() {
+    fileName() { 
       let branch = this.branches.find((value) => { return value.id == this.branch_id });
       let report_type = this.report_group.group == 'Detailed Report' ? this.report_type.text + ' - Breakdown' : this.report_type.text;
       return report_type + ' (' + branch.name + ')';
