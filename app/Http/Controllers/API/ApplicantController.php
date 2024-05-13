@@ -1506,7 +1506,7 @@ class ApplicantController extends Controller
 			foreach ($positions as $position) {
 																
 				// on process initial interview or IQ/Exam or BI, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
-				$beg_bal = $this->recruitment_on_process_quantity($request, $branch->id, null, 'Beginning Balance');	
+				$beg_bal = $this->recruitment_on_process_quantity($request, $branch->id, $position->name, 'Beginning Balance');	
 
 				// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
 				$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, $position->name, null); 
