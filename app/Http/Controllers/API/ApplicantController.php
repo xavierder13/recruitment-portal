@@ -1520,7 +1520,7 @@ class ApplicantController extends Controller
 				// qualified: passed in BI (Final Interview on process), params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
 				$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, $position->name, null); 
 
-				$end_bal = $beg_bal + $screening_passed + $recruitment_on_process	- $recruitment_failed - $bi_passed;
+				$end_bal = $beg_bal + $screening_passed	- $recruitment_failed - $bi_passed;
 
 				$arrApplicants[$branch->name][$position->name] = [
 																														'beg_bal' => $beg_bal,
