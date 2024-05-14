@@ -1210,15 +1210,25 @@ class ApplicantController extends Controller
 		$date_from = $request->date_from;
 		$date_to = $request->date_to;
 		
-		if($type == 'Beginning Balance')
-		{
-			$date_from = Carbon::parse($date_to)->subMonthsNoOverflow()->startOfMonth()->toDateString(); // last day last month;
-			$date_to = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-		}
+		// if($type == 'Beginning Balance')
+		// {
+		// 	$date_from = Carbon::parse($date_to)->subMonthsNoOverflow()->startOfMonth()->toDateString(); // last day last month;
+		// 	$date_to = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+		// }
 
 		return $this->all_job_applicants()
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)														
+								->where(function($query) use ($type, $date_from, $date_to){
+										if($type == 'Beginning Balance')
+										{
+											$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
+										}
+										else
+										{
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
+										}
+								})													
 								->where('branch_id', $branch_id)
 								->where(function($query) use ($position) {
 										if(isset($position))
@@ -1233,26 +1243,32 @@ class ApplicantController extends Controller
 	{
 		$date_from = $request->date_from;
 		$date_to = $request->date_to;
-		
-		if($type == 'Beginning Balance')
-		{
-			$date_from = Carbon::parse($date_to)->subMonthsNoOverflow()->startOfMonth()->toDateString(); // last day last month;
-			$date_to = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-		}
 
 		return $this->all_job_applicants()
-								->where(function($query) use ($type, $date_from, $date_to) {
-										// if type either beginning or ending balance then get data as of 'date_to' parameter
-										if(in_array($type, ['Beginnning Balance', 'Ending Balance']))
-										{
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_to);
-										}	
-										else
-										{
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);	
-										}							
-								})												
+								->where(function($query) use ($type, $date_from, $date_to){
+											if($type == 'Beginning Balance')
+											{
+												$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+												$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
+											}
+											else
+											{
+												$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+															->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
+											}
+								})
+								// ->where(function($query) use ($type, $date_from, $date_to) {
+								// 		// if type either beginning or ending balance then get data as of 'date_to' parameter
+								// 		if(in_array($type, ['Beginnning Balance', 'Ending Balance']))
+								// 		{
+								// 			$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_to);
+								// 		}	
+								// 		else
+								// 		{
+								// 			$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+								// 						->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);	
+								// 		}							
+								// })												
 								->where('branch_id', $branch_id)
 								->where(function($query) use ($position) {
 										if(isset($position))
@@ -1269,16 +1285,20 @@ class ApplicantController extends Controller
 	{
 		$date_from = $request->date_from;
 		$date_to = $request->date_to;
-		
-		if($type == 'Beginning Balance')
-		{
-			$date_from = Carbon::parse($date_to)->subMonthsNoOverflow()->startOfMonth()->toDateString(); // last day last month;
-			$date_to = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-		}
 
 		return $this->all_job_applicants()
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)												
+								->where(function($query) use ($type, $date_from, $date_to){
+										if($type == 'Beginning Balance')
+										{
+											$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
+										}
+										else
+										{
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
+										}
+								})										
 								->where('branch_id', $branch_id)
 								->where(function($query) use ($position) {
 										if(isset($position))
@@ -1299,16 +1319,20 @@ class ApplicantController extends Controller
 	{
 		$date_from = $request->date_from;
 		$date_to = $request->date_to;
-		
-		if($type == 'Beginning Balance')
-		{
-			$date_from = Carbon::parse($date_to)->subMonthsNoOverflow()->startOfMonth()->toDateString(); // last day last month;
-			$date_to = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-		}
 
 		return $this->all_job_applicants()
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)												
+								->where(function($query) use ($type, $date_from, $date_to){
+										if($type == 'Beginning Balance')
+										{
+											$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
+										}
+										else
+										{
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
+										}
+								})											
 								->where('branch_id', $branch_id)
 								->where(function($query) use ($position) {
 										if(isset($position))
@@ -1330,15 +1354,19 @@ class ApplicantController extends Controller
 		$date_from = $request->date_from;
 		$date_to = $request->date_to;
 		
-		if($type == 'Beginning Balance')
-		{
-			$date_from = Carbon::parse($date_to)->subMonthsNoOverflow()->startOfMonth()->toDateString(); // last day last month;
-			$date_to = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-		}
-
 		return $this->all_job_applicants()
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)																	
+								->where(function($query) use ($type, $date_from, $date_to){
+										if($type == 'Beginning Balance')
+										{
+											$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
+										}
+										else
+										{
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
+										}
+								})														
 								->where('branch_id', $branch_id)
 								->where(function($query) use ($position) {
 										if(isset($position))
@@ -1354,16 +1382,20 @@ class ApplicantController extends Controller
 	{
 		$date_from = $request->date_from;
 		$date_to = $request->date_to;
-		
-		if($type == 'Beginning Balance')
-		{
-			$date_from = Carbon::parse($date_to)->subMonthsNoOverflow()->startOfMonth()->toDateString(); // last day last month;
-			$date_to = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-		}
 
 		return $this->all_job_applicants()
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)																	
+								->where(function($query) use ($type, $date_from, $date_to){
+										if($type == 'Beginning Balance')
+										{
+											$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
+										}
+										else
+										{
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
+										}
+								})																
 								->where('branch_id', $branch_id)
 								->where(function($query) use ($position) {
 										if(isset($position))
@@ -1379,16 +1411,20 @@ class ApplicantController extends Controller
 	{
 		$date_from = $request->date_from;
 		$date_to = $request->date_to;
-		
-		if($type == 'Beginning Balance')
-		{
-			$date_from = Carbon::parse($date_to)->subMonthsNoOverflow()->startOfMonth()->toDateString(); // last day last month;
-			$date_to = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-		}
 
 		return $this->all_job_applicants()
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-								->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)																	
+								->where(function($query) use ($type, $date_from, $date_to){
+										if($type == 'Beginning Balance')
+										{
+											$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
+										}
+										else
+										{
+											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
+														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
+										}
+								})															
 								->where('branch_id', $branch_id)
 								->where(function($query) use ($position) {
 										if(isset($position))
@@ -1491,7 +1527,7 @@ class ApplicantController extends Controller
 			// qualified: passed in BI (Final Interview on process), params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
 			$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, null, null); 
 
-			$end_bal = $beg_bal + $screening_passed + $recruitment_on_process	- $recruitment_failed - $bi_passed;
+			$end_bal = $beg_bal + $screening_passed	- $recruitment_failed - $bi_passed;
 																			
 			$arrApplicants[$branch->name] = [
 				'total_count' => [

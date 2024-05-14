@@ -360,8 +360,6 @@ export default {
             this.loading = false;
             let data = response.data;
 
-            console.log(data);
-
             if(data.success){
               
               if(this.report_group.group == 'Detailed Report')
@@ -396,8 +394,6 @@ export default {
 
                 this.generate_btn = false;
                 this.export_btn = true;
-
-                console.log(data);
 
                 this.json_data = data.applicants;
               }
@@ -665,8 +661,6 @@ export default {
 
         }
       }
-
-      console.log(json_fields);
 
       return json_fields;
     },
