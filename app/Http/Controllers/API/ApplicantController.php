@@ -1586,13 +1586,13 @@ class ApplicantController extends Controller
 			$beg_bal = $this->on_process_quantity($request, 'applicants.final_interview_status', $branch->id, null, 'Beginning Balance');
 
 			// qualified: passed in BI (Final Interview on process)														 
-			$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, null); 
+			$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, null,null); 
 
 			// failed in final interview												 
-			$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', $branch->id, null); 
+			$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', $branch->id, null, null); 
 
 			// hired: params(request, status_field, branch_id, position)												 
-			$hired = $this->hired_quantity($request, $branch->id, null); 
+			$hired = $this->hired_quantity($request, $branch->id, null, null); 
 
 			$end_bal = $beg_bal + $bi_passed - $final_interview_failed - $hired;
 																			
@@ -1612,13 +1612,13 @@ class ApplicantController extends Controller
 				$beg_bal = $this->on_process_quantity($request, 'applicants.final_interview_status', $branch->id, $position->name, 'Beginning Balance');
 
 				// qualified: passed in BI (Final Interview on process)														 
-				$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, $position->name); 
+				$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, $position->name, null); 
 
 				// failed in final interview												 
-				$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', $branch->id, $position->name); 
+				$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', $branch->id, $position->name, null); 
 
 				// hired: params(request, status_field, branch_id, position)												 
-				$hired = $this->hired_quantity($request, $branch->id, $position->name	 ); 
+				$hired = $this->hired_quantity($request, $branch->id, $position->name, null); 
 
 				$end_bal = $beg_bal + $bi_passed - $final_interview_failed - $hired;
 
