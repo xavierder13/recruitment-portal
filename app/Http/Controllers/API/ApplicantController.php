@@ -1447,7 +1447,8 @@ class ApplicantController extends Controller
 														'beg_bal' => $beg_bal,
 														'total_qualified' => $bi_passed,
 														'total_final_interview_failed' => $final_interview_failed,
-														'total_hired' => $hired,
+														'total_orientation' => $for_orientation,
+														'total_reserve' => $reserved,
 														'end_bal' => $end_bal,
 													]
 			];
@@ -1479,7 +1480,8 @@ class ApplicantController extends Controller
 																														'beg_bal' => $beg_bal,
 																														'total_qualified' => $bi_passed,
 																														'total_final_interview_failed' => $final_interview_failed,
-																														'total_hired' => $hired,
+																														'total_orientation' => $for_orientation,
+																														'total_reserve' => $reserved,
 																														'end_bal' => $end_bal,
 																													];
 				

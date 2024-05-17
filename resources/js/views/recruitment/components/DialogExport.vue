@@ -617,7 +617,8 @@ export default {
             Object.assign(json_fields, {  
               'TOTAL_COUNT.total_qualified': 'total_count.total_qualified', 
               'TOTAL_COUNT.total_final_interview_failed': 'total_count.total_final_interview_failed', 
-              'TOTAL_COUNT.total_hired': 'total_count.total_hired',
+              'TOTAL_COUNT.total_orientation': 'total_count.total_orientation',
+              'TOTAL_COUNT.total_reserve': 'total_count.total_reserve',
             });
           }
 
@@ -650,7 +651,9 @@ export default {
               Object.assign(json_fields, { 
                 [ position.toUpperCase() + '.total_qualified' ]: position.toLowerCase() + '.total_qualified',
                 [ position.toUpperCase() + '.total_final_interview_failed' ]: position.toLowerCase() + '.total_final_interview_failed',
-                [ position.toUpperCase() + '.total_hired' ]: position.toLowerCase() + '.total_hired',
+                [ position.toUpperCase() + '.total_orientation' ]: position.toLowerCase() + '.total_orientation',
+                [ position.toUpperCase() + '.total_reserve' ]: position.toLowerCase() + '.total_reserve',
+                
               });
             }
 
