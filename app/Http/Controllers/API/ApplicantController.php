@@ -1205,16 +1205,10 @@ class ApplicantController extends Controller
 	
 	}
 
-	public function total_applicants(Request $request, $branch_id, $position, $type)
+	public function get_applicants(Request $request, $branch_id, $position, $type)
 	{
 		$date_from = $request->date_from;
 		$date_to = $request->date_to;
-		
-		// if($type == 'Beginning Balance')
-		// {
-		// 	$date_from = Carbon::parse($date_to)->subMonthsNoOverflow()->startOfMonth()->toDateString(); // last day last month;
-		// 	$date_to = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-		// }
 
 		return $this->all_job_applicants()
 								->where(function($query) use ($type, $date_from, $date_to){
@@ -1235,77 +1229,37 @@ class ApplicantController extends Controller
 										{
 											$query->where('positions.name', $position);
 										}
-								})
-								->count();
+								});
 	}
 
 	public function on_process_quantity(Request $request, $status_field, $branch_id, $position, $type) 
 	{
-		$date_from = $request->date_from;
-		$date_to = $request->date_to;
-
-		return $this->all_job_applicants()
-								->where(function($query) use ($type, $date_from, $date_to){
-											if($type == 'Beginning Balance')
-											{
-												$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-												$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
-											}
-											else
-											{
-												$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-															->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
-											}
-								})
-								// ->where(function($query) use ($type, $date_from, $date_to) {
-								// 		// if type either beginning or ending balance then get data as of 'date_to' parameter
-								// 		if(in_array($type, ['Beginnning Balance', 'Ending Balance']))
-								// 		{
-								// 			$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_to);
-								// 		}	
-								// 		else
-								// 		{
-								// 			$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-								// 						->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);	
-								// 		}							
-								// })												
-								->where('branch_id', $branch_id)
-								->where(function($query) use ($position) {
-										if(isset($position))
-										{
-											$query->where('positions.name', $position);
-										}
-								})
+		return $this->get_applicants($request, $branch_id, $position, $type)
 								->where($status_field, 0)
+								->count();
+			
+	}
+
+	public function passed_quantity(Request $request, $status_field, $branch_id, $position, $type) 
+	{
+		return $this->get_applicants($request, $branch_id, $position, $type)
+								->where($status_field, 1)
+								->count();
+			
+	}
+
+	public function failed_quantity(Request $request, $status_field, $branch_id, $position, $type) 
+	{
+		return $this->get_applicants($request, $branch_id, $position, $type)
+								->whereIn($status_field, [2, 3])
 								->count();
 			
 	}
 
 	public function recruitment_on_process_quantity(Request $request, $branch_id, $position, $type) 
 	{
-		$date_from = $request->date_from;
-		$date_to = $request->date_to;
 
-		return $this->all_job_applicants()
-								->where(function($query) use ($type, $date_from, $date_to){
-										if($type == 'Beginning Balance')
-										{
-											$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
-										}
-										else
-										{
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
-										}
-								})										
-								->where('branch_id', $branch_id)
-								->where(function($query) use ($position) {
-										if(isset($position))
-										{
-											$query->where('positions.name', $position);
-										}
-								})
+		return $this->get_applicants($request, $branch_id, $position, $type)
 								->where(function($query) {
 										$query->where('applicants.initial_interview_status', 0)
 													->orWhere('applicants.iq_status', 0)
@@ -1317,122 +1271,13 @@ class ApplicantController extends Controller
 
 	public function recruitment_failed_quantity(Request $request, $branch_id, $position, $type) 
 	{
-		$date_from = $request->date_from;
-		$date_to = $request->date_to;
 
-		return $this->all_job_applicants()
-								->where(function($query) use ($type, $date_from, $date_to){
-										if($type == 'Beginning Balance')
-										{
-											$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
-										}
-										else
-										{
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
-										}
-								})											
-								->where('branch_id', $branch_id)
-								->where(function($query) use ($position) {
-										if(isset($position))
-										{
-											$query->where('positions.name', $position);
-										}
-								})
+		return $this->get_applicants($request, $branch_id, $position, $type)
 								->where(function($query) {
 										$query->whereIn('applicants.initial_interview_status', [2, 3])
 													->orWhereIn('applicants.iq_status', [2, 3])
 													->orWhereIn('applicants.bi_status', [2, 3]);
 								})
-								->count();
-			
-	}
-
-	public function passed_quantity(Request $request, $status_field, $branch_id, $position, $type) 
-	{
-		$date_from = $request->date_from;
-		$date_to = $request->date_to;
-		
-		return $this->all_job_applicants()
-								->where(function($query) use ($type, $date_from, $date_to){
-										if($type == 'Beginning Balance')
-										{
-											$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
-										}
-										else
-										{
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
-										}
-								})														
-								->where('branch_id', $branch_id)
-								->where(function($query) use ($position) {
-										if(isset($position))
-										{
-											$query->where('positions.name', $position);
-										}
-								})
-								->where($status_field, 1)
-								->count();
-	}
-
-	public function failed_quantity(Request $request, $status_field, $branch_id, $position, $type) 
-	{
-		$date_from = $request->date_from;
-		$date_to = $request->date_to;
-
-		return $this->all_job_applicants()
-								->where(function($query) use ($type, $date_from, $date_to){
-										if($type == 'Beginning Balance')
-										{
-											$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
-										}
-										else
-										{
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
-										}
-								})																
-								->where('branch_id', $branch_id)
-								->where(function($query) use ($position) {
-										if(isset($position))
-										{
-											$query->where('positions.name', $position);
-										}
-								})
-								->whereIn($status_field, [2, 3])
-								->count();
-	}
-
-	public function hired_quantity(Request $request, $branch_id, $position, $type) 
-	{
-		$date_from = $request->date_from;
-		$date_to = $request->date_to;
-
-		return $this->all_job_applicants()
-								->where(function($query) use ($type, $date_from, $date_to){
-										if($type == 'Beginning Balance')
-										{
-											$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
-										}
-										else
-										{
-											$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $date_from)			
-														->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to);
-										}
-								})															
-								->where('branch_id', $branch_id)
-								->where(function($query) use ($position) {
-										if(isset($position))
-										{
-											$query->where('positions.name', $position);
-										}
-								})
-								->whereNotNull('applicants.signing_of_contract_date')
 								->count();
 	}
 
@@ -1448,15 +1293,15 @@ class ApplicantController extends Controller
 		foreach ($branches as $branch) {
 
 			//total applicants this month params (request, branch id, position, balance type e.g 'Beginning', 'Ending')
-			$total_applicants = $this->total_applicants($request, $branch->id, null, null);
+			$total_applicants = $this->get_applicants($request, $branch->id, null, null)->count();
 															 
 			// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
 			$beg_bal = $this->on_process_quantity($request, 'applicants.status', $branch->id, null, 'Beginning Balance');
 
-			// failed in screening														 
+			// failed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
 			$screening_failed = $this->failed_quantity($request, 'applicants.status', $branch->id, null, null); 
 
-			// passed in screening params(request, status_field, branch_id, position)												 
+			// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')												 
 			$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, null, null); 
 
 			$end_bal = $beg_bal + $total_applicants	- $screening_failed	- $screening_passed; 	
@@ -1474,7 +1319,7 @@ class ApplicantController extends Controller
 			foreach ($positions as $position) {
 
 				//total applicants this month params (request, branch id, position, balance type e.g 'Beginning', 'Ending')
-				$total_applicants = $this->total_applicants($request, $branch->id, $position->name, null);
+				$total_applicants = $this->get_applicants($request, $branch->id, $position->name, null)->count();
 																
 				// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
 				$beg_bal = $this->on_process_quantity($request, 'applicants.status', $branch->id, $position->name, 'Beginning Balance');
@@ -1518,9 +1363,6 @@ class ApplicantController extends Controller
 			// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
 			$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, null, null); 
 
-			// on process initial interview or IQ/Exam or BI, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
-			$recruitment_on_process = $this->recruitment_on_process_quantity($request, $branch->id, null, null);
-
 			// failed initial interview or IQ/Exam or BI, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
 			$recruitment_failed = $this->recruitment_failed_quantity($request, $branch->id, null, null);
 
@@ -1546,9 +1388,6 @@ class ApplicantController extends Controller
 
 				// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
 				$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, $position->name, null); 
-
-				// on process initial interview or IQ/Exam or BI, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
-				$recruitment_on_process = $this->recruitment_on_process_quantity($request, $branch->id, $position->name, null);
 
 				// failed initial interview or IQ/Exam or BI, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
 				$recruitment_failed = $this->recruitment_failed_quantity($request, $branch->id, $position->name, null);
@@ -1590,9 +1429,16 @@ class ApplicantController extends Controller
 
 			// failed in final interview												 
 			$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', $branch->id, null, null); 
+			
+			$reserved = $this->get_applicants($request, $branch->id, null, null)
+											 ->where('applicants.final_interview_status', 4)
+											 ->count();
 
-			// hired: params(request, status_field, branch_id, position)												 
-			$hired = $this->hired_quantity($request, $branch->id, null, null); 
+			$for_orientation = $this->get_applicants($request, $branch->id, null, null)
+															->whereNotNull('applicants.signing_of_contract_date')
+															->count();
+																								 
+			$hired = $reserved + $for_orientation; 
 
 			$end_bal = $beg_bal + $bi_passed - $final_interview_failed - $hired;
 																			
@@ -1617,8 +1463,15 @@ class ApplicantController extends Controller
 				// failed in final interview												 
 				$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', $branch->id, $position->name, null); 
 
-				// hired: params(request, status_field, branch_id, position)												 
-				$hired = $this->hired_quantity($request, $branch->id, $position->name, null); 
+				$reserved = $this->get_applicants($request, $branch->id, $position->name, null)
+											 ->where('applicants.final_interview_status', 4)
+											 ->count();
+
+				$for_orientation = $this->get_applicants($request, $branch->id, $position->name, null)
+																->whereNotNull('applicants.signing_of_contract_date')
+																->count();
+																									
+				$hired = $reserved + $for_orientation; 
 
 				$end_bal = $beg_bal + $bi_passed - $final_interview_failed - $hired;
 
