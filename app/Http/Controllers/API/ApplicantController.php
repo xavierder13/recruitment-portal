@@ -1435,7 +1435,7 @@ class ApplicantController extends Controller
 											 ->count();
 
 			$for_orientation = $this->get_applicants($request, $branch->id, null, null)
-															->whereNotNull('applicants.signing_of_contract_date')
+															->whereNotNull('applicants.orientation_date')
 															->count();
 																								 
 			$hired = $reserved + $for_orientation; 
@@ -1469,7 +1469,7 @@ class ApplicantController extends Controller
 											 ->count();
 
 				$for_orientation = $this->get_applicants($request, $branch->id, $position->name, null)
-																->whereNotNull('applicants.signing_of_contract_date')
+																->whereNotNull('applicants.orientation_date')
 																->count();
 																									
 				$hired = $reserved + $for_orientation; 
@@ -1493,7 +1493,109 @@ class ApplicantController extends Controller
 
 	public function export_signing_contract(Request $request) 
 	{
+		$branch_id = $request->branch_id;
+
 		$arrApplicants = [];
+		$positions = $this->positions();
+		$branches = $this->branches($branch_id);
+		$date_from = $request->date_from;
+		$date_to = $request->date_to;
+		$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+
+		foreach ($branches as $branch) {
+															 
+			// orientation on process this. month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
+			$beg_bal = $this->all_job_applicants()
+											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth)											
+											->where('branch_id', $branch_id)
+											->where('applicants.orientation_status', 0)
+											->count();
+			
+			$reserved = $this->get_applicants($request, $branch->id, null, null)
+											 ->where('applicants.final_interview_status', 4)
+											 ->count();
+
+			$for_orientation = $this->get_applicants($request, $branch->id, null, null)
+															->whereNotNull('applicants.orientation_date')
+															->count();
+
+			$non_compliance = $this->all_job_applicants()
+														 ->whereDate('applicants.orientation_date', '>=', $date_from)
+														 ->whereDate('applicants.orientation_date', '<=', $date_to)											
+														 ->where('branch_id', $branch_id)
+														 ->where('applicants.orientation_status', 3)
+														 ->count();
+
+			$signed_contract = $this->all_job_applicants()
+														  ->whereDate('applicants.signing_of_contract_date', '>=', $date_from)
+															->whereDate('applicants.signing_of_contract_date', '<=', $date_to)
+															->where('branch_id', $branch_id)
+														  ->count();
+																								 
+			$hired = $reserved + $for_orientation; 
+
+			$end_bal = $beg_bal + $hired - $non_compliance - $signed_contract;
+																			
+			$arrApplicants[$branch->name] = [
+				'total_count' => [
+														'beg_bal' => $beg_bal,
+														'total_orientation' => $for_orientation,
+														'total_reserve' => $reserved,
+														'total_non_compliance' => $non_compliance,
+														'total_signed_contract' => $signed_contract,
+														'end_bal' => $end_bal,
+													]
+			];
+
+			foreach ($positions as $position) {
+																
+				// orientation on process this. month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
+				$beg_bal = $this->all_job_applicants()
+												->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth)											
+												->where('branch_id', $branch_id)
+												->where('positions.name', $position->name)
+												->where('applicants.orientation_status', 0)
+												->count();
+
+				$reserved = $this->get_applicants($request, $branch->id, $position->name, null)
+												 ->where('applicants.final_interview_status', 4)
+												 ->count();
+
+				$for_orientation = $this->get_applicants($request, $branch->id, $position->name, null)
+																->whereNotNull('applicants.orientation_date')
+																->count();
+
+				$non_compliance = $this->all_job_applicants()
+															 ->whereDate('applicants.orientation_date', '>=', $date_from)
+															 ->whereDate('applicants.orientation_date', '<=', $date_to)											
+															 ->where('branch_id', $branch_id)
+															 ->where('positions.name', $position->name)
+															 ->where('applicants.orientation_status', 3)
+															 ->count();
+	 
+				 $signed_contract = $this->all_job_applicants()
+																 ->whereDate('applicants.signing_of_contract_date', '>=', $date_from)
+																 ->whereDate('applicants.signing_of_contract_date', '<=', $date_to)
+																 ->where('branch_id', $branch_id)
+																 ->where('positions.name', $position->name)
+																 ->count();
+																										
+				$hired = $reserved + $for_orientation; 
+	 
+				$end_bal = $beg_bal + $hired - $non_compliance - $signed_contract;
+
+				$arrApplicants[$branch->name][$position->name] = [
+																														'beg_bal' => $beg_bal,
+																														'total_orientation' => $for_orientation,
+																														'total_reserve' => $reserved,
+																														'total_non_compliance' => $non_compliance,
+																														'total_signed_contract' => $signed_contract,
+																														'end_bal' => $end_bal,
+																													];
+				
+			}
+		}
+
 		return response()->json(['success' => 'Record has been exported', 'applicants' => $arrApplicants], 200);
 	}
 

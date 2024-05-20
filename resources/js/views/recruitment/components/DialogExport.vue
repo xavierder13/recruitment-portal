@@ -621,6 +621,15 @@ export default {
               'TOTAL_COUNT.total_reserve': 'total_count.total_reserve',
             });
           }
+          else if(this.report_type.text == 'Signing of Contract')
+          {
+            Object.assign(json_fields, {  
+              'TOTAL_COUNT.total_orientation': 'total_count.total_orientation',
+              'TOTAL_COUNT.total_reserve': 'total_count.total_reserve',
+              'TOTAL_COUNT.total_non_compliance': 'total_count.total_non_compliance',
+              'TOTAL_COUNT.total_signed_contract': 'total_count.total_signed_contract',
+            });
+          }
 
           // assign last TOTAL_COUNT.end_bal for ordering of data purposes
           Object.assign(json_fields, { 'TOTAL_COUNT.end_bal': 'total_count.end_bal' });
@@ -653,7 +662,15 @@ export default {
                 [ position.toUpperCase() + '.total_final_interview_failed' ]: position.toLowerCase() + '.total_final_interview_failed',
                 [ position.toUpperCase() + '.total_orientation' ]: position.toLowerCase() + '.total_orientation',
                 [ position.toUpperCase() + '.total_reserve' ]: position.toLowerCase() + '.total_reserve',
-                
+              });
+            }
+            else if(this.report_type.text == 'Signing of Contract')
+            {
+              Object.assign(json_fields, { 
+                [ position.toUpperCase() + '.total_orientation' ]: position.toLowerCase() + '.total_orientation',
+                [ position.toUpperCase() + '.total_reserve' ]: position.toLowerCase() + '.total_reserve',
+                [ position.toUpperCase() + '.total_non_compliance' ]: position.toLowerCase() + '.total_non_compliance',
+                [ position.toUpperCase() + '.total_signed_contract' ]: position.toLowerCase() + '.total_signed_contract',
               });
             }
 
