@@ -1504,8 +1504,9 @@ class ApplicantController extends Controller
 
 		foreach ($branches as $branch) {
 															 
-			// orientation on process this. month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
-			$beg_bal = $this->all_job_applicants()
+			// orientation on process this. month and applied as of last month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
+			$beg_bal = $this->get_applicants($request, $branch->id, null, 'Beginning Balance')
+											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
 											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
 											->where('branch_id', $branch_id)
 											->where('applicants.orientation_status', 0)
@@ -1550,13 +1551,13 @@ class ApplicantController extends Controller
 
 			foreach ($positions as $position) {
 																
-				// orientation on process this. month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
-				$beg_bal = $this->all_job_applicants()
-												->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
-												->where('branch_id', $branch_id)
-												->where('positions.name', $position->name)
-												->where('applicants.orientation_status', 0)
-												->count();
+				// orientation on process this. month and applied as of last month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
+			$beg_bal = $this->get_applicants($request, $branch->id, $position->name, 'Beginning Balance')
+											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
+											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
+											->where('branch_id', $branch_id)
+											->where('applicants.orientation_status', 0)
+											->count();
 
 				$reserved = $this->get_applicants($request, $branch->id, $position->name, null)
 												 ->where('applicants.final_interview_status', 4)
