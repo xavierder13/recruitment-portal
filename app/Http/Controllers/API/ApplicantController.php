@@ -1506,7 +1506,7 @@ class ApplicantController extends Controller
 															 
 			// orientation on process this. month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
 			$beg_bal = $this->all_job_applicants()
-											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth)											
+											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
 											->where('branch_id', $branch_id)
 											->where('applicants.orientation_status', 0)
 											->count();
@@ -1552,7 +1552,7 @@ class ApplicantController extends Controller
 																
 				// orientation on process this. month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
 				$beg_bal = $this->all_job_applicants()
-												->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth)											
+												->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
 												->where('branch_id', $branch_id)
 												->where('positions.name', $position->name)
 												->where('applicants.orientation_status', 0)
