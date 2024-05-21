@@ -1527,8 +1527,8 @@ class ApplicantController extends Controller
 															->count();
 	
 			$signed_contract = $this->all_job_applicants()
-															->whereDate(DB::raw('DATE_FORMAT(applicants.orientatsigning_of_contract_dateion_date, "%Y-%m-%d")'), '>=', $date_from)
-															->whereDate(DB::raw('DATE_FORMAT(applicants.orientatsigning_of_contract_dateion_date, "%Y-%m-%d")'), '<=', $date_to)
+															->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '>=', $date_from)
+															->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '<=', $date_to)
 															->where('branch_id', $branch_id)
 															->where('applicants.orientation_status', 1)
 															->count();
@@ -1575,8 +1575,8 @@ class ApplicantController extends Controller
 															 ->count();
 	 
 				 $signed_contract = $this->all_job_applicants()
-																 ->whereDate(DB::raw('DATE_FORMAT(applicants.orientatsigning_of_contract_dateion_date, "%Y-%m-%d")'), '>=', $date_from)
-																 ->whereDate(DB::raw('DATE_FORMAT(applicants.orientatsigning_of_contract_dateion_date, "%Y-%m-%d")'), '<=', $date_to)
+																 ->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '>=', $date_from)
+																 ->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '<=', $date_to)
 																 ->where('branch_id', $branch_id)
 																 ->where('positions.name', $position->name)
 																 ->where('applicants.orientation_status', 1)
