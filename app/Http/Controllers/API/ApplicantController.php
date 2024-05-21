@@ -1520,17 +1520,18 @@ class ApplicantController extends Controller
 															->count();
 
 			$non_compliance = $this->all_job_applicants()
-														 ->whereDate('applicants.orientation_date', '>=', $date_from)
-														 ->whereDate('applicants.orientation_date', '<=', $date_to)											
-														 ->where('branch_id', $branch_id)
-														 ->where('applicants.orientation_status', 3)
-														 ->count();
-
-			$signed_contract = $this->all_job_applicants()
-														  ->whereDate('applicants.signing_of_contract_date', '>=', $date_from)
-															->whereDate('applicants.signing_of_contract_date', '<=', $date_to)
+															->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
+															->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
 															->where('branch_id', $branch_id)
-														  ->count();
+															->where('applicants.orientation_status', 3)
+															->count();
+	
+			$signed_contract = $this->all_job_applicants()
+															->whereDate(DB::raw('DATE_FORMAT(applicants.orientatsigning_of_contract_dateion_date, "%Y-%m-%d")'), '>=', $date_from)
+															->whereDate(DB::raw('DATE_FORMAT(applicants.orientatsigning_of_contract_dateion_date, "%Y-%m-%d")'), '<=', $date_to)
+															->where('branch_id', $branch_id)
+															->where('applicants.orientation_status', 1)
+															->count();
 																								 
 			$hired = $reserved + $for_orientation; 
 
@@ -1566,18 +1567,19 @@ class ApplicantController extends Controller
 																->count();
 
 				$non_compliance = $this->all_job_applicants()
-															 ->whereDate('applicants.orientation_date', '>=', $date_from)
-															 ->whereDate('applicants.orientation_date', '<=', $date_to)											
+															 ->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
+															 ->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
 															 ->where('branch_id', $branch_id)
 															 ->where('positions.name', $position->name)
 															 ->where('applicants.orientation_status', 3)
 															 ->count();
 	 
 				 $signed_contract = $this->all_job_applicants()
-																 ->whereDate('applicants.signing_of_contract_date', '>=', $date_from)
-																 ->whereDate('applicants.signing_of_contract_date', '<=', $date_to)
+																 ->whereDate(DB::raw('DATE_FORMAT(applicants.orientatsigning_of_contract_dateion_date, "%Y-%m-%d")'), '>=', $date_from)
+																 ->whereDate(DB::raw('DATE_FORMAT(applicants.orientatsigning_of_contract_dateion_date, "%Y-%m-%d")'), '<=', $date_to)
 																 ->where('branch_id', $branch_id)
 																 ->where('positions.name', $position->name)
+																 ->where('applicants.orientation_status', 1)
 																 ->count();
 																										
 				$hired = $reserved + $for_orientation; 

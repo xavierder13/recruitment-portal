@@ -2200,6 +2200,8 @@ export default {
         isRequired = true;
       }
 
+      console.log(isRequired);
+
       return isRequired;
     },
 
@@ -2207,7 +2209,7 @@ export default {
       let isRequired = false;
       let hasAllRequiredFiles = this.final_interview_required_files.every(value => this.applicantDocuments.includes(value));
 
-      if(this.editedItem.final_interview_status == 1 && !hasAllRequiredFiles)
+      if(this.editedItem.final_interview_status == 1 && !hasAllRequiredFiles && this.applicant.progress_status == 'Final Interviews')
       {
         isRequired = true;
       }
