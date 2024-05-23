@@ -1288,7 +1288,7 @@ class ApplicantController extends Controller
 								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $request->date_from)
 								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $request->date_to)											
 								->where('branch_id', $branch_id)
-								->where('applicants.orientation_status', 0)
+								// ->where('applicants.orientation_status', 0)
 								->count();
 	}
 
