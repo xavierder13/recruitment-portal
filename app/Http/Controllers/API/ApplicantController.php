@@ -1508,7 +1508,7 @@ class ApplicantController extends Controller
 			$beg_bal = $this->get_applicants($request, $branch->id, null, 'Beginning Balance')
 											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
 											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
-											->where('branch_id', $branch_id)
+											->where('branch_id', $branch->id)
 											->where('applicants.orientation_status', 0)
 											->count();
 			
@@ -1523,14 +1523,14 @@ class ApplicantController extends Controller
 			$non_compliance = $this->all_job_applicants()
 															->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
 															->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
-															->where('branch_id', $branch_id)
+															->where('branch_id', $branch->id)
 															->where('applicants.orientation_status', 3)
 															->count();
 	
 			$signed_contract = $this->all_job_applicants()
 															->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '>=', $date_from)
 															->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '<=', $date_to)
-															->where('branch_id', $branch_id)
+															->where('branch_id', $branch->id)
 															->where('applicants.orientation_status', 1)
 															->count();
 																								 
@@ -1555,7 +1555,7 @@ class ApplicantController extends Controller
 			$beg_bal = $this->get_applicants($request, $branch->id, $position->name, 'Beginning Balance')
 											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
 											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
-											->where('branch_id', $branch_id)
+											->where('branch_id', $$branch->id)
 											->where('applicants.orientation_status', 0)
 											->count();
 
@@ -1570,7 +1570,7 @@ class ApplicantController extends Controller
 				$non_compliance = $this->all_job_applicants()
 															 ->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
 															 ->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
-															 ->where('branch_id', $branch_id)
+															 ->where('branch_id', $branch->id)
 															 ->where('positions.name', $position->name)
 															 ->where('applicants.orientation_status', 3)
 															 ->count();
@@ -1578,7 +1578,7 @@ class ApplicantController extends Controller
 				 $signed_contract = $this->all_job_applicants()
 																 ->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '>=', $date_from)
 																 ->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '<=', $date_to)
-																 ->where('branch_id', $branch_id)
+																 ->where('branch_id', $branch->id)
 																 ->where('positions.name', $position->name)
 																 ->where('applicants.orientation_status', 1)
 																 ->count();
