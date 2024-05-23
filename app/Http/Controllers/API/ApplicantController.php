@@ -1555,7 +1555,7 @@ class ApplicantController extends Controller
 			$beg_bal = $this->get_applicants($request, $branch->id, $position->name, 'Beginning Balance')
 											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
 											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
-											->where('branch_id', $$branch->id)
+											->where('branch_id', $branch->id)
 											->where('applicants.orientation_status', 0)
 											->count();
 
