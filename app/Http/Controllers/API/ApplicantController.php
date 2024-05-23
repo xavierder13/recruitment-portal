@@ -1281,6 +1281,17 @@ class ApplicantController extends Controller
 								->count();
 	}
 
+	public function orientation_beg(Request $request, $branch_id, $position) 
+	{
+
+		return $this->get_applicants($request, $branch_id, $position, 'Beginning Balance')
+								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $request->date_from)
+								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $request->date_to)											
+								->where('branch_id', $branch_id)
+								->where('applicants.orientation_status', 0)
+								->count();
+	}
+
 	public function export_sourcing(Request $request) 
 	{
 
@@ -1505,12 +1516,7 @@ class ApplicantController extends Controller
 		foreach ($branches as $branch) {
 															 
 			// orientation on process this. month and applied as of last month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
-			$beg_bal = $this->get_applicants($request, $branch->id, null, 'Beginning Balance')
-											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
-											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
-											->where('branch_id', $branch->id)
-											->where('applicants.orientation_status', 0)
-											->count();
+			$beg_bal = $this->orientation_beg($request, $branch->id, null);
 			
 			$reserved = $this->get_applicants($request, $branch->id, null, null)
 											 ->where('applicants.final_interview_status', 4)
@@ -1552,12 +1558,7 @@ class ApplicantController extends Controller
 			foreach ($positions as $position) {
 																
 				// orientation on process this. month and applied as of last month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
-			$beg_bal = $this->get_applicants($request, $branch->id, $position->name, 'Beginning Balance')
-											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
-											->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
-											->where('branch_id', $branch->id)
-											->where('applicants.orientation_status', 0)
-											->count();
+				$beg_bal = $this->orientation_beg($request, $branch->id, $position->name);
 
 				$reserved = $this->get_applicants($request, $branch->id, $position->name, null)
 												 ->where('applicants.final_interview_status', 4)
