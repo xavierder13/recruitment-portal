@@ -322,12 +322,15 @@ export default {
         'Management System Supervisor',
         'Encoder',
         'Cashier',
-        'Account Analyst',
+        // 'Account Analyst',
+        'C.I. Collector',
         'Warehouseman',
         'Sales Specialist',
         'Technician',
-        'Delivery/ Logistics Driver',
-        'Delivery/Logistics Helper',
+        // 'Delivery/ Logistics Driver',
+        // 'Delivery/Logistics Helper',
+        'Logistics Driver',
+        'Logistics Helper',
       ],
     }
   },
@@ -547,7 +550,7 @@ export default {
           sub_fields.forEach(sub_field => { // sub_fields are positions/branch/total_count field name
 
             let key_sub_field = sub_field.split('.').join(''); // remove '.' character
-
+          
             Object.assign(json_data[i], { [key_sub_field.toLowerCase()]: this.json_data[field][sub_field] })  
 
           });
@@ -555,6 +558,8 @@ export default {
         });
 
       }
+
+      console.log(json_data);
 
       return json_data;
     },
@@ -580,13 +585,15 @@ export default {
           let fields = Object.keys(this.exportJSONData[0]); // keys are position names
 
           this.position_names.forEach(position => {
-
+            
+            let pos = position.split('.').join(''); // remove '.' character
+            
             Object.assign(json_fields, { 
-              [ position.toUpperCase() + '.beg_bal' ]: position.toLowerCase() + '.beg_bal', 
-              [ position.toUpperCase() + '.qualified' ]: position.toLowerCase() + '.qualified',
-              [ position.toUpperCase() + '.hired' ]: position.toLowerCase() + '.hired',
-              [ position.toUpperCase() + '.expired' ]: position.toLowerCase() + '.expired',
-              [ position.toUpperCase() + '.end_bal' ]: position.toLowerCase() + '.end_bal',
+              [ position.toUpperCase() + '.beg_bal' ]: pos.toLowerCase() + '.beg_bal', 
+              [ position.toUpperCase() + '.qualified' ]: pos.toLowerCase() + '.qualified',
+              [ position.toUpperCase() + '.hired' ]: pos.toLowerCase() + '.hired',
+              [ position.toUpperCase() + '.expired' ]: pos.toLowerCase() + '.expired',
+              [ position.toUpperCase() + '.end_bal' ]: pos.toLowerCase() + '.end_bal',
             });
   
           });
@@ -636,46 +643,48 @@ export default {
 
           this.position_names.forEach(position => {
             
+            let pos = position.split('.').join(''); // remove '.' character
+
             // assign first beg_bal for ordering of data purposes
-            Object.assign(json_fields, { [ position.toUpperCase() + '.beg_bal' ]: position.toLowerCase() + '.beg_bal' });
+            Object.assign(json_fields, { [ position.toUpperCase() + '.beg_bal' ]: pos.toLowerCase() + '.beg_bal' });
 
             if(this.report_type.text == 'Sourcing/Screening')
             {
               Object.assign(json_fields, { 
-                [ position.toUpperCase() + '.total_applicants' ]: position.toLowerCase() + '.total_applicants',
-                [ position.toUpperCase() + '.total_screening_failed' ]: position.toLowerCase() + '.total_screening_failed',
-                [ position.toUpperCase() + '.total_screening_passed' ]: position.toLowerCase() + '.total_screening_passed',
+                [ position.toUpperCase() + '.total_applicants' ]: pos.toLowerCase() + '.total_applicants',
+                [ position.toUpperCase() + '.total_screening_failed' ]: pos.toLowerCase() + '.total_screening_failed',
+                [ position.toUpperCase() + '.total_screening_passed' ]: pos.toLowerCase() + '.total_screening_passed',
               });
             }
             else if(this.report_type.text == 'Recruitment')
             {
               Object.assign(json_fields, { 
-                [ position.toUpperCase() + '.total_screening_passed' ]: position.toLowerCase() + '.total_screening_passed',
-                [ position.toUpperCase() + '.total_recruitment_failed' ]: position.toLowerCase() + '.total_recruitment_failed',
-                [ position.toUpperCase() + '.total_qualified' ]: position.toLowerCase() + '.total_qualified',
+                [ position.toUpperCase() + '.total_screening_passed' ]: pos.toLowerCase() + '.total_screening_passed',
+                [ position.toUpperCase() + '.total_recruitment_failed' ]: pos.toLowerCase() + '.total_recruitment_failed',
+                [ position.toUpperCase() + '.total_qualified' ]: pos.toLowerCase() + '.total_qualified',
               });
             }
             else if(this.report_type.text == 'Hiring')
             {
               Object.assign(json_fields, { 
-                [ position.toUpperCase() + '.total_qualified' ]: position.toLowerCase() + '.total_qualified',
-                [ position.toUpperCase() + '.total_final_interview_failed' ]: position.toLowerCase() + '.total_final_interview_failed',
-                [ position.toUpperCase() + '.total_orientation' ]: position.toLowerCase() + '.total_orientation',
-                [ position.toUpperCase() + '.total_reserve' ]: position.toLowerCase() + '.total_reserve',
+                [ position.toUpperCase() + '.total_qualified' ]: pos.toLowerCase() + '.total_qualified',
+                [ position.toUpperCase() + '.total_final_interview_failed' ]: pos.toLowerCase() + '.total_final_interview_failed',
+                [ position.toUpperCase() + '.total_orientation' ]: pos.toLowerCase() + '.total_orientation',
+                [ position.toUpperCase() + '.total_reserve' ]: pos.toLowerCase() + '.total_reserve',
               });
             }
             else if(this.report_type.text == 'Signing of Contract')
             {
               Object.assign(json_fields, { 
-                [ position.toUpperCase() + '.total_orientation' ]: position.toLowerCase() + '.total_orientation',
-                [ position.toUpperCase() + '.total_reserve' ]: position.toLowerCase() + '.total_reserve',
-                [ position.toUpperCase() + '.total_non_compliance' ]: position.toLowerCase() + '.total_non_compliance',
-                [ position.toUpperCase() + '.total_signed_contract' ]: position.toLowerCase() + '.total_signed_contract',
+                [ position.toUpperCase() + '.total_orientation' ]: pos.toLowerCase() + '.total_orientation',
+                [ position.toUpperCase() + '.total_reserve' ]: pos.toLowerCase() + '.total_reserve',
+                [ position.toUpperCase() + '.total_non_compliance' ]: pos.toLowerCase() + '.total_non_compliance',
+                [ position.toUpperCase() + '.total_signed_contract' ]: pos.toLowerCase() + '.total_signed_contract',
               });
             }
 
             // assign last end_bal for ordering of data purposes
-            Object.assign(json_fields, { [ position.toUpperCase() + '.end_bal' ]: position.toLowerCase() + '.end_bal' });
+            Object.assign(json_fields, { [ position.toUpperCase() + '.end_bal' ]: pos.toLowerCase() + '.end_bal' });
   
           });
 
