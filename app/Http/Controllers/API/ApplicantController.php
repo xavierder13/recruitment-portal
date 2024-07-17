@@ -1758,6 +1758,10 @@ class ApplicantController extends Controller
 				$file_name = $file->file_name;
 				$file_type = $file->file_type;
 
+				$exploded = explode('/', $title); //explode or split the file type e.g 'Diploma/Copy of grades'
+
+				$title = count($exploded) ? join('_', $exploded) : $title;
+
 				$file = public_path() . $file_path . "/" . $file_name;
 				$headers = array('Content-Type: application/' . $file_type,);
 
