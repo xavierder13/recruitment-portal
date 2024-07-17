@@ -1822,12 +1822,12 @@ class ApplicantController extends Controller
 																												$query->where('applicants.branch_id', $user->branch_id);
 																											}
 																									})
-																									->where(function($query){
-																											$query->where(function($qry) {
-																																$qry->whereDate('applicants.initial_interview_date', '>=', Carbon::now()->format('Y-m-d'))
-																																		->orWhereNull('applicants.initial_interview_date');
-																														});			
-																									})
+																									// ->where(function($query){
+																									// 		$query->where(function($qry) {
+																									// 							$qry->whereDate('applicants.initial_interview_date', '>=', Carbon::now()->format('Y-m-d'))
+																									// 									->orWhereNull('applicants.initial_interview_date');
+																									// 					});			
+																									// })
 																									->orderBy('applicants.initial_interview_date', 'DESC')
 																									->get()
 																									->each(function ($row, $index) {
@@ -1928,12 +1928,12 @@ class ApplicantController extends Controller
 																						})
 																						// ->whereDate('applicants.orientation_date', '>=', Carbon::now()->format('Y-m-d'))'
 																						// ->whereIn('applicants.final_interview_status', [1, 4]) //Passed or Reserved
-																						->where(function($query){
-																								$query->where(function($qry) {
-																													$qry->whereDate('applicants.orientation_date', '>=', Carbon::now()->format('Y-m-d'))
-																															->orWhereNull('applicants.orientation_date');
-																											});	
-																						})
+																						// ->where(function($query){
+																						// 		$query->where(function($qry) {
+																						// 							$qry->whereDate('applicants.orientation_date', '>=', Carbon::now()->format('Y-m-d'))
+																						// 									->orWhereNull('applicants.orientation_date');
+																						// 					});	
+																						// })
 																						->orderBy('applicants.orientation_date', 'DESC')
 																						->get()
 																						->each(function ($row, $index) {
@@ -2140,12 +2140,12 @@ class ApplicantController extends Controller
 
 	public function delete_applicants_old() {
 
-		$six_months_old = (Carbon::now())->addDays(-180);
+		$two_months_old = (Carbon::now())->addDays(-60);
 												
-		Applicant::whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $six_months_old)
+		Applicant::whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $two_months_old)
 							->where(function($query){
-								$query->where('final_interview_status', '<>', 1)
-											->orWhereNull('final_interview_status');
+								$query->where('orientation_status', '<>', 1)
+											->orWhereNull('orientation_status');
 							})
 							->delete();
 
