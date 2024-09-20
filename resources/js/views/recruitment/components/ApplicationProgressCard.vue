@@ -40,6 +40,19 @@
         </v-col>
         <v-col class="my-2 py-0">
           <v-text-field
+            class="ma-0 pa-0" 
+            v-model="applicant.screening_date"
+            label="Screening Date"
+            type="date"
+            prepend-icon="mdi-calendar"
+            readonly
+          >
+          </v-text-field>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col class="my-2 py-0">
+          <v-text-field
             class="ma-0 pa-0"
             v-model="applicant.position_name"
             label="Job Position Applied"
@@ -132,6 +145,18 @@
           ></v-autocomplete>
         </v-col>
         <v-col class="my-2 py-0">
+          <v-text-field
+            class="ma-0 pa-0"
+            label="IQ Date"
+            type="date"
+            prepend-icon="mdi-calendar"
+            v-model="applicant.iq_date"
+            readonly
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col class="my-2 py-0">
           <v-autocomplete
             class="ma-0 pa-0"
             :items="statusItems"
@@ -139,6 +164,16 @@
             v-model="applicant.bi_status"
             readonly
           ></v-autocomplete>
+        </v-col>
+        <v-col class="my-2 py-0">
+          <v-text-field
+            class="ma-0 pa-0"
+            label="BI Date"
+            type="date"
+            prepend-icon="mdi-calendar"
+            v-model="applicant.bi_date"
+            readonly
+          ></v-text-field>
         </v-col>
       </v-row>
       <v-row>

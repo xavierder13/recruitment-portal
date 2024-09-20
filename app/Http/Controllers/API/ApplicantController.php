@@ -85,17 +85,18 @@ class ApplicantController extends Controller
 																 DB::raw("DATE_FORMAT(applicants.created_at, '%m/%d/%Y') AS created_at"),
 																 'branches.name AS branch_name',
 																 'applicants.status',
-																 'applicants.position_preference',
-																 'applicants.branch_preference',
+																 DB::raw('DATE_FORMAT(applicants.screening_date, "%m/%d/%Y") as screening_date'),
 														 		 DB::raw('applicants.status as screening_status'),
 																 'applicants.initial_interview_status',
 														 		 DB::raw('DATE_FORMAT(applicants.initial_interview_date, "%m/%d/%Y") as initial_interview_date'),
 														     'applicants.position_preference',
 																 'applicants.branch_preference',
 																 'applicants.iq_status',
+																 DB::raw('DATE_FORMAT(applicants.iq_date, "%m/%d/%Y") as iq_date'),
 																 DB::raw('branch_complied.id as branch_id_complied'),
 																 DB::raw('branch_complied.name as branch_complied'),
 																 'applicants.bi_status',
+																 DB::raw('DATE_FORMAT(applicants.bi_date, "%m/%d/%Y") as bi_date'),
 																 DB::raw('DATE_FORMAT(applicants.final_interview_date, "%m/%d/%Y") as final_interview_date'),
 														 		 'applicants.final_interview_status',
 																 'applicants.final_interview_remarks',
@@ -178,14 +179,15 @@ class ApplicantController extends Controller
 		$applicantsArr = [];
 		$user = Auth::user();
 
-		// get applicants per branch preferences
+		// get applicants per branch preferences if branch_complied field is empty or null, means applicants have not complied to a specific branch yet
 		foreach ($job_applicants as $applicant) {
 			
 			$branch_preference = $applicant->branch_preference;
 
 			if($user->hasRole('Branch Manager'))
 			{
-				if($branch_preference)
+				// if branch_preference has value and branch_complies is null
+				if($branch_preference && !$applicant->branch_complied)
 				{
 					$branch_ids = explode(',', $branch_preference);
 
@@ -694,6 +696,7 @@ class ApplicantController extends Controller
 																 'applicants.how_learn',
 																 'applicants.file',
 																 'applicants.status',
+																 'applicants.screening_date',
 																 'applicants.initial_interview_date',
 																 'applicants.initial_interview_status',
 																 'applicants.position_preference',
@@ -701,7 +704,9 @@ class ApplicantController extends Controller
 																 DB::raw('tbranches.id as branch_id_complied'),
 																 DB::raw('tbranches.name as branch_complied'),
 																 'applicants.iq_status',
+																 'applicants.iq_date',
 																 'applicants.bi_status',
+																 'applicants.bi_date',
 																 'applicants.final_interview_date',
 																 'applicants.final_interview_status',
 																 'applicants.final_interview_remarks',
@@ -1232,25 +1237,98 @@ class ApplicantController extends Controller
 								});
 	}
 
-	public function on_process_quantity(Request $request, $status_field, $branch_id, $position, $type) 
+	public function on_process_quantity(Request $request, $date_field, $branch_id, $position, $type) 
 	{
-		return $this->get_applicants($request, $branch_id, $position, $type)
-								->where($status_field, 0)
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
+
+		// if('Beginning Balance')
+		// {
+		// 	$date_to = Carbon::parse($request->date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString();
+		// 	$date_from  = Carbon::parse($request->date_to)->subMonthsNoOverflow()->firstOfMonth()->toDateString();
+		// }
+
+		return  $this->all_job_applicants()												
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->where(function($query) use ($type, $date_from, $date_to, $date_field){
+									if($type == 'Beginning Balance')
+									{
+										$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+										$query->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
+									}
+									else
+									{
+										$query->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '>=', $date_from)			
+													->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '<=', $date_to);
+									}
+								})
+								// ->where($status_field, 0)
 								->count();
+	}
+
+	public function passed_quantity(Request $request, $status_field, $date_field, $branch_id, $position, $type) 
+	{
+		
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
+
+		return $this->all_job_applicants()												
+					->where('branch_id', $branch_id)
+					->where(function($query) use ($position) {
+							if(isset($position))
+							{
+								$query->where('positions.name', $position);
+							}
+					})
+					->where(function($query) use ($type, $date_from, $date_to, $date_field){
+						if($type == 'Beginning Balance')
+						{
+							$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+							$query->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
+						}
+						else
+						{
+							$query->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '>=', $date_from)			
+										->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '<=', $date_to);
+						}
+					})
+					->where($status_field, 1)
+					->count();
 			
 	}
 
-	public function passed_quantity(Request $request, $status_field, $branch_id, $position, $type) 
+	public function failed_quantity(Request $request, $status_field, $date_field, $branch_id, $position, $type) 
 	{
-		return $this->get_applicants($request, $branch_id, $position, $type)
-								->where($status_field, 1)
-								->count();
-			
-	}
+		
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
 
-	public function failed_quantity(Request $request, $status_field, $branch_id, $position, $type) 
-	{
-		return $this->get_applicants($request, $branch_id, $position, $type)
+		return $this->all_job_applicants()												
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->where(function($query) use ($type, $date_from, $date_to, $date_field){
+									if($type == 'Beginning Balance')
+									{
+										$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+										$query->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
+									}
+									else
+									{
+										$query->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '>=', $date_from)			
+													->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '<=', $date_to);
+									}
+								})
 								->whereIn($status_field, [2, 3])
 								->count();
 			
@@ -1306,14 +1384,14 @@ class ApplicantController extends Controller
 			//total applicants this month params (request, branch id, position, balance type e.g 'Beginning', 'Ending')
 			$total_applicants = $this->get_applicants($request, $branch->id, null, null)->count();
 															 
-			// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
-			$beg_bal = $this->on_process_quantity($request, 'applicants.status', $branch->id, null, 'Beginning Balance');
+			// screening on process last month, params(request, date field, branch_id, position, balance type e.g 'Beginning', 'Ending')
+			$beg_bal = $this->on_process_quantity($request, 'applicants.screening_date', $branch->id, null, 'Beginning Balance');
 
 			// failed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
-			$screening_failed = $this->failed_quantity($request, 'applicants.status', $branch->id, null, null); 
+			$screening_failed = $this->failed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, null, null); 
 
 			// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')												 
-			$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, null, null); 
+			$screening_passed = $this->passed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, null, null); 
 
 			$end_bal = $beg_bal + $total_applicants	- $screening_failed	- $screening_passed; 	
 
@@ -1333,13 +1411,13 @@ class ApplicantController extends Controller
 				$total_applicants = $this->get_applicants($request, $branch->id, $position->name, null)->count();
 																
 				// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
-				$beg_bal = $this->on_process_quantity($request, 'applicants.status', $branch->id, $position->name, 'Beginning Balance');
+				$beg_bal = $this->on_process_quantity($request, 'applicants.screening_date', $branch->id, $position->name, 'Beginning Balance');
 
 				// failed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
-				$screening_failed = $this->failed_quantity($request, 'applicants.status', $branch->id, $position->name, null); 
+				$screening_failed = $this->failed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, $position->name, null); 
 
 				// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
-				$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, $position->name, null); 
+				$screening_passed = $this->passed_quantity($request, 'applicants.status', 'applicants.status', 'applicants.screening_date', $branch->id, $position->name, null); 
 
 				$end_bal = $beg_bal + $total_applicants	- $screening_failed	- $screening_passed;
 
@@ -1729,22 +1807,191 @@ class ApplicantController extends Controller
 
 		$applicant->save();
 
-		$applicant = DB::table('job_vacancies')
+		$applicant = $this->getApplicant($id)->first();	
+
+		return response()->json(['success' => true, 'resp' => 'Updated status successfully.', 'applicant' => $applicant]);
+	}
+
+
+	public function update_hiring_details(Request $req) 
+	{
+
+		$valid_fields = [
+			'status' => 'required|integer|between:0, 2',
+			'screening_date' => 'nullable|date_format:Y-m-d',
+			'initial_interview_date' => 'nullable|date_format:Y-m-d',
+			'initial_interview_status' => 'nullable|integer|between:0, 4',
+			'iq_status' => 'nullable|integer|between:0, 4',
+			'iq_date' => 'nullable|date_format:Y-m-d',
+			'branch_id_complied' => 'nullable|integer',
+			'bi_status' => 'nullable|integer|between:0, 4',
+			'bi_date' => 'nullable|date_format:Y-m-d',
+			'final_interview_date' => 'nullable|date_format:Y-m-d',
+			'final_interview_status' => 'nullable|integer|between:0, 4',
+			'employment_position' => 'nullable|integer',
+			'employment_branch' => 'nullable|integer',
+			'orientation_status' => 'nullable|integer|between:0, 4',
+			'orientation_date' => 'nullable|date_format:Y-m-d',
+			'signing_of_contract_date' => 'nullable|date_format:Y-m-d',
+		];
+
+		$status_msg = 'Status must be an integer';
+		$between_msg = 'Enter a valid value. Value must be 0 (On Process), 1 (Passed), 2 (Failed), 3 (Non-Compliant) or 4 (Reserved)'; 
+		$date_format_msg = 'Invalid date. Format: (YYYY-MM-DD)';
+		$integer_msg = 'ID must be an integer';
+
+
+		$rules = [
+			'status.required' => 'Screening Status is required',
+			'status.integer' => $status_msg,
+			'status.between' => 'Enter a valid value. Value must be 0 (On Process), 1 (Passed) or 2 (Failed)',
+			'screening_date.date_format' => $date_format_msg,
+			'initial_interview_date.date_format' => $date_format_msg,
+			'initial_interview_status.integer' => $status_msg,
+			'initial_interview_status.between' => $between_msg,
+			'iq_date.date_format' => $date_format_msg,
+			'iq_status.integer' => $status_msg,
+			'iq_status.between' => $between_msg,
+			'branch_id_complied.integer' => 'Branch complied ' . $integer_msg,
+			'bi_date.date_format' => $date_format_msg,
+			'bi_status.integer' => $status_msg,
+			'bi_status.between' => $between_msg,
+			'final_interview_date.date_format' => $date_format_msg,
+			'final_interview_status.integer' => $status_msg,
+			'final_interview_status.between' => $between_msg,
+			'employment_position.integer' => 'Employment position ' . $integer_msg,
+			'employment_branch.integer' => 'Employment branch ' . $integer_msg,
+			'hiring_officer_position.integer' => 'Hiring Officer Position ' . $integer_msg,
+			'orientation_date.date_format' => $date_format_msg,
+			'orientation_status.integer' => $status_msg,
+			'orientation_status.between' => $between_msg,
+			'signing_of_contract_date.date_format' => $date_format_msg,
+		];
+		
+		$validator = Validator::make($req->all(), $valid_fields, $rules);
+
+		if($validator->fails())
+		{
+			return response()->json(['error' => $validator->errors()], 200);
+		}
+
+		$id = $req->applicant_id;
+
+		$applicant = Applicant::find($id);	
+		$applicant->status = $req->status;
+		$applicant->screening_date = $req->screening_date;
+		$applicant->initial_interview_date = $req->initial_interview_date;
+		$applicant->initial_interview_status = $req->initial_interview_status;
+		$applicant->position_preference = $req->position_preference;
+		$applicant->branch_preference = $req->branch_preference;
+		$applicant->iq_status = $req->iq_status;
+		$applicant->iq_date = $req->iq_date;
+		$applicant->branch_complied = $req->branch_id_complied;
+		$applicant->bi_status = $req->bi_status;
+		$applicant->bi_date = $req->bi_date;
+		$applicant->final_interview_date = $req->final_interview_date;
+		$applicant->final_interview_status = $req->final_interview_status;
+		$applicant->final_interview_remarks = $req->final_interview_remarks;
+		$applicant->employment_position = $req->employment_position;
+		$applicant->employment_branch = $req->employment_branch;
+		$applicant->hiring_officer_position = $req->hiring_officer_position;
+		$applicant->hiring_officer_name = $req->hiring_officer_name;
+		$applicant->orientation_status = $req->orientation_status;
+		$applicant->orientation_remarks = $req->orientation_remarks;
+		$applicant->orientation_date = $req->orientation_date;
+		$applicant->signing_of_contract_date = $req->signing_of_contract_date;
+		$applicant->save();
+
+		$applicant = $this->getApplicant($id)->first();	
+
+		return response()->json(['success' => true, 'resp' => 'Record has been updated.', 'applicant' => $applicant]);
+	}
+
+	public function getApplicant($id)
+	{
+		return DB::table('job_vacancies')
 								   ->join('applicants', 'applicants.jobvacancy_id', '=', 'job_vacancies.id')
 								   ->join('positions', 'positions.id', '=', 'job_vacancies.position_id')
 								   ->join('branches', 'branches.id', '=', 'applicants.branch_id')
+									 ->leftJoin('branches as branch_complied', 'branch_complied.id', '=', 'applicants.branch_complied')
+									 ->leftJoin('positions as employment_position', 'employment_position.id', '=', 'applicants.employment_position')
+									 ->leftJoin('branches as employment_branch', 'employment_branch.id', '=', 'applicants.employment_branch')
 								   ->select(
-										//DB::raw('row_number() OVER(ORDER BY applicants.id) AS cnt_id'),
-								   				 'applicants.id AS id',
-								   				 'positions.name AS position_name',
-								   				 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, IFNULL(CONCAT(', ', applicants.middlename),'')) AS name"),
-								   				 DB::raw("DATE_FORMAT(applicants.created_at, '%M %d, %Y') AS created_at"),
-								   				 'branches.name AS branch_name',
-								   				 'applicants.status'
+													  'applicants.id AS id',
+																 'applicants.branch_id',
+																 DB::raw('branches.name as branch_applied'),
+																 DB::raw('DATE_FORMAT(applicants.created_at, "%m/%d/%Y") as date_applied'),
+																 'positions.id AS position_id',
+																 'positions.name AS position_name',
+																 DB::raw("CONCAT(applicants.lastname, ', ', applicants.firstname, IFNULL(CONCAT(', ', applicants.middlename),'')) AS name"),
+																 'applicants.lastname',
+																 'applicants.firstname',
+																 'applicants.middlename',
+														     'applicants.address',
+														 		 DB::raw('DATE_FORMAT(applicants.birthdate, "%m/%d/%Y") as birthdate'),
+															 	 'applicants.age',
+																 'applicants.gender',
+														     'applicants.contact_no', 
+																 'applicants.civil_status', 
+														     'applicants.email',
+														     'applicants.educ_attain',
+														     'applicants.course',
+																 'applicants.school_grad',
+														     'applicants.how_learn',
+																 DB::raw("DATE_FORMAT(applicants.created_at, '%m/%d/%Y') AS created_at"),
+																 'branches.name AS branch_name',
+																 'applicants.status',
+																 DB::raw('DATE_FORMAT(applicants.screening_date, "%m/%d/%Y") as screening_date'),
+														 		 DB::raw('applicants.status as screening_status'),
+																 'applicants.initial_interview_status',
+														 		 DB::raw('DATE_FORMAT(applicants.initial_interview_date, "%m/%d/%Y") as initial_interview_date'),
+														     'applicants.position_preference',
+																 'applicants.branch_preference',
+																 'applicants.iq_status',
+																 DB::raw('DATE_FORMAT(applicants.iq_date, "%m/%d/%Y") as iq_date'),
+																 DB::raw('branch_complied.id as branch_id_complied'),
+																 DB::raw('branch_complied.name as branch_complied'),
+																 'applicants.bi_status',
+																 DB::raw('DATE_FORMAT(applicants.bi_date, "%m/%d/%Y") as bi_date'),
+																 DB::raw('DATE_FORMAT(applicants.final_interview_date, "%m/%d/%Y") as final_interview_date'),
+														 		 'applicants.final_interview_status',
+																 'applicants.final_interview_remarks',
+																 'employment_position.name as employment_position',
+																 'employment_branch.name as employment_branch',
+																 DB::raw('employment_branch.id as employment_branch_id'),
+																 DB::raw('employment_position.id as employment_position_id'),
+																 'applicants.hiring_officer_position',
+																 'applicants.hiring_officer_name',
+														 		 DB::raw('DATE_FORMAT(applicants.orientation_date, "%m/%d/%Y") as orientation_date'),
+														 		 DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%m/%d/%Y") as signing_of_contract_date'),
+																 'applicants.orientation_status',
+																 'applicants.orientation_remarks',
+																 DB::raw("
+																 	CASE 
+																		WHEN applicants.status = 0 THEN 'Screening on Process' 
+																		WHEN applicants.status = 2 THEN 'Not Qualified'
+																		WHEN applicants.status = 3 THEN 'Non-Compliant - Screening'
+																		WHEN applicants.initial_interview_status = 0 THEN 'Initial Interview on Process'
+																		WHEN applicants.initial_interview_status = 2 THEN 'Initial Interview Failed'
+																		WHEN applicants.initial_interview_status = 3 THEN 'Non-Compliant - Initial Interview'
+																		WHEN applicants.iq_status = 0 THEN 'Exam on Process'
+																		WHEN applicants.iq_status = 2 THEN 'Exam Failed'
+																		WHEN applicants.iq_status = 3 THEN 'Non-Compliant - Exam'
+																		WHEN applicants.bi_status = 0 THEN 'B.I & Basic Req on Process'
+																		WHEN applicants.bi_status = 2 THEN 'B.I & Basic Req Failed'
+																		WHEN applicants.bi_status = 3 THEN 'Non-Compliant - B.I & Basic Req'
+																		WHEN applicants.final_interview_status = 0 THEN 'Final Interview on Process'
+																		WHEN applicants.final_interview_status = 2 THEN 'Final Interview Failed'
+																		WHEN applicants.final_interview_status = 3 THEN 'Non-Compliant - Final Interview'
+																		WHEN applicants.final_interview_status = 4 THEN 'Reserved'
+																		WHEN applicants.orientation_status = 0 || (applicants.final_interview_status = 1 && applicants.orientation_status IS NULL) THEN 'Orientation on Process'  
+																		WHEN applicants.orientation_status = 2 THEN 'Orientation Failed' 
+																		WHEN applicants.orientation_status = 3 THEN 'Non-Compliant - Orientation' 
+																		WHEN applicants.orientation_status = 1 && applicants.signing_of_contract_date IS NOT NULL THEN 'Hired' 
+																	END as progress_status
+															")
 								   				)
-								   ->where('applicants.id', $id)->first();		
-
-		return response()->json(['success' => true, 'resp' => 'Updated status successfully.', 'applicant' => $applicant]);
+								   ->where('applicants.id', $id);	
 	}
 
 	public function download_file(Request $req)

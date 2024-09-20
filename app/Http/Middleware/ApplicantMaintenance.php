@@ -150,6 +150,12 @@ class ApplicantMaintenance
 				}
 			}
 
+			if($request->is('api/job_applicant/update_hiring_details')){
+				if($user->can('jobapplicants-update-hiring-details')){
+					return $next($request);
+				}
+			}
+
       return abort(401, 'Unauthorized');
     }
 }

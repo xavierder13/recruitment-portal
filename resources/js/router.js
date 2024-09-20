@@ -5,16 +5,8 @@ import Login from './auth/Login.vue';
 import Dashboard from './views/dashboard/Dashboard.vue';
 import RecruitmentFrontendIndex from './views/recruitment_frontend/RecruitmentFrontendIndex.vue';
 import JobVacanciesIndex from './views/recruitment/JobVacanciesIndex.vue';
-import JobApplicantsIndex from './views/recruitment/JobApplicantsIndex.vue';
 import JobApplicantsIndexNew from './views/recruitment/JobApplicantsIndexNew.vue';
 import JobApplicantsView from './views/recruitment/JobApplicantsView.vue';
-import ScreeningList from './views/recruitment/ScreeningList.vue';
-import InitialInterviewList from './views/recruitment/InitialInterviewList.vue';
-import IQTestList from './views/recruitment/IQTestList.vue';
-import BIList from './views/recruitment/BIList.vue';
-import FinalInterviewList from './views/recruitment/FinalInterviewList.vue';
-import OrientationList from './views/recruitment/OrientationList.vue';
-import HiredList from './views/recruitment/HiredList.vue';
 import UserIndex from './views/user/UserIndex.vue';
 import UserCreate from './views/user/UserCreate.vue';
 import UserProfile from './views/user/UserProfile.vue';
@@ -62,37 +54,37 @@ const routes = [
       {
         path: '/jobapplicants/screening-list',
         name: 'jobapplicants.screening.list',
-        component: ScreeningList
+        component: JobApplicantsIndexNew
       },
       {
         path: '/jobapplicants/initial-interview-list',
         name: 'jobapplicants.initial.interview.list',
-        component: InitialInterviewList
+        component: JobApplicantsIndexNew
       },
       {
         path: '/jobapplicants/iq-test-list',
         name: 'jobapplicants.iq.test.list',
-        component: IQTestList
+        component: JobApplicantsIndexNew
       },
       {
         path: '/jobapplicants/bi-list',
         name: 'jobapplicants.bi.list',
-        component: BIList
+        component: JobApplicantsIndexNew
       },
       {
         path: '/jobapplicants/final-interview-list',
         name: 'jobapplicants.final.interview.list',
-        component: FinalInterviewList
+        component: JobApplicantsIndexNew
       },
       {
         path: '/jobapplicants/orientation-list',
         name: 'jobapplicants.orientation.list',
-        component: OrientationList
+        component: JobApplicantsIndexNew
       },
       {
         path: '/jobapplicants/hired-list',
         name: 'jobapplicants.hired.list',
-        component: HiredList
+        component: JobApplicantsIndexNew
       },
       {
         path: '/user/index',

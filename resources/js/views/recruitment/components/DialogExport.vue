@@ -256,13 +256,16 @@ export default {
         'Date Applied': 'date_applied',
         'Source' : 'how_learn',
         'Screening': 'screening_status',
+        'Screening Date': 'screening_date',
         'Interview Schedule': 'initial_interview_date',
         'Initial Interview': 'initial_interview_status',
         'Position Preference': 'position_preference',
         'Branch Preference': 'branch_preference',
         'Branch Complied': 'branch_complied',
         'Exam': 'iq_status',
+        'Exam Date': 'iq_date',
         'B.I & Basic Req': 'bi_status',
+        'B.I & Basic Req Date': 'bi_date',
         'Final Interview Date': 'final_interview_date',
         'Final Interview Status': 'final_interview_status',
         'Employment Position' : 'employment_position',
@@ -317,20 +320,22 @@ export default {
       get_empty_date: false,
       position_names: [
         'Branch Manager', 
+        'Reserved BM', 
         'Sales Supervisor', 
+        'Reserved SS', 
         'Credit & Collection Supervisor', 
+        'Reserved CCS', 
         'Management System Supervisor',
-        'Encoder',
-        'Cashier',
-        // 'Account Analyst',
-        'C.I. Collector',
-        'Warehouseman',
+        'Reserved MSS',
         'Sales Specialist',
-        'Technician',
-        // 'Delivery/ Logistics Driver',
-        // 'Delivery/Logistics Helper',
+        'Warehouseman',
         'Logistics Driver',
         'Logistics Helper',
+        'Technician',
+        'C.I. Collector',
+        'Cashier',
+        'BICF',
+        'BICO'
       ],
     }
   },
@@ -462,7 +467,7 @@ export default {
       if(this.page_view != 'All Status')
       {
         this.report_group = this.reportGroups[1];
-        this.report_type = this.report_group.types.find((value) => { return value.text == this.page_view });
+        this.report_type = this.report_group ? this.report_group.types.find((value) => { return value.text == this.page_view }) : '';
       }
 
     },
@@ -817,31 +822,44 @@ export default {
     dateFieldParameters() {
       let  items = [
             { description: 'Date Applied', field_name: 'created_at' },
+            { description: 'Screening Date', field_name: 'screening_date' },
             { description: 'Initial Interview Date', field_name: 'initial_interview_date' },
+            { description: 'Exam Date', field_name: 'iq_date' },
+            { description: 'B.I. Date', field_name: 'bi_date' },
             { description: 'Final Interview Date', field_name: 'final_interview_date' },
             { description: 'Orientation Date', field_name: 'orientation_date' },
             { description: 'Signing of Contract Date', field_name: 'signing_of_contract_date' },
           ];
-
+      
       let fields = [];
+      let indeces = [];
 
       if(this.report_group.group == 'Detailed Report')
       {
         if(this.report_type.text == 'Screening') // if report type Screening
         {
+          indeces
           fields = [ items[0] ] ;
         }
-        else if(['Initial Interview', 'Exam', 'B.I & Basic Req'].includes(this.report_type.text)) // if report type value Initial Interview or Exam or 3 B.I & Basic Req
-        {
-          fields = [ items[0], items[1] ];
-        }
-        else if(this.report_type.text == 'Final Interview') // if report type value Final Interview
+        else if(this.report_type.text == 'Initial Interview') 
         {
           fields = [ items[0], items[1], items[2] ];
         }
+        else if(this.report_type.text == 'Exam') 
+        {
+          fields = [ items[0], items[1], items[2], items[3] ];
+        }
+        else if(this.report_type.text == 'B.I & Basic Req') 
+        {
+          fields = [ items[0], items[1], items[2], items[3], items[4] ];
+        }
+        else if(this.report_type.text == 'Final Interview') // if report type value Final Interview
+        {
+          fields = [ items[0], items[1], items[2], items[3], items[4], items[5] ];
+        }
         else if(this.report_type.text == 'Orientation') // if report type Orientation
         {
-          items.splice(4, 1) // remove index 4
+          items.splice(7, 1) // remove index 7
           fields = items;
         }
         else if(['Hired', 'ALL'].includes(this.report_type.text)) // if report type value Hired or ALL
@@ -849,7 +867,7 @@ export default {
           fields = items;
         }
       }
-
+      
       return fields;
 
     },

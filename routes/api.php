@@ -303,6 +303,11 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
 		'as' => 'job_applicant.update_status',
 	]);
 
+    Route::post('/update_hiring_details', [
+		'uses' => 'API\ApplicantController@update_hiring_details',
+		'as' => 'job_applicant.update_hiring_details',
+	]);
+
     Route::post('/file/download', [
         'uses' => 'API\ApplicantController@download_file',
         'as' => 'applicant.file.download',

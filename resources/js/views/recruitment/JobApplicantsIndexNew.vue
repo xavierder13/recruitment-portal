@@ -10,96 +10,24 @@
           </template>
         </v-breadcrumbs>
         <v-card>
-          <v-card-title>
-            Job Applicant Lists
-            <v-spacer></v-spacer>
-            <v-text-field
-              v-model="search"
-              append-icon="mdi-magnify"
-              label="Search"
-              single-line
-            ></v-text-field>
-            <v-spacer></v-spacer>
-            <v-tooltip top>
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  color="primary"
-                  fab
-                  dark
-                  class="mb-2 mr-2"
-                  @click="getApplicants()"
-                  v-bind="attrs" v-on="on"
-                >
-                  <v-icon>mdi-refresh</v-icon>
-                </v-btn>
-              </template>
-              <span>Refresh Data</span>
-            </v-tooltip>  
-            <v-tooltip top v-if="hasPermission('jobapplicants-export')">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  color="#009688"
-                  fab
-                  dark
-                  class="mb-2"
-                  @click="openExportDialog()"
-                  v-bind="attrs" v-on="on"
-                >
-                  <v-icon>mdi-file-excel</v-icon>
-                </v-btn>
-              </template>
-              <span>Export Data</span>
-            </v-tooltip>
-              
-          </v-card-title>
-
-          <v-data-table
-            :headers="headers"
-            :items="job_applicants"
-            :search="search"
+          <ApplicantDataTable
+            :job_applicants="job_applicants"
             :loading="loading"
-          >
-            <template v-slot:item.progress_status="{ item }">
-              <v-chip
-                small
-                dark
-                :color="applicationProgress(item).color"
-              >  
-                {{ applicationProgress(item).progress }}
-              </v-chip>
-            </template>
-            <template v-slot:item.actions="{ item }">
-              <!-- <v-icon
-                small
-                color="#fb8c00"
-                @click="viewStatus(item.id)"
-              >
-                mdi-account-circle-outline
-              </v-icon> -->
-              <v-icon
-                small
-                color="blue"
-                @click="view_applicant(item)"
-              >
-                mdi-eye
-              </v-icon>
-              <v-icon
-                small
-                color="red"
-                v-if="hasPermission('jobapplicants-delete')"
-                @click="deleteApplicant(item.id)"
-              >
-                mdi-delete
-              </v-icon>
-            </template>
-          </v-data-table>
+            :table_title="tableTitle"
+            @getData="getApplicants"
+            @exportData="openExportDialog"
+            @applicationProgress="applicationProgress"
+            @view_applicant="view_applicant"
+            @deleteApplicant="deleteApplicant"
+            :key="componentKey"
+          />
         </v-card>
 
         <!-- Dialogs -->
         <DialogExport
           :branches="branches"
           :dialog="dialog"
-          :page_view="'All Status'"
+          :page_view="pageView"
           @closeDialog="closeExportDialog"
           ref="DialogExport"
         />
@@ -122,7 +50,7 @@
               >
                 <v-icon>mdi-close</v-icon>
               </v-btn>
-              <v-toolbar-title> Applicant's Details </v-toolbar-title>
+              <v-toolbar-title> Applicant's Details {{ applicant.progress_status }} </v-toolbar-title>
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn
@@ -815,6 +743,7 @@
                 </v-col>
                 <v-divider vertical></v-divider>
                 <v-col cols="4" class="mt-4 px-6">
+        
                   <ApplicationProgressCard 
                     :applicant="applicant"
                     :color="applicationProgress(applicant).color"
@@ -826,6 +755,7 @@
                     :positions="positions"
                     @viewProgress="viewProgress"
                   />
+                  
                 </v-col>
               </v-row>
             </v-card-text>
@@ -855,334 +785,22 @@
             </v-card-text>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="application_status_dialog" max-width="500px" persistent>
-         <v-card>
-            <v-card-title class="mb-0 pb-0">
-              <strong> {{ progressFormTitle }} </strong>  
-            </v-card-title>
-            <v-divider></v-divider>
-            <v-card-text>
-              <template v-if="step == 0">
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      :items="statusItems"
-                      item-value="value"
-                      item-text="text"
-                      label="Status"
-                      v-model="editedItem.status"
-                    ></v-autocomplete>
-                  </v-col>
-                </v-row>
-              </template>
-              <template v-if="step == 1">
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-text-field
-                      label="Initial Interview Date"
-                      type="date"
-                      prepend-icon="mdi-calendar"
-                      v-model="editedItem.initial_interview_date"
-                      :error-messages="applicantError.initial_interview_date + dateErrors.initial_interview_date.msg"
-                      @input="validateDate('initial_interview_date')"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      :items="statusItems"
-                      item-value="value"
-                      item-text="text"
-                      label="Status"
-                      v-model="editedItem.initial_interview_status"
-                      :disabled="editedItem.initial_interview_date ? false : true"
-                    ></v-autocomplete>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      v-model="editedItem.position_preference"
-                      :items="positions"
-                      item-text="name"
-                      item-value="id"
-                      label="Position Preference"
-                      multiple
-                      chips
-                      clearable
-                      :disabled="editedItem.initial_interview_status != 1"
-                    >
-                      <template v-slot:selection="data">
-                        <v-chip
-                          color="secondary"
-                          v-bind="data.attrs"
-                          :input-value="data.selected"
-                          close
-                          @click="data.select"
-                          @click:close="removePositionPref(data.item.id)"
-                        >
-                          {{ data.item.name }}
-                        </v-chip>
-                      </template>
-                    </v-autocomplete>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      v-model="editedItem.branch_preference"
-                      :items="branches"
-                      item-text="name"
-                      item-value="id"
-                      label="Branch Preference"
-                      multiple
-                      chips
-                      clearable
-                      :disabled="editedItem.initial_interview_status != 1"
-                    >
-                      <template v-slot:selection="data">
-                        <v-chip
-                          color="secondary"
-                          v-bind="data.attrs"
-                          :input-value="data.selected"
-                          close
-                          @click="data.select"
-                          @click:close="removeBranchPref(data.item.id)"
-                        >
-                          {{ data.item.name }}
-                        </v-chip>
-                      </template>
-                    </v-autocomplete>
-                  </v-col>
-                </v-row>
-              </template>
-              <template v-if="step == 2">
-                <v-row v-if="IQFilesIsRequired">
-                  <v-col class="my-2 py-0">
-                    <span class="font-italic font-weight-bold red--text">Please upload {{ iq_required_files.join(', ') }} files</span>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      v-model="editedItem.branch_id_complied"
-                      :items="branches"
-                      item-text="name"
-                      item-value="id"
-                      label="Branch Complied"
-                      :readonly="hasRole('Branch Manager')"
-                    ></v-autocomplete>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      :items="statusItems"
-                      item-value="value"
-                      item-text="text"
-                      label="Status"
-                      v-model="editedItem.iq_status"
-                    ></v-autocomplete>
-                  </v-col>
-                </v-row>
-              </template>
-              <template v-if="step == 3">
-                <v-row v-if="BIFilesIsRequired">
-                  <v-col class="my-2 py-0">
-                    <span class="font-italic font-weight-bold red--text">Please upload {{ bi_required_files.join(', ') }} files</span>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      :items="statusItems"
-                      item-value="value"
-                      item-text="text"
-                      label="Status"
-                      v-model="editedItem.bi_status"
-                    ></v-autocomplete>
-                  </v-col>
-                </v-row>
-              </template>
-              <template v-if="step == 4">
-                <v-row v-if="FinalFilesIsRequired">
-                  <v-col class="my-2 py-0">
-                    <span class="font-italic font-weight-bold red--text">Please upload {{ final_interview_required_files.join(', ') }} files</span>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-text-field
-                      label="Final Interview Date"
-                      type="date"
-                      prepend-icon="mdi-calendar"
-                      v-model="editedItem.final_interview_date"
-                      :error-messages="applicantError.final_interview_date + dateErrors.final_interview_date.msg"
-                      @input="validateDate('final_interview_date')"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      :items="statusItems"
-                      item-value="value"
-                      item-text="text"
-                      label="Final Interview Status"
-                      v-model="editedItem.final_interview_status"
-                      :disabled="editedItem.final_interview_date ? false : true"
-                    ></v-autocomplete>
-                  </v-col>
-                </v-row>
-                <!-- if final_interview_status value is non-compliant -->
-                <template v-if="editedItem.final_interview_status == 3">
-                  <v-row>
-                    <v-col class="my-0 py-0">
-                      <v-autocomplete
-                        :items="non_compliant_reasons"
-                        label="Non-Compliant Reason"
-                        v-model="selected_non_compliant_final_reason"
-                      ></v-autocomplete>
-                    </v-col>
-                  </v-row>
-                  <v-row v-if="selected_non_compliant_final_reason == 'Others (Specify)'">
-                    <v-col class="my-0 py-0">
-                      <v-text-field
-                        label="Specify Non-Compliant Reason"
-                        v-model="specified_non_compliant_final_reason"
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </template>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      :items="positions"
-                      item-value="id"
-                      item-text="name"
-                      label="Employment Position"
-                      v-model="editedItem.employment_position"
-                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
-                    ></v-autocomplete>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      :items="branches"
-                      item-value="id"
-                      item-text="name"
-                      label="Employment Branch"
-                      v-model="editedItem.employment_branch"
-                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
-                    ></v-autocomplete>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      :items="hiring_officer_positions"
-                      label="Hiring Officer Position"
-                      v-model="editedItem.hiring_officer_position"
-                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
-                    ></v-autocomplete>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-text-field
-                      label="Hiring Officer Name"
-                      v-model="editedItem.hiring_officer_name"
-                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-              </template>
-              <template v-if="step == 5">
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-text-field
-                      label="Orientation/Training Date"
-                      type="date"
-                      prepend-icon="mdi-calendar"
-                      v-model="editedItem.orientation_date"
-                      :error-messages="applicantError.orientation_date + dateErrors.orientation_date.msg"
-                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
-                      :readonly="hasRole('Branch Manager')"
-                      @input="(applicantError.orientation_date = []) + validateDate('orientation_date')"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-text-field
-                      label="Signing of Contract Date"
-                      type="date"
-                      prepend-icon="mdi-calendar"
-                      v-model="editedItem.signing_of_contract_date"
-                      :error-messages="signingContractErrors"
-                      :disabled="![1, 4].includes(editedItem.final_interview_status)"
-                      :readonly="hasRole('Branch Manager')"
-                      @input="(applicantError.signing_of_contract_date = []) + validateDate('signing_of_contract_date')"
-                      @blur="$v.editedItem.signing_of_contract_date.$touch()"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col class="my-0 py-0">
-                    <v-autocomplete
-                      :items="statusItems"
-                      item-value="value"
-                      item-text="text"
-                      label="Orientation Status"
-                      v-model="editedItem.orientation_status"
-                      :disabled="editedItem.orientation_date ? false : true"
-                      :readonly="hasRole('Branch Manager')"
-                    ></v-autocomplete>
-                  </v-col>
-                </v-row>
-                <!-- if final_interview_status value is non-compliant -->
-                <template v-if="editedItem.orientation_status == 3">
-                  <v-row>
-                    <v-col class="my-0 py-0">
-                      <v-autocomplete
-                        :items="non_compliant_reasons"
-                        label="Non-Compliant Reason"
-                        v-model="selected_non_compliant_orientation_reason"
-                        :readonly="hasRole('Branch Manager')"
-                      ></v-autocomplete>
-                    </v-col>
-                  </v-row>
-                  <v-row v-if="selected_non_compliant_orientation_reason == 'Others (Specify)'">
-                    <v-col class="my-0 py-0">
-                      <v-text-field
-                        label="Specify Non-Compliant Reason"
-                        v-model="specified_non_compliant_orientation_reason"
-                        :readonly="hasRole('Branch Manager')"
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </template>
-              </template>
-            </v-card-text>
-            <v-divider class="mb-3 mt-0"></v-divider>
-            <v-card-actions class="pa-0">
-              <v-spacer></v-spacer>
-              <v-btn color="#E0E0E0" @click="closeProgressDialog()" class="mb-3">
-                Cancel
-              </v-btn>
-              <v-btn
-                color="primary"
-                @click="showConfirmAlert()"
-                class="mb-3 mr-4"
-                :disabled="disabled"
-              >
-                Save
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+
+        <ApplicationProgressDialog
+          :applicant="applicant"
+          :applicant_files="applicant_files"
+          :step="step"
+          :dialog="application_status_dialog"
+          :progressFormTitle="progressFormTitle"
+          :progress_items="progress_items"
+          :statusItems="statusItems"
+          :progressStatus="progressStatus"
+          :branches="branches"
+          :positions="positions"
+          @saveStatus="saveStatus"
+          @closeDialog="closeProgressDialog"
+        />
+        
         <ApplicantDetailsPDF 
           :applicant='applicant' 
           :educ_attains='educ_attains'
@@ -1208,17 +826,21 @@ import axios from "axios";
 import { validationMixin } from "vuelidate";
 import { required, requiredIf, maxLength, email } from "vuelidate/lib/validators";
 import { mapState, mapGetters } from "vuex";
+import ApplicantDataTable from './components/ApplicantDataTable.vue';
 import ApplicantFiles from './components/ApplicantFiles.vue';
 import ApplicantDetailsPDF from './components/ApplicantDetailsPDF.vue';
 import ApplicationProgressCard from "./components/ApplicationProgressCard.vue";
+import ApplicationProgressDialog from "./components/ApplicationProgressDialog.vue";
 import DialogExport from "./components/DialogExport";
 import moment from "moment";
 
 export default {
   components: {
+    ApplicantDataTable,
     ApplicantFiles,
     ApplicantDetailsPDF,
     ApplicationProgressCard,
+    ApplicationProgressDialog,
     DialogExport
   },
   mixins: [validationMixin],
@@ -1248,18 +870,7 @@ export default {
 
       table_loader: false,
       job_applicants: [],
-      headers: [
-        { text: "#", value: "cnt_id" },
-        { text: "Full name", value: "name" },
-        { text: "Position", value: "position_name" },
-        { text: "Branch Applied", value: "branch_name" },
-        { text: "Branch Complied", value: "branch_complied" },
-        { text: "Employment Branch", value: "employment_branch" },
-        { text: "Date Submitted", value: "created_at" },
-        { text: "Status", value: "progress_status" },
-        { text: "Actions", value: "actions", sortable: false, width: "100px" },
-      ],
-
+      
       loading: false,
       items: [
         {
@@ -1298,11 +909,14 @@ export default {
         position_name: "",
         branch_name: "",
         status: "",
+        screening_date: "",
         initial_interview_status: "",
         branch_id_complied: "",
         branch_complied: "",
         iq_status: "",
+        iq_date: "",
         bi_status: "",
+        bi_date: "",
         initial_interview_date: "",
         position_preference: [],
         branch_preference: [],
@@ -1316,7 +930,7 @@ export default {
         orientation_date: "",
         orientation_status: "",
         orientation_remarks: "",
-        hired_date: "",
+        signing_of_contract_date: "",
       },
 
       // export_btn
@@ -1341,6 +955,8 @@ export default {
       applicant_files: [],
       applicantError: { 
         initial_interview_date: [],
+        iq_date: [],
+        bi_date: [],
         final_interview_date: [],
         orientation_date: [],
         signing_of_contract_date: [],
@@ -1404,37 +1020,11 @@ export default {
       },
       disabled: false,
       progress_items: ['Screening', 'Initial Interview', 'Exam', 'B.I & Basic Req', 'Final Interview', 'Orientation'],
-      dateErrors: {
-        initial_interview_date: { status: false, msg: "" },
-        final_interview_date: { status: false, msg: "" },
-        orientation_date: { status: false, msg: "" },
-        signing_of_contract_date: { status: false, msg: "" },
-      },
-      hiring_officer_positions: [
-        'General Manager',
-        'HR Division Manager',
-        'Recruitment Manager',
-        'Immediate Division Manager',
-        'Immediate Department Manager',
-        'Branch Manager',
-        'Immediate Branch Supervisor',
-        'Recruitment Staff',
-      ],
       dialog_preview: true,
       componentKey: 0, // use to force refresh component contents
-      export_all_count: false,
-      non_compliant_reasons: [
-        'Hired in other organization',
-        'Back out due to Training',
-        'Others (Specify)'
-      ],
-      selected_non_compliant_final_reason: "",
-      specified_non_compliant_final_reason: "",
-      selected_non_compliant_orientation_reason: "",
-      specified_non_compliant_orientation_reason: "",
-      iq_required_files: ['Exam'],
-      bi_required_files: ['Birth Certificate', 'Diploma/Copy of Grades', 'Background Investigation'],
-      final_interview_required_files: ['Final Interview Result'],
+      export_all_count: false, 
+      editedIndex: -1,
+      api_url: "get_applicants_new",
     };
   },
   methods: {
@@ -1461,7 +1051,7 @@ export default {
       this.v_table = false;
       this.loading = true;
       this.table_loader = true;
-      axios.get("/api/job_applicant/get_applicants_new").then(
+      axios.get("/api/job_applicant/" + this.api_url).then(
         (response) => {
           let data = response.data
  
@@ -1482,12 +1072,14 @@ export default {
   
       this.view_applicant_loading = true;
       this.applicant_id = item.id;
+      this.editedIndex = this.job_applicants.indexOf(item);     
 
       const url = `/api/job_applicant/view_applicants_new/${item.id}`;
       axios.get(url).then(
         (response) => {
           this.view_applicant_loading = false;
-          const data = response.data;
+          const data = response.data;  
+                
           if (data.success) {
             let step = this.applicationProgress(data.applicant).step;
             let progress_fields = ['status', 'initial_interview_status', 'iq_status', 'bi_status', 'final_interview_status', 'orientation_status'];
@@ -1515,6 +1107,7 @@ export default {
             {
               this.view_dialog = true;
               this.applicant = data.applicant;
+              
               // this.educ_attains = data.educ_attains;
               // this.experiences = data.experiences;
               this.references = data.references;
@@ -1607,6 +1200,7 @@ export default {
       this.fam_members = [];
       this.dependents = [];
       this.applicant_files = [];
+      this.editedIndex = -1;
 
     },
 
@@ -1670,65 +1264,6 @@ export default {
       }
     },
 
-    updateStatus(status){
-
-      let formData = new FormData();
-      formData.append('applicant_id', this.applicant_id);
-      formData.append('status_value', status);
-
-      axios.post("/api/job_applicant/update_status", formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data' 
-        }
-      }).then(
-        (response) => {
-          if(response.data.success){
-
-            // this.status_dialog = false;
-            this.view_dialog = false;
-
-            this.$toaster.success('You have successfully updated the status of the applicant.', {
-              timeout: 3000
-            });
-
-            var applicant = response.data.applicant;
-            var updatedIndex = -1;
-            for(var index = 0; index < this.job_applicants.length; index++) {
-              var oldApplicant = this.job_applicants[index]
-              if(oldApplicant.id == applicant.id) {
-                applicant.cnt_id = oldApplicant.cnt_id
-                updatedIndex = index;
-                break;
-              }
-            }
-            if(updatedIndex > -1) {
-              this.job_applicants.splice(updatedIndex, 1, applicant)
-            }
-            // var updatedList = this.job_applicants.map(function(item){
-            //   if(item.id == applicant.id) {
-            //     applicant.cnt_id = item.cnt_id;
-            //     return applicant;
-            //   }
-            //   return item;
-            // });
-            // this.job_applicants = updatedList;
-
-            this.applicant_id = "";
-          }else{
-            // this.status_dialog = false;
-            
-            this.$toaster.error('You have errors updating the status of the applicant.', {
-              timeout: 3000
-            });
-          }
-        },
-        (error) => {
-          console.log(error);
-          this.isUnauthorized(error);
-        }
-      );
-    },
-
     clear_export(){
       this.generate_btn = true;
       this.export_btn = false;
@@ -1741,74 +1276,73 @@ export default {
       this.$v.$reset();
     },
 
-    saveStatus() {
-
-      let data = this.editedItem;
-      let position_preference = this.editedItem.position_preference.join(',');
-      let branch_preference = this.editedItem.branch_preference.join(',');
+    saveStatus(data) {
       
-      Object.assign(data, { 
-        applicant_id: this.applicant.id, 
-        step: this.step,
-        position_preference: position_preference,
-        branch_preference: branch_preference,
-        final_interview_remarks: this.selected_non_compliant_final_reason == 'Others (Specify)' ? this.specified_non_compliant_final_reason : '',
-        orientation_remarks: this.selected_non_compliant_orientation_reason == 'Others (Specify)' ? this.specified_non_compliant_orientation_reason : '',
-      })
+      let position_preference = data.position_preference;
+      
+      if(position_preference)
+      {
+        let positionsIdArr = position_preference.split(',');
+        let positions = positionsIdArr.map(Number);
+        this.applicant.position_preference = positions;
+      }
+      else
+      {
+        this.applicant.position_preference = [];
+      }
 
-      axios.post("/api/job_applicant/update_status", data).then(
-        (response) => {
-  
-          this.application_status_dialog = false;
-          if(response.data.success){
-            
-            // this.status_dialog = false;
-            this.view_dialog = false;
+      let branch_preference = data.branch_preference;
 
-            this.$toaster.success('You have successfully updated the status of the applicant.', {
-              timeout: 3000
-            });
+      if(branch_preference)
+      {
+        let branchesIdArr = branch_preference.split(',');
+        let branches = branchesIdArr.map(Number);
+        this.applicant.branch_preference = branches;
+      }
+      else
+      {
+        this.applicant.branch_preference = [];
+      }
 
-            var applicant = response.data.applicant;
-            var updatedIndex = -1;
-            for(var index = 0; index < this.job_applicants.length; index++) {
-              var oldApplicant = this.job_applicants[index]
-              if(oldApplicant.id == applicant.id) {
-                applicant.cnt_id = oldApplicant.cnt_id
-                updatedIndex = index;
-                break;
-              }
-            }
-            if(updatedIndex > -1) {
-              this.job_applicants.splice(updatedIndex, 1, applicant)
-            }
+      let date_fields = [
+                          'date_applied', 
+                          'screening_date', 
+                          'initial_interview_date',
+                          'iq_date', 
+                          'bi_date',
+                          'final_interview_date',
+                          'orientation_date',
+                          'signing_of_contract_date'
+                        ];
+      let preferences = ['position_preference', 'branch_preference'];
 
-            this.applicant_id = "";
+      let fields = Object.keys(this.applicant);
 
-            this.getApplicants();
-          }else{
-            // this.status_dialog = false;
-            
-            this.$toaster.error('You have errors updating the status of the applicant.', {
-              timeout: 3000
-            });
+      fields.forEach(field => {
+
+        if(!preferences.includes(field))
+        {
+          if(date_fields.includes(field))
+          {
+            let [m, d, y] = data[field] ? data[field].split('/') : [];
+            let date = data[field]  ? `${y}-${m}-${d}` : '';
+            this.applicant[field] = date; 
           }
-        },
-        (error) => {
-          console.log(error);
-          this.isUnauthorized(error);
+          else
+          {
+            this.applicant[field] = data[field];
+          }
         }
-      );
-    },
-  
-    removePositionPref(item) {
-      const index = this.editedItem.position_preference.indexOf(item);
-      if (index >= 0) this.editedItem.position_preference.splice(index, 1);
-    },
 
-    removeBranchPref(item) {
-      const index = this.editedItem.branch_preference.indexOf(item);
-      if (index >= 0) this.editedItem.branch_preference.splice(index, 1);
+      });   
+
+      this.applicant.employment_branch = data.employment_branch_id;
+      this.applicant.employment_position = data.employment_position_id;
+      
+      this.job_applicants[this.editedIndex] = data;
+      
+      this.application_status_dialog = false;
+      this.componentKey += 1; //to refresh/re-render ApplicantDataTable Component
     },
 
     applicationProgress(applicant) {
@@ -1896,105 +1430,18 @@ export default {
     },
 
     viewProgress() {
-      
       this.application_status_dialog = true;
       this.step = this.currentProgress;
-      this.progressFormTitle = this.progress_items[this.step] + ' Status';
-      
-      let fields = Object.keys(this.editedItem);
-
-      fields.forEach(field => {
-        let field_value = this.applicant[field];
-        
-        // if(['initial_interview_date', 'final_interview_date', 'signing_of_contract_date', 'orientation_date'].includes(field) && field_value)
-        // {
-        //   let split_date_val = field_value.split('-');
-          
-        //   let day = split_date_val[0];
-        //   let month = split_date_val[1];
-        //   let year = split_date_val[2];
-
-        //   field_value = `${year}-${month}-${day}`;
-        // }
-        this.editedItem[field] = field_value;
-      });
-
-      if(!this.applicant.branch_id_complied)
-      {
-        this.editedItem.branch_id_complied = this.user.branch_id;
-      }
-
     },
     
     closeProgressDialog() {
-      this.editedItem = Object.assign({}, this.defaultItem);
       this.application_status_dialog = false;
       this.step = null;
-      this.dateErrors = {
-        initial_interview_date: { status: false, msg: "" },
-        final_interview_date: { status: false, msg: "" },
-        orientation_date: { status: false, msg: "" },
-        signing_of_contract_date: { status: false, msg: "" },
-      };
-      this.$v.editedItem.$reset();
     },
 
-    showConfirmAlert() {
-
-      let progress = this.progress_items[this.step];
-
-      if(this.signingContractDateIsRequired)
-      {
-        this.$v.editedItem.signing_of_contract_date.$touch();
-      }
-
-      if( 
-        !this.dateHasError && 
-        !this.$v.editedItem.signing_of_contract_date.$error && 
-        !this.IQFilesIsRequired && 
-        !this.BIFIlesIsRequired &&
-        !this.FinalFilesIsRequired
-      )
-      {
-        this.$swal({
-          title: "Are you sure?",
-          text: `Update ${progress} Status`,
-          icon: "warning",
-          showCancelButton: true,
-          cancelButtonColor: "#6c757d",
-          confirmButtonColor: "#1976d2", 
-          confirmButtonText: "Save",
-        }).then((result) => {
-          // <--
-
-          if (result.value) {
-            this.saveStatus();
-          }
-        });
-      }
-
-    },
-
-    validateDate(field) {
-      let min_date = new Date('1900-01-01').getTime();
-      let max_date = new Date().getTime();
-      let date = this.editedItem[field];
-   
-      if(date)
-      {
-        let date_value = new Date(date).getTime();
-        let [year, month, day] = date.split('-');
-
-        this.dateErrors[field].status = false;
-        this.dateErrors[field].msg = "";
-
-        // if (date_value < min_date || date_value > max_date || year.length > 4) {
-        if (date_value < min_date || year.length > 4) {
-          this.dateErrors[field].status = true;
-          this.dateErrors[field].msg = 'Enter a valid date';
-        }  
-      }
-        
+    removeSelectedHeader(item) {
+      let index = this.selectedTableHeaders.findIndex(header => header.value === item.value);
+      this.selectedTableHeaders.splice(index, 1);
     },
 
     formatDate(date) {
@@ -2036,26 +1483,6 @@ export default {
       });
 
       return this.export_all_count ? this.formatDate(this.asOfDate) : dates.join(' ~ ');
-    },
-
-    signingContractErrors () {
-      const errors = [];
-      
-      if (!this.$v.editedItem.signing_of_contract_date.$dirty) return errors;
-      !this.$v.editedItem.signing_of_contract_date.required &&
-        errors.push("Please enter date.");
-      
-      if(this.applicantError.signing_of_contract_date.length)
-      {
-        errors = this.applicantError.signing_of_contract_date;
-      }
-
-      if(this.dateErrors.signing_of_contract_date.msg)
-      {
-        errors.push(this.dateErrors.signing_of_contract_date.msg);
-      }
-      return errors;
-
     },
 
     // validations
@@ -2136,10 +1563,6 @@ export default {
       return index;
     },
 
-    signingContractDateIsRequired() {
-      return this.editedItem.orientation_status == 1; // if this.editedItem.status == 1 (passed) then signing contract date is required
-    },
-
     progressIsEditable() {
       let fields = [
         'final_interview_date',
@@ -2153,14 +1576,16 @@ export default {
         'signing_of_contract_date',
       ];
 
-      let isEditable = false;
+      let isEditable = true;
 
-      fields.forEach(field => {
-        if(!this.applicant[field])
-        {
-          isEditable = true;
-        }
-      });
+      // let isEditable = false;
+
+      // fields.forEach(field => {
+      //   if(!this.applicant[field])
+      //   {
+      //     isEditable = true;
+      //   }
+      // });
 
       return isEditable;
 
@@ -2177,54 +1602,49 @@ export default {
 
       return hasPermission;
     },
-    
 
-    IQFilesIsRequired() {
-      let isRequired = false;
-      let hasAllRequiredFiles = this.iq_required_files.every(value => this.applicantDocuments.includes(value));
-
-      if(this.editedItem.iq_status == 1 && !hasAllRequiredFiles && this.applicant.progress_status == 'Exam on Process')
-      {
-        isRequired = true;
-      }
-
-      return isRequired;
-    },
-
-    BIFilesIsRequired() {
-      let isRequired = false;
-      let hasAllRequiredFiles = this.bi_required_files.every(value => this.applicantDocuments.includes(value));
+    tableTitle() {
       
-      if(this.editedItem.bi_status == 1 && !hasAllRequiredFiles && this.applicant.progress_status == 'B.I & Basic Req')
-      {
-        isRequired = true;
-      }
-
-      console.log(isRequired);
-
-      return isRequired;
+      let text = this.pageView && this.pageView == "Hired" ? ' (Hired)' : ` (For ${this.pageView })`;
+      
+      return 'Job Applicant Lists ' + (this.pageView != 'All Status' ? text : ''); 
     },
 
-    FinalFilesIsRequired() {
-      let isRequired = false;
-      let hasAllRequiredFiles = this.final_interview_required_files.every(value => this.applicantDocuments.includes(value));
+    pageView() {
+      let doctype = "All Status";
 
-      if(this.editedItem.final_interview_status == 1 && !hasAllRequiredFiles && this.applicant.progress_status == 'Final Interview')
+      let splitted_route = this.$router.history.current.path.split('/');
+
+      if(splitted_route[2] == 'screening-list')
       {
-        isRequired = true;
+        doctype = "Screening";
+      }
+      else if(splitted_route[2] == 'initial-interview-list')
+      {
+        doctype = "Initial Interview";
+      }
+      else if(splitted_route[2] == 'iq-test-list')
+      {
+        doctype = "Exam";
+      }
+      else if(splitted_route[2] == 'bi-list')
+      {
+        doctype = "B.I & Basic Req";
+      }
+      else if(splitted_route[2] == 'final-interview-list')
+      {
+        doctype = "Final Interview";
+      }
+      else if(splitted_route[2] == 'orientation-list')
+      {
+        doctype = "Orientation";
+      }
+      else if(splitted_route[2] == 'hired-list')
+      {
+        doctype = "Hired";
       }
 
-      return isRequired;
-    },
-
-    applicantDocuments () {
-      let files = [];
-
-      this.applicant_files.forEach(value => {
-        files.push(value.title)
-      });
-
-      return files;
+      return doctype;
     },
 
     ...mapState("userRolesPermissions", ["userRoles", "userPermissions"]),
@@ -2240,84 +1660,6 @@ export default {
       },
     },
 
-    "editedItem.status"() {
-      if(this.editedItem.status == 0) 
-      {
-        this.editedItem.initial_interview_date = null;
-      }
-    },
-
-    "editedItem.initial_interview_status"() {
-      this.editedItem.position_preference = [];
-      this.editedItem.branch_preference = [];
-
-      if(this.editedItem.initial_interview_status == 1) 
-      { 
-
-        let position_preference = this.applicant.position_preference;
-
-        if(position_preference.length && position_preference)
-        {
-          position_preference.forEach(val => {
-            this.editedItem.position_preference.push(val);
-          }); 
-        }
-        else
-        {
-          this.editedItem.position_preference.push(this.applicant.position_id);
-        }
-
-        let branch_preference = this.applicant.branch_preference;
-        
-        if(branch_preference.length)
-        { 
-          branch_preference.forEach(val => {
-            this.editedItem.branch_preference.push(val);
-          });
-        }
-        else
-        {
-          this.editedItem.branch_preference.push(this.applicant.branch_id);
-        }
-
-      }
-   
-    },
-
-    "editedItem.bi_status"() {
-      if(this.editedItem.bi_status == 0) 
-      {
-        this.editedItem.final_interview_date = null;
-      }
-    },
-
-    "editedItem.final_interview_date"() {
-      if(!this.editedItem.final_interview_date) 
-      {
-        this.editedItem.final_interview_status = 0;
-      }
-    },
-    
-    "editedItem.final_interview_status"() {
-      if(this.editedItem.final_interview_status == 0) 
-      {
-        this.editedItem.orientation_date = null;
-        this.editedItem.signing_of_contract_date = null;
-        this.editedItem.employment_branch = null;
-        this.editedItem.employment_position = null;
-      }
-      
-      if(this.editedItem.final_interview_status == 1)
-      { 
-        if(!this.hasRole('Administrator') && this.editedItem.employment_branch == null )
-        {
-          this.editedItem.employment_branch = this.editedItem.branch_id_complied;
-        }
-        
-      }
-
-    },
-
     tab() {
       this.componentKey += 1;
     },
@@ -2328,12 +1670,19 @@ export default {
     }
 
   },
-  mounted() {
+  async mounted() {
     axios.defaults.headers.common["Authorization"] =
-      "Bearer " + localStorage.getItem("access_token");
-    this.websocket();
+    await  "Bearer " + localStorage.getItem("access_token");
+    await this.websocket();
 
-    this.getApplicants();
+    let splitted_route = this.$router.history.current.path.split('/');
+    if(splitted_route[2] != 'index-new')
+    {
+      this.api_url = await splitted_route[2].split('-').join('_'); //e.g screening-list become screening_list
+    }
+    
+
+    await this.getApplicants();
     
     // this.getBranch();
   }
