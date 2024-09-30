@@ -138,7 +138,7 @@
                 item-value="id"
                 label="Branch Complied"
                 :readonly="hasRole('Branch Manager')"
-                :disabled="!editedItem.initial_interview_status"
+                :disabled="!editedItem.iq_status"
               ></v-autocomplete>
             </v-col>
           </v-row>
@@ -150,7 +150,7 @@
                 item-text="text"
                 label="IQ Status"
                 v-model="editedItem.iq_status"
-                :disabled="!editedItem.initial_interview_status"
+                :disabled="editedItem.initial_interview_status != 1"
               ></v-autocomplete>
             </v-col>
           </v-row>
@@ -670,7 +670,8 @@ export default {
       let alert_msg = hiring_status != 'Hired' ? `Update ${progress} Status` : 'Save Hiring Details';
 
       this.$v.$touch();
-
+      console.log(this.$v);
+      
       if( 
         !this.dateHasError && 
         !this.$v.$error && 
@@ -1135,11 +1136,11 @@ export default {
     },
 
     positionPreferenceIsRequired() {
-      return this.editedItem.initial_interview_status > 0;
+      return this.editedItem.initial_interview_status == 1;
     },
 
     branchPreferenceIsRequired() {
-      return this.editedItem.initial_interview_status > 0;
+      return this.editedItem.initial_interview_status == 1;
     },
 
     employmentPositionIsRequired() {
