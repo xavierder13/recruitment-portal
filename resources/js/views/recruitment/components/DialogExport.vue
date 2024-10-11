@@ -92,6 +92,7 @@
                 </v-col>
               </v-row>
             </template>
+            {{report_type.text}}
             <v-row>
               <v-col class="my-0 py-0" v-if="report_type.text != 'Overall Count'">
                 <v-text-field
@@ -334,8 +335,8 @@ export default {
         'Technician',
         'C.I. Collector',
         'Cashier',
-        'BICF',
-        'BICO'
+        'Bookkeeper - Operations',
+        'Bookkeeper - Finance'
       ],
     }
   },
