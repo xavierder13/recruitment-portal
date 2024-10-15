@@ -2148,7 +2148,7 @@
                   </v-stepper-content>
                   <v-stepper-content step="2">
                     <v-row>
-                      <v-col cols="12" class="my-4 py-0">
+                      <v-col cols="12" sm="12" md="8" lg="4" xl="4" class="my-4 py-0">
                         <v-file-input
                           show-size
                           label="Please attach your resume here."
@@ -2159,6 +2159,22 @@
                           :error-messages="resumefileErrors + applicantError.file"
                           @change="$v.applicant.myFileInput.$touch() + (applicantError.file = []) + (validateFile())"
                           @blur="$v.applicant.myFileInput.$touch() + (applicantError.file = [])"
+                        ></v-file-input>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col cols="12" sm="12" md="8" lg="4" xl="4"  class="my-4 py-0">
+                        <v-file-input
+                          show-size
+                          label="Copy of Grades"
+                          v-model="applicant.copy_of_grades"
+                          hint=".docs, .docx, .pdf, .jpeg, .png, .jpg"
+                          persistent-hint
+                          accept=".pdf, .docs, .docx, .jpeg, .png, .jpg"
+                          :error-messages="copyOfGradesErrors"
+                          multiple
+                          @change="$v.applicant.copy_of_grades.$touch() + (applicantError.copy_of_grades = []) + (validateFile())"
+                          @blur="$v.applicant.copy_of_grades.$touch() + (applicantError.file = [])"
                         ></v-file-input>
                       </v-col>
                     </v-row>
@@ -2627,6 +2643,7 @@ export default {
         }),
       },
       myFileInput: { required },
+      copy_of_grades: { required }
     },
     highschool: {
       school: { required },
@@ -2829,7 +2846,8 @@ export default {
         height: "",
         weight: "",
         how_learn: "",
-        myFileInput: []
+        myFileInput: [],
+        copy_of_grades: []
       },
       bdate_value: "",
       
@@ -2856,7 +2874,8 @@ export default {
         // course: [],
         // school_grad: [],
         how_learn: [],
-        file: []
+        file: [],
+        copy_of_grades: [],
       },
       
       referenceError: {
@@ -2958,7 +2977,9 @@ export default {
         sr_highschool: false,
         college: false,
         vocational_school: false,
-      }
+      },
+
+      fileInvalid: false,
     }
   },
 
@@ -3036,6 +3057,7 @@ export default {
       this.applicant.how_learn = "";
       this.applicant.how_learn_2 = "";
       this.applicant.myFileInput = [];
+      this.applicant.copy_of_grades = [];
       this.dialog_submit_now = false;
 
       this.$v.$reset();
@@ -3342,7 +3364,8 @@ export default {
         // school_grad: [],
         how_learn: [],
         how_learn_2: [],
-        file: []
+        file: [],
+        copy_of_grades: [],
       };
 
       const how_learn_selected = this.applicant.how_learn;
@@ -3463,6 +3486,7 @@ export default {
       });
 
       formData.append('file', this.applicant.myFileInput);
+      formData.append('file', this.applicant.copy_of_grades);
 
       axios.post("/api/public_api/submit_application", formData, {
         headers: {
@@ -3841,10 +3865,57 @@ export default {
 
     validateFile(){
       let myFileInput = this.applicant.myFileInput;
+      let copy_of_grades = this.applicant.copy_of_grades;
+
+      let extensions = ['docs', 'docx', 'pdf', 'jpg', 'jpeg', 'png'];
+    
+      if(myFileInput)
+      {
+        if(myFileInput.name)
+        {
+          let split_arr = myFileInput.name.split('.');
+          let split_ctr = split_arr.length;
+          let extension = split_arr[split_ctr - 1].toLowerCase();
+          
+          if(!extensions.includes(extension))
+          {
+            this.fileInvalid = true;
+            errorMsg = `File type must be ${extensions.join(', ')}.`;
+          }
+
+          if(file.size > 5000000) // 5000000 bytes or 20MB
+          {
+            errorMsg = "File size maximum is 5MB";
+            this.fileInvalid = true;
+          }
+        }
+      }
+
+      if(copy_of_grades)
+      {
+        if(copy_of_grades.name)
+        {
+          let split_arr = copy_of_grades.name.split('.');
+          let split_ctr = split_arr.length;
+          let extension = split_arr[split_ctr - 1].toLowerCase();
+          
+          if(!extensions.includes(extension))
+          {
+            this.fileInvalid = true;
+            errorMsg = `File type must be ${extensions.join(', ')}.`;
+          }
+
+          if(file.size > 5000000) // 5000000 bytes or 20MB
+          {
+            errorMsg = "File size maximum is 5MB";
+            this.fileInvalid = true;
+          }
+        }
+      }
 
       this.continue_2 = true;
 
-      if(!myFileInput){
+      if(!myFileInput || !copy_of_grades || this.fileInvalid){
         this.continue_2 = false;
       }
     },
@@ -4399,9 +4470,76 @@ export default {
       if (!this.$v.applicant.myFileInput.$dirty) return errors;
       !this.$v.applicant.myFileInput.required &&
         errors.push("File is required.");
-      return errors;
-    },
+      
+      let file = this.applicant.myFileInput;
+      let extensions = ['docs', 'docx', 'pdf', 'jpg', 'jpeg', 'png'];
+      let errorMsg = "";
+      let fileInvalid = false;
+    
+      if(file)
+      {
+        if(file.name)
+        {
+          let split_arr = file.name.split('.');
+          let split_ctr = split_arr.length;
+          let extension = split_arr[split_ctr - 1].toLowerCase();
+          
+          if(!extensions.includes(extension))
+          {
+            fileInvalid = true;
+            errorMsg = `File type must be ${extensions.join(', ')}.`;
+          }
 
+          if(file.size > 5000000) // 5000000 bytes or 20MB
+          {
+            errorMsg = "File size maximum is 5MB";
+            fileInvalid = true;
+          }
+        }
+      }
+      this.fileInvalid = fileInvalid;
+      fileInvalid && errors.push(errorMsg);
+
+      return errors
+      
+    },
+    copyOfGradesErrors() {
+      const errors = [];
+      if (!this.$v.applicant.copy_of_grades.$dirty) return errors;
+      !this.$v.applicant.copy_of_grades.required &&
+        errors.push("Copy of Grades is required.");
+
+      let file = this.applicant.copy_of_grades;
+      let extensions = ['docs', 'docx', 'pdf', 'jpg', 'jpeg', 'png'];
+      let errorMsg = "";
+      let fileInvalid = false;
+    
+      if(file)
+      {
+        if(file.name)
+        {
+          let split_arr = file.name.split('.');
+          let split_ctr = split_arr.length;
+          let extension = split_arr[split_ctr - 1].toLowerCase();
+          
+          if(!extensions.includes(extension))
+          {
+            fileInvalid = true;
+            errorMsg = `File type must be ${extensions.join(', ')}.`;
+          }
+
+          if(file.size > 5000000) // 5000000 bytes or 20MB
+          {
+            errorMsg = "File size maximum is 5MB";
+            fileInvalid = true;
+          }
+        }
+      }
+      this.fileInvalid = fileInvalid;
+      fileInvalid && errors.push(errorMsg);
+
+      return errors
+    },
     howLearn2Errors() {
 
       const errors = [];
