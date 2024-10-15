@@ -262,6 +262,7 @@ class ApplicantController extends Controller
 					// 'school_grad.required' => 'School graduated is required.',
 					'how_learn.required' 	  => 'This field is required.',
 					'file.required' 			  => 'File is required.',
+					'copy_of_grades.required' 			  => 'Copy of Grades is required.',
 				];
 
 				$valid_fields = [
@@ -344,6 +345,88 @@ class ApplicantController extends Controller
 				if($validator->fails()){
 					return response()->json($validator->errors(), 200);
 				}
+
+				$file = $req->file;
+				$file_extension = $file->getClientOriginalExtension();
+
+				$validator = Validator::make(
+						[   
+								'file_ext' => strtolower($file_extension),
+								'file' => $file,
+						],
+						[
+								'file_ext' => 'in:jpeg,jpg,png',
+								'file' => 'max: 20800'
+						], 
+						[
+								'file_ext.in' => 'File type must be jpeg, jpg, png.',
+								'file.max' => 'File size maximum is 20MB,'
+						]
+				);  
+				
+				if($validator->fails())
+				{
+						return response()->json(['error' => $validator->errors()], 200);
+				}  
+
+				$copy_of_grades = $req->copy_of_grades;
+
+				if(is_array($copy_of_grades))
+        {
+            foreach ($copy_of_grades as $file) {
+                
+                try {
+
+										$file_extension = $file->getClientOriginalExtension();
+										$validator = Validator::make(
+												[   
+														'file_ext' => strtolower($file_extension),
+														'file' => $file,
+												],
+												[
+														'file_ext' => 'in:jpeg,jpg,png',
+														'file' => 'max: 20800'
+												], 
+												[
+														'file_ext.in' => 'File type must be jpeg, jpg, png.',
+														'file.max' => 'File size maximum is 20MB,'
+												]
+										);  
+										
+										if($validator->fails())
+										{
+												return response()->json(['error' => $validator->errors()], 200);
+										}  
+                    
+                } catch (\Exception $e) {
+                
+                    return response()->json(['error' => $e->getMessage()], 200);
+                }
+            }
+        }
+				else
+				{
+					$file_extension = $copy_of_grades->getClientOriginalExtension();
+					$validator = Validator::make(
+							[   
+									'file_ext' => strtolower($file_extension),
+									'file' => $file,
+							],
+							[
+									'file_ext' => 'in:jpeg,jpg,png',
+									'file' => 'max: 20800'
+							], 
+							[
+									'file_ext.in' => 'File type must be jpeg, jpg, png.',
+									'file.max' => 'File size maximum is 20MB,'
+							]
+					);  
+					
+					if($validator->fails())
+					{
+							return response()->json(['error' => $validator->errors()], 200);
+					}  
+				}
 	
 				// $resume_file = $req->file('file');
 
@@ -414,6 +497,21 @@ class ApplicantController extends Controller
 				$applicant_file->file_type = $file_extension;
 				$applicant_file->title = "Resume";
 				$applicant_file->save();
+
+				if(is_array($copy_of_grades))
+        {
+					foreach ($copy_of_grades as $file) {
+						$applicant_file = new ApplicantFile();
+						$applicant_file->applicant_id = $applicant->id;
+						$applicant_file->file_name = $file_name;
+						$applicant_file->file_path = $file_path;
+						$applicant_file->file_type = $file_extension;
+						$applicant_file->title = "Copy Of Grades";
+						$applicant_file->save();
+					}
+					
+				}
+
 
 				if($educ_attain == 'Highschool Graduate' || !$k_12_highschool)
 				{
@@ -1278,6 +1376,40 @@ class ApplicantController extends Controller
 								->count();
 	}
 
+	public function sourcing_beg(Request $request, $branch_id, $position) 
+	{
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
+		
+
+		return $this->all_job_applicants()												
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->where(function($query) use ($date_to, $date_from) {
+
+									
+									$query->where(function($query) use ($date_to, $date_from) {
+														$firstDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->firstOfMonth()->toDateString(); // first day last month;
+														$lastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+														
+														$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $firstDayLastMonth)
+																  ->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																	->whereDate(DB::raw('DATE_FORMAT(applicants.screening_date, "%Y-%m-%d")'), '>', $lastDayLastMonth);
+
+												})
+												->orWhere(function($query) use ($date_to) {
+														$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)
+																	->where('applicants.status', 0);
+												});
+								})
+								->count();
+	}
+
 	public function passed_quantity(Request $request, $status_field, $date_field, $branch_id, $position, $type) 
 	{
 		
@@ -1293,16 +1425,8 @@ class ApplicantController extends Controller
 							}
 					})
 					->where(function($query) use ($type, $date_from, $date_to, $date_field){
-						if($type == 'Beginning Balance')
-						{
-							$asOfLastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
-							$query->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '<=', $asOfLastDayLastMonth);	
-						}
-						else
-						{
 							$query->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '>=', $date_from)			
 										->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '<=', $date_to);
-						}
 					})
 					->where($status_field, 1)
 					->count();
@@ -1391,7 +1515,9 @@ class ApplicantController extends Controller
 			$total_applicants = $this->get_applicants($request, $branch->id, null, null)->count();
 															 
 			// screening on process last month, params(request, date field, branch_id, position, balance type e.g 'Beginning', 'Ending')
-			$beg_bal = $this->on_process_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, null, 'Beginning Balance');
+			// $beg_bal = $this->on_process_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, null, 'Beginning Balance');
+			
+			$beg_bal = $this->sourcing_beg($request, $branch->id, null);
 
 			// failed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
 			$screening_failed = $this->failed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, null, null); 
@@ -1417,13 +1543,15 @@ class ApplicantController extends Controller
 				$total_applicants = $this->get_applicants($request, $branch->id, $position->name, null)->count();
 																
 				// screening on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
-				$beg_bal = $this->on_process_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, $position->name, 'Beginning Balance');
+				// $beg_bal = $this->on_process_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, $position->name, 'Beginning Balance');
+
+				$beg_bal = $this->sourcing_beg($request, $branch->id, $position->name);
 
 				// failed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
 				$screening_failed = $this->failed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, $position->name, null); 
 
 				// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
-				$screening_passed = $this->passed_quantity($request, 'applicants.status', 'applicants.status', 'applicants.screening_date', $branch->id, $position->name, null); 
+				$screening_passed = $this->passed_quantity($request, 'applicants.status', 'applicants.screening_date', 'applicants.screening_date', $branch->id, $position->name, null); 
 
 				$end_bal = $beg_bal + $total_applicants	- $screening_failed	- $screening_passed;
 
@@ -1436,6 +1564,7 @@ class ApplicantController extends Controller
 																													];
 				
 			}
+
 		}
 
 		return response()->json(['success' => 'Record has been exported', 'applicants' => $arrApplicants], 200);

@@ -670,7 +670,6 @@ export default {
       let alert_msg = hiring_status != 'Hired' ? `Update ${progress} Status` : 'Save Hiring Details';
 
       this.$v.$touch();
-      console.log(this.$v);
       
       if( 
         !this.dateHasError && 
