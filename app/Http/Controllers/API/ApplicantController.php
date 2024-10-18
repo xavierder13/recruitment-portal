@@ -355,11 +355,11 @@ class ApplicantController extends Controller
 								'file' => $file,
 						],
 						[
-								'file_ext' => 'in:jpeg,jpg,png',
+								'file_ext' => 'in:jpeg,jpg,png,docs,docx,pdf',
 								'file' => 'max: 20800'
 						], 
 						[
-								'file_ext.in' => 'File type must be jpeg, jpg, png.',
+								'file_ext.in' => 'File type must be jpeg, jpg, png, docs, docx or pdf.',
 								'file.max' => 'File size maximum is 20MB,'
 						]
 				);  
@@ -384,11 +384,11 @@ class ApplicantController extends Controller
 										'file' => $file,
 								],
 								[
-										'file_ext' => 'in:jpeg,jpg,png',
+										'file_ext' => 'in:jpeg,jpg,png,docs,docx,pdf',
 										'file' => 'max: 20800'
 								], 
 								[
-										'file_ext.in' => 'File type must be jpeg, jpg, png.',
+										'file_ext.in' => 'File type must be jpeg, jpg, png, docs, docx or pdf.',
 										'file.max' => 'File size maximum is 20MB,'
 								]
 							);  
