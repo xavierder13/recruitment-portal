@@ -373,53 +373,53 @@ class ApplicantController extends Controller
 
 				if(is_array($copy_of_grades))
         {
-            foreach ($copy_of_grades as $file) {
-                
-                try {
+					foreach ($copy_of_grades as $file) {
+						
+						try {
 
-										$file_extension = $file->getClientOriginalExtension();
-										$validator = Validator::make(
-												[   
-														'file_ext' => strtolower($file_extension),
-														'file' => $file,
-												],
-												[
-														'file_ext' => 'in:jpeg,jpg,png',
-														'file' => 'max: 20800'
-												], 
-												[
-														'file_ext.in' => 'File type must be jpeg, jpg, png.',
-														'file.max' => 'File size maximum is 20MB,'
-												]
-										);  
-										
-										if($validator->fails())
-										{
-												return response()->json(['error' => $validator->errors()], 200);
-										}  
-                    
-                } catch (\Exception $e) {
-                
-                    return response()->json(['error' => $e->getMessage()], 200);
-                }
-            }
+							$file_extension = $file->getClientOriginalExtension();
+							$validator = Validator::make(
+								[   
+										'file_ext' => strtolower($file_extension),
+										'file' => $file,
+								],
+								[
+										'file_ext' => 'in:jpeg,jpg,png',
+										'file' => 'max: 20800'
+								], 
+								[
+										'file_ext.in' => 'File type must be jpeg, jpg, png.',
+										'file.max' => 'File size maximum is 20MB,'
+								]
+							);  
+							
+							if($validator->fails())
+							{
+								return response()->json(['error' => $validator->errors()], 200);
+							}  
+								
+						} catch (\Exception $e) {
+						
+							return response()->json(['error' => $e->getMessage()], 200);
+						}
+					}
         }
 				else
 				{
 					$file_extension = $copy_of_grades->getClientOriginalExtension();
 					$validator = Validator::make(
-							[   
-									'file_ext' => strtolower($file_extension),
-									'file' => $file,
-							],
-							[
-									'file_ext' => 'in:jpeg,jpg,png',
-									'file' => 'max: 20800'
-							], 
-							[
-									'file_ext.in' => 'File type must be jpeg, jpg, png.',
-									'file.max' => 'File size maximum is 20MB,'
-							]
+						[   
+							'file_ext' => strtolower($file_extension),
+							'file' => $file,
+						],
+						[
+							'file_ext' => 'in:jpeg,jpg,png',
+							'file' => 'max: 20800'
+						], 
+						[
+							'file_ext.in' => 'File type must be jpeg, jpg, png.',
+							'file.max' => 'File size maximum is 20MB,'
+						]
 					);  
 					
 					if($validator->fails())
