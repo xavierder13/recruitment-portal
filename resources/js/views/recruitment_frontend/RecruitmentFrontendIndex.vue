@@ -3485,9 +3485,12 @@ export default {
         
       });
 
-      formData.append('file', this.applicant.myFileInput);
-      formData.append('file', this.applicant.copy_of_grades);
+      formData.append('file', this.applicant.myFileInput);  
 
+      this.applicant.copy_of_grades.forEach(file => {
+        formData.append('copy_of_grades[]', file);
+      });
+          
       axios.post("/api/public_api/submit_application", formData, {
         headers: {
           'Content-Type': 'multipart/form-data' 
@@ -3880,44 +3883,44 @@ export default {
           if(!extensions.includes(extension))
           {
             this.fileInvalid = true;
-            errorMsg = `File type must be ${extensions.join(', ')}.`;
           }
 
-          if(file.size > 5000000) // 5000000 bytes or 20MB
+          if(myFileInput.size > 5000000) // 5000000 bytes or 20MB
           {
-            errorMsg = "File size maximum is 5MB";
             this.fileInvalid = true;
           }
         }
       }
 
-      if(copy_of_grades)
+      if(copy_of_grades.length)
       {
-        if(copy_of_grades.name)
-        {
-          let split_arr = copy_of_grades.name.split('.');
-          let split_ctr = split_arr.length;
-          let extension = split_arr[split_ctr - 1].toLowerCase();
-          
-          if(!extensions.includes(extension))
+        copy_of_grades.forEach(file => {
+          if(file.name)
           {
-            this.fileInvalid = true;
-            errorMsg = `File type must be ${extensions.join(', ')}.`;
-          }
+            let split_arr = file.name.split('.');
+            let split_ctr = split_arr.length;
+            let extension = split_arr[split_ctr - 1].toLowerCase();
+            
+            if(!extensions.includes(extension))
+            {
+              this.fileInvalid = true;
+            }
 
-          if(file.size > 5000000) // 5000000 bytes or 20MB
-          {
-            errorMsg = "File size maximum is 5MB";
-            this.fileInvalid = true;
+            if(file.size > 5000000) // 5000000 bytes or 20MB
+            {
+              this.fileInvalid = true;
+            }
           }
-        }
+        });
+        
       }
 
       this.continue_2 = true;
 
-      if(!myFileInput || !copy_of_grades || this.fileInvalid){
+      if(!myFileInput || !copy_of_grades.length || this.fileInvalid){
         this.continue_2 = false;
       }
+      
     },
 
     bdate_value_change(){
@@ -4509,32 +4512,36 @@ export default {
       !this.$v.applicant.copy_of_grades.required &&
         errors.push("Copy of Grades is required.");
 
-      let file = this.applicant.copy_of_grades;
+      let copy_of_grades = this.applicant.copy_of_grades;
       let extensions = ['docs', 'docx', 'pdf', 'jpg', 'jpeg', 'png'];
       let errorMsg = "";
       let fileInvalid = false;
-    
-      if(file)
-      {
-        if(file.name)
-        {
-          let split_arr = file.name.split('.');
-          let split_ctr = split_arr.length;
-          let extension = split_arr[split_ctr - 1].toLowerCase();
-          
-          if(!extensions.includes(extension))
-          {
-            fileInvalid = true;
-            errorMsg = `File type must be ${extensions.join(', ')}.`;
-          }
 
-          if(file.size > 5000000) // 5000000 bytes or 20MB
+      if(copy_of_grades.length)
+      {
+        copy_of_grades.forEach(file => {
+          if(file.name)
           {
-            errorMsg = "File size maximum is 5MB";
-            fileInvalid = true;
+            let split_arr = file.name.split('.');
+            let split_ctr = split_arr.length;
+            let extension = split_arr[split_ctr - 1].toLowerCase();
+            
+            if(!extensions.includes(extension))
+            {
+              fileInvalid = true;
+              errorMsg = `File type must be ${extensions.join(', ')}.`;
+            }
+
+            if(file.size > 5000000) // 5000000 bytes or 20MB
+            {
+              errorMsg = "File size maximum is 5MB";
+              fileInvalid = true;
+            }
           }
-        }
+        });
+        
       }
+
       this.fileInvalid = fileInvalid;
       fileInvalid && errors.push(errorMsg);
 
