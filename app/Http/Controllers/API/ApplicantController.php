@@ -1551,7 +1551,7 @@ class ApplicantController extends Controller
 				$screening_failed = $this->failed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, $position->name, null); 
 
 				// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
-				$screening_passed = $this->passed_quantity($request, 'applicants.status', 'applicants.screening_date', 'applicants.screening_date', $branch->id, $position->name, null); 
+				$screening_passed = $this->passed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, $position->name, null); 
 
 				$end_bal = $beg_bal + $total_applicants	- $screening_failed	- $screening_passed;
 
