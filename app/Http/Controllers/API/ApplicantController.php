@@ -1391,19 +1391,18 @@ class ApplicantController extends Controller
 										}
 								})
 								->where(function($query) use ($date_to, $date_from) {
-
+									$firstDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->firstOfMonth()->toDateString(); // first day last month;
+									$lastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
 									
-									$query->where(function($query) use ($date_to, $date_from) {
-														$firstDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->firstOfMonth()->toDateString(); // first day last month;
-														$lastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+									$query->where(function($query) use ($firstDayLastMonth, $lastDayLastMonth) {
 														
 														$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $firstDayLastMonth)
 																  ->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
 																	->whereDate(DB::raw('DATE_FORMAT(applicants.screening_date, "%Y-%m-%d")'), '>', $lastDayLastMonth);
 
 												})
-												->orWhere(function($query) use ($date_to) {
-														$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $date_to)
+												->orWhere(function($query) use ($lastDayLastMonth) {
+														$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
 																	->where('applicants.status', 0);
 												});
 								})
