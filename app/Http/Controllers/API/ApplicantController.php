@@ -1512,8 +1512,8 @@ class ApplicantController extends Controller
 								})
 								->where(function($query)use ($date_to, $date_from) {
 									
-									$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '>=', $date_from)			
-												->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '<=', $date_to)
+									$query->whereDate(DB::raw(' DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '>=', $date_from)			
+												->whereDate(DB::raw(' DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '<=', $date_to)
 												->whereIn(DB::raw('IFNULL(applicants.bi_status, IFNULL(applicants.iq_status, applicants.initial_interview_status))'), [2, 3]);
 								})
 								->count();
