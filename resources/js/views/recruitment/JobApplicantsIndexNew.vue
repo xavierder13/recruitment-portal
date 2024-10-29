@@ -19,7 +19,7 @@
             @applicationProgress="applicationProgress"
             @view_applicant="view_applicant"
             @deleteApplicant="deleteApplicant"
-            :key="componentKey"
+            :key="dataTableKey"
           />
         </v-card>
 
@@ -1021,6 +1021,7 @@ export default {
       disabled: false,
       progress_items: ['Screening', 'Initial Interview', 'Exam', 'B.I & Basic Req', 'Final Interview', 'Orientation'],
       dialog_preview: true,
+      dataTableKey: 0,
       componentKey: 0, // use to force refresh component contents
       export_all_count: false, 
       editedIndex: -1,
@@ -1342,7 +1343,7 @@ export default {
       this.job_applicants[this.editedIndex] = data;
       
       this.application_status_dialog = false;
-      this.componentKey += 1; //to refresh/re-render ApplicantDataTable Component
+      this.dataTableKey += 1; //to refresh/re-render ApplicantDataTable Component
     },
 
     applicationProgress(applicant) {
