@@ -1409,6 +1409,39 @@ class ApplicantController extends Controller
 								->count();
 	}
 
+	public function recruitment_beg(Request $request, $branch_id, $position) 
+	{
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
+		
+
+		return $this->all_job_applicants()												
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->where(function($query) use ($date_to, $date_from) {
+									$firstDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->firstOfMonth()->toDateString(); // first day last month;
+									$lastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+									
+									$query->where(function($query) use ($firstDayLastMonth, $lastDayLastMonth) {
+														
+														$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.iq_date, applicants.initial_interview_date), "%Y-%m-%d")'), '>=', $firstDayLastMonth)
+																	->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.iq_date, applicants.initial_interview_date), "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																	->whereDate(DB::raw('DATE_FORMAT(applicants.screening_date, "%Y-%m-%d")'), '>', $lastDayLastMonth);
+
+												})
+												->orWhere(function($query) use ($lastDayLastMonth) {
+														$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.iq_date, applicants.initial_interview_date), "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																	->where(DB::raw('IFNULL(applicants.bi_status, 0)'), 0);
+												});
+								})
+								->count();
+	}
+
 	public function passed_quantity(Request $request, $status_field, $date_field, $branch_id, $position, $type) 
 	{
 		
@@ -1463,27 +1496,26 @@ class ApplicantController extends Controller
 			
 	}
 
-	public function recruitment_on_process_quantity(Request $request, $branch_id, $position, $type) 
-	{
-
-		return $this->get_applicants($request, $branch_id, $position, $type)
-								->where(function($query) {
-										$query->where('applicants.initial_interview_status', 0)
-													->orWhere('applicants.iq_status', 0)
-													->orWhere('applicants.bi_status', 0);
-								})
-								->count();
-			
-	}
-
 	public function recruitment_failed_quantity(Request $request, $branch_id, $position, $type) 
 	{
 
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
+		
 		return $this->get_applicants($request, $branch_id, $position, $type)
-								->where(function($query) {
-										$query->whereIn('applicants.initial_interview_status', [2, 3])
-													->orWhereIn('applicants.iq_status', [2, 3])
-													->orWhereIn('applicants.bi_status', [2, 3]);
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->where(function($query)use ($date_to, $date_from) {
+									$firstDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->firstOfMonth()->toDateString(); // first day last month;
+									$lastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+									
+									$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+												->whereIn(DB::raw('IFNULL(applicants.bi_status, IFNULL(applicants.iq_status, applicants.initial_interview_status))'), [2, 3]);
 								})
 								->count();
 	}
@@ -1518,10 +1550,10 @@ class ApplicantController extends Controller
 			
 			$beg_bal = $this->sourcing_beg($request, $branch->id, null);
 
-			// failed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
+			// failed in screening, params(request, status_field, date_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
 			$screening_failed = $this->failed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, null, null); 
 
-			// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')												 
+			// passed in screening, params(request, status_field, date_field, branch_id, position, balance type e.g 'Beginning', 'Ending')												 
 			$screening_passed = $this->passed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, null, null); 
 
 			$end_bal = $beg_bal + $total_applicants	- $screening_failed	- $screening_passed; 	
@@ -1546,10 +1578,10 @@ class ApplicantController extends Controller
 
 				$beg_bal = $this->sourcing_beg($request, $branch->id, $position->name);
 
-				// failed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
+				// failed in screening, params(request, status_field, date_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
 				$screening_failed = $this->failed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, $position->name, null); 
 
-				// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
+				// passed in screening, params(request, status_field, date_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
 				$screening_passed = $this->passed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, $position->name, null); 
 
 				$end_bal = $beg_bal + $total_applicants	- $screening_failed	- $screening_passed;
@@ -1581,16 +1613,18 @@ class ApplicantController extends Controller
 															 
 			
 			// on process initial interview or IQ/Exam or BI, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
-			$beg_bal = $this->recruitment_on_process_quantity($request, $branch->id, null, 'Beginning Balance');	
+			// $beg_bal = $this->recruitment_on_process_quantity($request, $branch->id, null, 'Beginning Balance');	
 
-			// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
-			$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, null, null); 
+			$beg_bal = $this->recruitment_beg($request, $branch->id, null);
+
+			// passed in screening, params(request, status_field, date_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
+			$screening_passed = $this->passed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, null, null); 
 
 			// failed initial interview or IQ/Exam or BI, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
 			$recruitment_failed = $this->recruitment_failed_quantity($request, $branch->id, null, null);
 
-			// qualified: passed in BI (Final Interview on process), params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
-			$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, null, null); 
+			// qualified: passed in BI (Final Interview on process), params(request, status_field, date_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
+			$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', 'applicants.bi_date', $branch->id, null, null); 
 
 			$end_bal = $beg_bal + $screening_passed	- $recruitment_failed - $bi_passed;
 																			
@@ -1607,16 +1641,18 @@ class ApplicantController extends Controller
 			foreach ($positions as $position) {
 																
 				// on process initial interview or IQ/Exam or BI, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
-				$beg_bal = $this->recruitment_on_process_quantity($request, $branch->id, $position->name, 'Beginning Balance');	
+				// $beg_bal = $this->recruitment_on_process_quantity($request, $branch->id, $position->name, 'Beginning Balance');
+				
+				$beg_bal = $this->recruitment_beg($request, $branch->id, $position->name);
 
-				// passed in screening, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
-				$screening_passed = $this->passed_quantity($request, 'applicants.status', $branch->id, $position->name, null); 
+				// passed in screening, params(request, status_field, date_field, branch_id, position, balance type e.g 'Beginning', 'Ending')											 
+				$screening_passed = $this->passed_quantity($request, 'applicants.status', 'applicants.screening_date', $branch->id, $position->name, null); 
 
 				// failed initial interview or IQ/Exam or BI, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
 				$recruitment_failed = $this->recruitment_failed_quantity($request, $branch->id, $position->name, null);
 
-				// qualified: passed in BI (Final Interview on process), params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
-				$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, $position->name, null); 
+				// qualified: passed in BI (Final Interview on process), params(request, status_field, date_field, branch_id, position, balance type e.g 'Beginning', 'Ending')														 
+				$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', 'applicants.bi_date', $branch->id, $position->name, null); 
 
 				$end_bal = $beg_bal + $screening_passed	- $recruitment_failed - $bi_passed;
 
