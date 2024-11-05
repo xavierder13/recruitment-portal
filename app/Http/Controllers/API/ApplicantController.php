@@ -218,7 +218,7 @@ class ApplicantController extends Controller
 	}
 
 	public function submit_application(Request $req){
-		// return $req;
+		
 		try{
 			$applicant_lastname 	= $req->get('lastname');
 			$applicant_firstname  = $req->get('firstname');
@@ -427,25 +427,6 @@ class ApplicantController extends Controller
 							return response()->json(['error' => $validator->errors()], 200);
 					}  
 				}
-	
-				// $resume_file = $req->file('file');
-
-				// $random_string_1 = Str::random(6);
-				// $random_string_2 = Str::random(4);
-
-				// $random_string = $random_string_1 . $random_string_2;
-
-				// if(Applicant::where('file', $random_string )->exists()) {
-				// 	$random_string_1 = Str::random(4);
-				// 	$random_string_2 = Str::random(6);
-		
-				// 	$random_string = $random_string_1 . $random_string_2;
-				// }
-	
-				// $file_name = $random_string . '.' . $resume_file->getClientOriginalExtension();
-	
-				// //Move to file directory.
-				// $resume_file->move(public_path() . '/wysiwyg' . '/resume_files' . '/', $file_name);		
 
 				$applicant  								= new Applicant();
 				$applicant->jobvacancy_id		= $req->get('jobvacancy_id');
@@ -501,6 +482,13 @@ class ApplicantController extends Controller
 				if(is_array($copy_of_grades))
         {
 					foreach ($copy_of_grades as $file) {
+
+						$file_name = time().$file->getClientOriginalName();
+						$file_path = '/wysiwyg/applicant_files/' . $file_date;
+						$file_extension = $file->getClientOriginalExtension();
+
+						$file->move(public_path() . $file_path, $file_name);
+
 						$applicant_file = new ApplicantFile();
 						$applicant_file->applicant_id = $applicant->id;
 						$applicant_file->file_name = $file_name;
@@ -511,7 +499,6 @@ class ApplicantController extends Controller
 					}
 					
 				}
-
 
 				if($educ_attain == 'Highschool Graduate' || !$k_12_highschool)
 				{
@@ -1442,6 +1429,39 @@ class ApplicantController extends Controller
 								->count();
 	}
 
+	public function hiring_beg(Request $request, $branch_id, $position) 
+	{
+
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
+		
+		return $this->all_job_applicants()												
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->where(function($query) use ($date_to, $date_from) {
+									$firstDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->firstOfMonth()->toDateString(); // first day last month;
+									$lastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+									
+									$query->where(function($query) use ($firstDayLastMonth, $lastDayLastMonth) {
+														
+														$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '>=', $firstDayLastMonth)
+																  ->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																	->whereDate(DB::raw('DATE_FORMAT(applicants.screening_date, "%Y-%m-%d")'), '>', $lastDayLastMonth);
+
+												})
+												->orWhere(function($query) use ($lastDayLastMonth) {
+														$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																	->where('applicants.status', 0);
+												});
+								})
+								->count();
+	}
+
 	public function passed_quantity(Request $request, $status_field, $date_field, $branch_id, $position, $type) 
 	{
 		
@@ -1449,20 +1469,19 @@ class ApplicantController extends Controller
 		$date_from = $request->date_from;
 
 		return $this->all_job_applicants()												
-					->where('branch_id', $branch_id)
-					->where(function($query) use ($position) {
-							if(isset($position))
-							{
-								$query->where('positions.name', $position);
-							}
-					})
-					->where(function($query) use ($type, $date_from, $date_to, $date_field){
-							$query->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '>=', $date_from)			
-										->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '<=', $date_to);
-					})
-					->where($status_field, 1)
-					->count();
-			
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->where(function($query) use ($type, $date_from, $date_to, $date_field){
+										$query->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '>=', $date_from)			
+													->whereDate(DB::raw('DATE_FORMAT('.$date_field.', "%Y-%m-%d")'), '<=', $date_to);
+								})
+								->where($status_field, 1)
+								->count();
 	}
 
 	public function failed_quantity(Request $request, $status_field, $date_field, $branch_id, $position, $type) 
@@ -1501,8 +1520,8 @@ class ApplicantController extends Controller
 
 		$date_to = $request->date_to;
 		$date_from = $request->date_from;
-		
-		return $this->get_applicants($request, $branch_id, $position, $type)
+
+		return $this->all_job_applicants()												
 								->where('branch_id', $branch_id)
 								->where(function($query) use ($position) {
 										if(isset($position))
@@ -1511,12 +1530,13 @@ class ApplicantController extends Controller
 										}
 								})
 								->where(function($query)use ($date_to, $date_from) {
-									
-									$query->whereDate(DB::raw(' DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '>=', $date_from)			
-												->whereDate(DB::raw(' DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '<=', $date_to)
+							
+									$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '>=', $date_from)			
+												->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '<=', $date_to)
 												->whereIn(DB::raw('IFNULL(applicants.bi_status, IFNULL(applicants.iq_status, applicants.initial_interview_status))'), [2, 3]);
 								})
 								->count();
+		
 	}
 
 	public function orientation_beg(Request $request, $branch_id, $position) 
@@ -1603,7 +1623,7 @@ class ApplicantController extends Controller
 	public function export_recruitment(Request $request) 
 	{
 		$branch_id = $request->branch_id;
-
+ 
 		$arrApplicants = [];
 		$positions = $this->positions();
 		$branches = $this->branches($branch_id);
