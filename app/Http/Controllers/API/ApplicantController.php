@@ -1418,7 +1418,7 @@ class ApplicantController extends Controller
 														
 														$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.iq_date, applicants.initial_interview_date), "%Y-%m-%d")'), '>=', $firstDayLastMonth)
 																	->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.iq_date, applicants.initial_interview_date), "%Y-%m-%d")'), '<=', $lastDayLastMonth)
-																	->whereDate(DB::raw('DATE_FORMAT(applicants.screening_date, "%Y-%m-%d")'), '>', $lastDayLastMonth);
+																	->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '>', $lastDayLastMonth);
 
 												})
 												->orWhere(function($query) use ($lastDayLastMonth) {
