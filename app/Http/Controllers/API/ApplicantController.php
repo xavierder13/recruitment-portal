@@ -284,8 +284,8 @@ class ApplicantController extends Controller
 					'file'			  						=> 'required',
 					'religion'								=> 'required',
 					'citizenship'							=> 'required',
-					'weight'			  					=> 'required|numeric|between:0.00000001, 999999.99',
-					'height'			 	 					=> 'required|numeric|between:0.00000001, 999999.99',
+					'weight'			  					=> 'required|numeric|between:0, 999999.99',
+					'height'			 	 					=> 'required|numeric|between:0, 999999.99',
 					'references.*.name' 			=> 'required',
 					'references.*.address' 		=> 'required',
 					'references.*.contact' 		=> 'required',
@@ -1427,16 +1427,15 @@ class ApplicantController extends Controller
 									// 			});
 
 									$query->where(function($query) use ($firstDayLastMonth, $lastDayLastMonth) {
-														
 													$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.iq_date, applicants.initial_interview_date), "%Y-%m-%d")'), '<=', $lastDayLastMonth)
-																->where(function($query) use ($lastDayLastMonth) {
-																		$query->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)
-																					->orWhere(DB::raw('IFNULL(applicants.bi_status, 0)'), 0);
-																});
-																
-
-											});
+																->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '>', $lastDayLastMonth);
+												})
+												->orWhere(function($query) use ($firstDayLastMonth, $lastDayLastMonth) {
+													$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.iq_date, applicants.initial_interview_date), "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																->where(DB::raw('IFNULL(applicants.bi_status, 0)'), 0);
+												});
 								})
+								
 								->count();
 	}
 
