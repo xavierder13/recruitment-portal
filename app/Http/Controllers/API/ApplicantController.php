@@ -1426,6 +1426,8 @@ class ApplicantController extends Controller
 																	->where(DB::raw('IFNULL(applicants.bi_status, 0)'), 0);
 												});
 								})
+
+								
 								->count();
 	}
 
