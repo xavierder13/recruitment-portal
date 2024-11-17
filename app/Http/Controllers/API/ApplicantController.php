@@ -1429,14 +1429,19 @@ class ApplicantController extends Controller
 									$query->where(function($query) use ($lastDayLastMonth) {
 														
 													$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																->where('applicants.status', 1)
+																// ->where(function($query) use ($lastDayLastMonth) {
+																// 		$query->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
+																// 					->orWhere(function($qry) {
+																// 							$qry->where('applicants.initial_interview_status', 0)
+																// 									->orWhere('applicants.iq_status', 0)
+																// 									->orWhere('applicants.bi_status', 0);
+																// 					});
+																// });
 																->where(function($query) use ($lastDayLastMonth) {
-																		$query->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
-																					->orWhere(function($qry) {
-																							$qry->where('applicants.initial_interview_status', 0)
-																									->orWhere('applicants.iq_status', 0)
-																									->orWhere('applicants.bi_status', 0);
-																					});
-																});
+																	$query->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
+																				->orWhereNull('applicants.applicants.bi_date');
+															});
 											});
 								})
 								
