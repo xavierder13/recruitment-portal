@@ -1440,7 +1440,7 @@ class ApplicantController extends Controller
 																// });
 																->where(function($query) use ($lastDayLastMonth) {
 																	$query->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
-																				->orWhereNull('applicants.applicants.bi_date');
+																				->orWhereNull('applicants.bi_date');
 															});
 											});
 								})
