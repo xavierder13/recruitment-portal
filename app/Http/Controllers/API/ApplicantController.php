@@ -1434,7 +1434,9 @@ class ApplicantController extends Controller
 																						$q->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)
 																							->orWhere('applicants.bi_status', 0);
 																				});
-																	});
+																	})
+																	// if initial interview is on process
+																	->orWhere('applicants.initial_interview_status', 0);
 																	
 											
 												});
