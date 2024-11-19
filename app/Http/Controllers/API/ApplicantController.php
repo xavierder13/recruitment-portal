@@ -1464,7 +1464,7 @@ class ApplicantController extends Controller
 												->where('applicants.bi_status', 1)
 												->where(function($query) use ($lastDayLastMonth) {
 																		// if date process is current month(parameter month)
-														$query->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date), "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
+														$query->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
 																		// if BI Date is less than or equal to last day last month, and if final interview date is greater than last day last month or final interview status is on process
 																	->orWhere(function($qry) use ($lastDayLastMonth) {
 																		$qry->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
@@ -1722,10 +1722,10 @@ class ApplicantController extends Controller
 			$beg_bal = $this->hiring_beg($request, $branch->id, null);
 
 			// qualified: passed in BI (Final Interview on process)														 
-			$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, null,null); 
+			$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', 'applicants.bi_date', $branch->id, null,null); 
 
 			// failed in final interview												 
-			$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', $branch->id, null, null); 
+			$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', 'applicants.final_interview_date', $branch->id, null, null); 
 			
 			$reserved = $this->get_applicants($request, $branch->id, null, null)
 											 ->where('applicants.final_interview_status', 4)
@@ -1758,10 +1758,10 @@ class ApplicantController extends Controller
 				$beg_bal = $this->hiring_beg($request, $branch->id, $position->name);
 
 				// qualified: passed in BI (Final Interview on process)														 
-				$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, $position->name, null); 
+				$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', 'applicants.bi_date', $branch->id, $position->name, null); 
 
 				// failed in final interview												 
-				$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', $branch->id, $position->name, null); 
+				$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', 'applicants.final_interview_date', $branch->id, $position->name, null); 
 
 				$reserved = $this->get_applicants($request, $branch->id, $position->name, null)
 											 ->where('applicants.final_interview_status', 4)
