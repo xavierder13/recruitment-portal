@@ -1417,15 +1417,26 @@ class ApplicantController extends Controller
 									$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
 												->where('applicants.status', 1)
 												->where(function($query) use ($lastDayLastMonth) {
-														$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
-																	// ->orWhereIn(DB::raw('IFNULL(applicants.bi_status, IFNULL(applicants.iq_status, applicants.initial_interview_status))'), [0, 2]); //on process or failed		
-																	->where(function($qry) {
-																			$qry->whereIn('applicants.bi_status', [0, 2])
-																					->orWhereIn('applicants.iq_status', [0, 2])
-																					->orWhereIn('applicants.initial_interview_status', [0, 2]);
-																	});	
+																	// if date process is currend month(parameter month)
+														$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '>', $lastDayLastMonth)
+																	// if initial interview is less than or equal to last day last month, and if iq date is greater than last day last month and iq status is on process
+																	->orWhere(function($qry) use ($lastDayLastMonth) {
+																			$qry->whereDate(DB::raw('DATE_FORMAT(applicants.initial_interview_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																					->where(function($q) use ($lastDayLastMonth) {
+																							$q->whereDate(DB::raw('DATE_FORMAT(applicants.iq_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)
+																								->orWhere('applicants.iq_status', 0);
+																					});
+																	})
+																	// if iq date is less than or equal to last day last month, and if iq date is greater than last day last month and iq status is on process
+																	->orWhere(function($qry) use ($lastDayLastMonth) {
+																		$qry->whereDate(DB::raw('DATE_FORMAT(applicants.iq_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																				->where(function($q) use ($lastDayLastMonth) {
+																						$q->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)
+																							->orWhere('applicants.bi_status', 0);
+																				});
+																	});
 																	
-																	
+											
 												});
 								})
 								->count();
