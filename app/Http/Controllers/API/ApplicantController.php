@@ -1717,7 +1717,9 @@ class ApplicantController extends Controller
 		foreach ($branches as $branch) {
 															 
 			// final interview on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
-			$beg_bal = $this->on_process_quantity($request, 'applicants.final_interview_status', $branch->id, null, 'Beginning Balance');
+			// $beg_bal = $this->on_process_quantity($request, 'applicants.final_interview_status', $branch->id, null, 'Beginning Balance');
+
+			$beg_bal = $this->hiring_beg($request, $branch->id, null);
 
 			// qualified: passed in BI (Final Interview on process)														 
 			$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, null,null); 
@@ -1751,7 +1753,9 @@ class ApplicantController extends Controller
 			foreach ($positions as $position) {
 																
 				// final interview on process last month, params(request, status_field, branch_id, position, balance type e.g 'Beginning', 'Ending')
-				$beg_bal = $this->on_process_quantity($request, 'applicants.final_interview_status', $branch->id, $position->name, 'Beginning Balance');
+				// $beg_bal = $this->on_process_quantity($request, 'applicants.final_interview_status', $branch->id, $position->name, 'Beginning Balance');
+
+				$beg_bal = $this->hiring_beg($request, $branch->id, $position->name);
 
 				// qualified: passed in BI (Final Interview on process)														 
 				$bi_passed = $this->passed_quantity($request, 'applicants.bi_status', $branch->id, $position->name, null); 
