@@ -1418,9 +1418,10 @@ class ApplicantController extends Controller
 												->where('applicants.status', 1)
 												->where(function($query) use ($lastDayLastMonth) {
 														$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
-																	->orWhereIn(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_status, IFNULL(applicants.iq_status, applicants.initial_interview_status)), 0)'), [0, 2]); //on process or failed								
-												})
-												;
+																	->orWhereIn(DB::raw('IFNULL(applicants.bi_status, IFNULL(applicants.iq_status, applicants.initial_interview_status))'), [0, 2]); //on process or failed		
+																	
+																	
+												});
 								})
 								->count();
 	}
@@ -1431,7 +1432,6 @@ class ApplicantController extends Controller
 		$date_to = $request->date_to;
 		$date_from = $request->date_from;
 		
-
 		return $this->all_job_applicants()												
 								->where('branch_id', $branch_id)
 								->where(function($query) use ($position) {
@@ -1444,9 +1444,12 @@ class ApplicantController extends Controller
 									$firstDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->firstOfMonth()->toDateString(); // first day last month;
 									$lastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
 			
-									$query->whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
-												->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed								
-												->where('applicants.status', 1);
+									$query->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+												->where('applicants.bi_status', 1)
+												->where(function($query) use ($lastDayLastMonth) {
+														$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_date, IFNULL(applicants.iq_date, applicants.initial_interview_date)), "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
+																	->orWhereIn(DB::raw('DATE_FORMAT(IFNULL(applicants.bi_status, IFNULL(applicants.iq_status, applicants.initial_interview_status)), 0)'), [0, 2]); //on process or failed								
+												});
 								})
 								->count();
 	}
