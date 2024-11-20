@@ -1561,11 +1561,112 @@ class ApplicantController extends Controller
 	public function orientation_beg(Request $request, $branch_id, $position) 
 	{
 
-		return $this->get_applicants($request, $branch_id, $position, 'Beginning Balance')
-								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $request->date_from)
-								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $request->date_to)											
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
+
+		return $this->all_job_applicants()												
 								->where('branch_id', $branch_id)
-								// ->where('applicants.orientation_status', 0)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->where(function($query) use ($date_to, $date_from) {
+									$firstDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->firstOfMonth()->toDateString(); // first day last month;
+									$lastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
+			
+									$query->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+												->where('applicants.final_interview_status', 1)
+												->where(function($query) use ($lastDayLastMonth) {
+																		// if date process is current month(parameter month)
+														$query->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
+																		// if final_interview_date is less than or equal to last day last month, and if final interview date is greater than last day last month or final interview status is on process
+																	->orWhere(function($qry) use ($lastDayLastMonth) {
+																		$qry->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																				->where(function($q) use ($lastDayLastMonth) {
+																						$q->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)
+																							->orWhere('applicants.final_interview_status', 0);
+																				});	
+																				
+																	});
+												});
+								})
+								->count();
+	}
+
+	public function reserved_quantity(Request $request, $branch_id, $position) 
+	{
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
+
+		return $this->all_job_applicants()												
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '>=', $date_from)		
+								->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '<=', $date_to)		
+								->where('applicants.final_interview_status', 4)
+								->count();
+	}
+
+	public function orientation_quantity(Request $request, $branch_id, $position) 
+	{
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
+
+		return $this->all_job_applicants()												
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
+								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)	
+								->count();
+	}
+
+	public function orientation_non_compliance_quantity(Request $request, $branch_id, $position) 
+	{
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
+
+		return $this->all_job_applicants()												
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
+								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)	
+								->where('applicants.orientation_status', 3)
+								->count();
+	}
+
+	public function signed_contract_quantity(Request $request, $branch_id, $position) 
+	{
+		$date_to = $request->date_to;
+		$date_from = $request->date_from;
+
+		return $this->all_job_applicants()												
+								->where('branch_id', $branch_id)
+								->where(function($query) use ($position) {
+										if(isset($position))
+										{
+											$query->where('positions.name', $position);
+										}
+								})
+								->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '>=', $date_from)
+								->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '<=', $date_to)	
+								->where('applicants.orientation_status', 1)
 								->count();
 	}
 
@@ -1649,7 +1750,6 @@ class ApplicantController extends Controller
 
 		foreach ($branches as $branch) {
 															 
-			
 			// on process initial interview or IQ/Exam or BI, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
 			// $beg_bal = $this->recruitment_on_process_quantity($request, $branch->id, null, 'Beginning Balance');	
 
@@ -1729,13 +1829,9 @@ class ApplicantController extends Controller
 			// failed in final interview												 
 			$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', 'applicants.final_interview_date', $branch->id, null, null); 
 			
-			$reserved = $this->get_applicants($request, $branch->id, null, null)
-											 ->where('applicants.final_interview_status', 4)
-											 ->count();
+			$reserved = $this->reserved_quantity($request, $branch->id, null);
 
-			$for_orientation = $this->get_applicants($request, $branch->id, null, null)
-															->whereNotNull('applicants.orientation_date')
-															->count();
+			$for_orientation = $this->orientation_quantity($request, $branch->id, null);
 																								 
 			$hired = $reserved + $for_orientation; 
 
@@ -1765,13 +1861,9 @@ class ApplicantController extends Controller
 				// failed in final interview												 
 				$final_interview_failed = $this->failed_quantity($request, 'applicants.final_interview_status', 'applicants.final_interview_date', $branch->id, $position->name, null); 
 
-				$reserved = $this->get_applicants($request, $branch->id, $position->name, null)
-											 ->where('applicants.final_interview_status', 4)
-											 ->count();
+				$reserved = $this->reserved_quantity($request, $branch->id, $position->name);
 
-				$for_orientation = $this->get_applicants($request, $branch->id, $position->name, null)
-																->whereNotNull('applicants.orientation_date')
-																->count();
+				$for_orientation = $this->orientation_quantity($request, $branch->id, $position->name);
 																									
 				$hired = $reserved + $for_orientation; 
 
@@ -1808,27 +1900,13 @@ class ApplicantController extends Controller
 			// orientation on process this. month and applied as of last month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
 			$beg_bal = $this->orientation_beg($request, $branch->id, null);
 			
-			$reserved = $this->get_applicants($request, $branch->id, null, null)
-											 ->where('applicants.final_interview_status', 4)
-											 ->count();
+			$reserved = $this->reserved_quantity($request, $branch->id, null);
 
-			$for_orientation = $this->get_applicants($request, $branch->id, null, null)
-															->whereNotNull('applicants.orientation_date')
-															->count();
+			$for_orientation = $this->orientation_quantity($request, $branch->id, null);
 
-			$non_compliance = $this->all_job_applicants()
-															->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
-															->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
-															->where('branch_id', $branch->id)
-															->where('applicants.orientation_status', 3)
-															->count();
+			$non_compliance = $this->orientation_non_compliance_quantity($request, $branch->id, null);
 	
-			$signed_contract = $this->all_job_applicants()
-															->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '>=', $date_from)
-															->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '<=', $date_to)
-															->where('branch_id', $branch->id)
-															->where('applicants.orientation_status', 1)
-															->count();
+			$signed_contract = $this->signed_contract_quantity($request, $branch->id, null);
 																								 
 			$hired = $reserved + $for_orientation; 
 
@@ -1850,29 +1928,13 @@ class ApplicantController extends Controller
 				// orientation on process this. month and applied as of last month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
 				$beg_bal = $this->orientation_beg($request, $branch->id, $position->name);
 
-				$reserved = $this->get_applicants($request, $branch->id, $position->name, null)
-												 ->where('applicants.final_interview_status', 4)
-												 ->count();
+				$reserved = $this->reserved_quantity($request, $branch->id, $position->name);
 
-				$for_orientation = $this->get_applicants($request, $branch->id, $position->name, null)
-																->whereNotNull('applicants.orientation_date')
-																->count();
+				$for_orientation = $this->orientation_quantity($request, $branch->id, $position->name);
 
-				$non_compliance = $this->all_job_applicants()
-															 ->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
-															 ->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)											
-															 ->where('branch_id', $branch->id)
-															 ->where('positions.name', $position->name)
-															 ->where('applicants.orientation_status', 3)
-															 ->count();
-	 
-				 $signed_contract = $this->all_job_applicants()
-																 ->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '>=', $date_from)
-																 ->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '<=', $date_to)
-																 ->where('branch_id', $branch->id)
-																 ->where('positions.name', $position->name)
-																 ->where('applicants.orientation_status', 1)
-																 ->count();
+				$non_compliance = $this->orientation_non_compliance_quantity($request, $branch->id, $position->name);
+
+				$signed_contract = $this->signed_contract_quantity($request, $branch->id, $position->name);
 																										
 				$hired = $reserved + $for_orientation; 
 	 
