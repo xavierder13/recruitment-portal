@@ -1466,8 +1466,9 @@ class ApplicantController extends Controller
 												->where('applicants.bi_status', 1)
 												->where(function($query) use ($lastDayLastMonth) {
 																		// if date process is current month(parameter month)
-														$query->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
-																		// if BI Date is less than or equal to last day last month, and if final interview date is greater than last day last month or final interview status is on process
+														// $query->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
+														$query->whereDate(DB::raw('DATE_FORMAT(IFNULL(applicants.orientation_date, applicants.final_interview_date), "%Y-%m-%d")'), '>', $lastDayLastMonth)	
+																	// if BI Date is less than or equal to last day last month, and if final interview date is greater than last day last month or final interview status is on process
 																	->orWhere(function($qry) use ($lastDayLastMonth) {
 																		$qry->whereDate(DB::raw('DATE_FORMAT(applicants.bi_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
 																				->where(function($q) use ($lastDayLastMonth) {
@@ -1475,7 +1476,16 @@ class ApplicantController extends Controller
 																							->orWhere('applicants.final_interview_status', 0);
 																				});	
 																				
-																	});
+																	})
+																	->orWhere(function($qry) use ($lastDayLastMonth) {
+																		$qry->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																				->where(function($q) use ($lastDayLastMonth) {
+																						$q->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)
+																							->orWhere('applicants.orientation_status', 0);
+																				});
+																	})
+																	// if initial interview is on process
+																	->orWhere('applicants.orientation_status', 0);
 												});
 								})
 								->count();

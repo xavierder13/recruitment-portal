@@ -92,7 +92,6 @@
                 </v-col>
               </v-row>
             </template>
-            {{report_type.text}}
             <v-row>
               <v-col class="my-0 py-0" v-if="report_type.text != 'Overall Count'">
                 <v-text-field
@@ -363,7 +362,7 @@ export default {
         
         axios.post(api, data).then(
           (response) => {
-
+          
             this.generate_btn = true;
             this.export_btn = false;
             this.loading = false;
@@ -564,8 +563,6 @@ export default {
         });
 
       }
-
-      console.log(json_data);
 
       return json_data;
     },
