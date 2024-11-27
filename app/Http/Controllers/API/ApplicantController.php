@@ -1639,8 +1639,8 @@ class ApplicantController extends Controller
 								})
 								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>=', $date_from)
 								->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $date_to)	
-								->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '>=', $date_from)
-								->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '<=', $date_to)	
+								// ->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '>=', $date_from)
+								// ->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '<=', $date_to)	
 								->count();
 	}
 
