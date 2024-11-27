@@ -1568,7 +1568,7 @@ class ApplicantController extends Controller
 		
 	}
 
-	public function orientation_beg(Request $request, $branch_id, $position) 
+	public function signing_contract_beg(Request $request, $branch_id, $position) 
 	{
 
 		$date_to = $request->date_to;
@@ -1586,17 +1586,17 @@ class ApplicantController extends Controller
 									$firstDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->firstOfMonth()->toDateString(); // first day last month;
 									$lastDayLastMonth = Carbon::parse($date_to)->subMonthsNoOverflow()->endOfMonth()->toDateString(); // last day last month;
 			
-									$query->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
-												->where('applicants.final_interview_status', 1)
+									$query->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+												->where('applicants.orientation_status', 1)
 												->where(function($query) use ($lastDayLastMonth) {
 																		// if date process is current month(parameter month)
-														$query->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
+														$query->whereDate(DB::raw('DATE_FORMAT(applicants.signing_contract_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
 																		// if final_interview_date is less than or equal to last day last month, and if final interview date is greater than last day last month or final interview status is on process
 																	->orWhere(function($qry) use ($lastDayLastMonth) {
-																		$qry->whereDate(DB::raw('DATE_FORMAT(applicants.final_interview_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
+																		$qry->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
 																				->where(function($q) use ($lastDayLastMonth) {
-																						$q->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)
-																							->orWhere('applicants.orientation_status', 0);
+																						$q->whereDate(DB::raw('DATE_FORMAT(applicants.signing_contract_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)
+																							->orWhereNull('applicants.signing_contract_date');
 																				});	
 																				
 																	});
@@ -1910,7 +1910,7 @@ class ApplicantController extends Controller
 		foreach ($branches as $branch) {
 															 
 			// orientation on process this. month and applied as of last month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
-			$beg_bal = $this->orientation_beg($request, $branch->id, null);
+			$beg_bal = $this->signing_contract_beg($request, $branch->id, null);
 			
 			$reserved = $this->reserved_quantity($request, $branch->id, null);
 
@@ -1938,7 +1938,7 @@ class ApplicantController extends Controller
 			foreach ($positions as $position) {
 																
 				// orientation on process this. month and applied as of last month, params(request, branch_id, position, balance type e.g 'Beginning', 'Ending')
-				$beg_bal = $this->orientation_beg($request, $branch->id, $position->name);
+				$beg_bal = $this->signing_contract_beg($request, $branch->id, $position->name);
 
 				$reserved = $this->reserved_quantity($request, $branch->id, $position->name);
 
