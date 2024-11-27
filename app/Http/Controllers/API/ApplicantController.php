@@ -1590,13 +1590,13 @@ class ApplicantController extends Controller
 												->where('applicants.orientation_status', 1)
 												->where(function($query) use ($lastDayLastMonth) {
 																		// if date process is current month(parameter month)
-														$query->whereDate(DB::raw('DATE_FORMAT(applicants.signing_contract_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
+														$query->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)//date processed
 																		// if final_interview_date is less than or equal to last day last month, and if final interview date is greater than last day last month or final interview status is on process
 																	->orWhere(function($qry) use ($lastDayLastMonth) {
 																		$qry->whereDate(DB::raw('DATE_FORMAT(applicants.orientation_date, "%Y-%m-%d")'), '<=', $lastDayLastMonth)
 																				->where(function($q) use ($lastDayLastMonth) {
-																						$q->whereDate(DB::raw('DATE_FORMAT(applicants.signing_contract_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)
-																							->orWhereNull('applicants.signing_contract_date');
+																						$q->whereDate(DB::raw('DATE_FORMAT(applicants.signing_of_contract_date, "%Y-%m-%d")'), '>', $lastDayLastMonth)
+																							->orWhereNull('applicants.signing_of_contract_date');
 																				});	
 																				
 																	});
