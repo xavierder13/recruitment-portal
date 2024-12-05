@@ -639,7 +639,6 @@ export default {
 
       axios.post("/api/job_applicant/" + url, data).then(
         (response) => {
-          console.log(response.data);
           
           if(response.data.success){
             
@@ -1285,13 +1284,14 @@ export default {
     },
     "editedItem.initial_interview_date"() {
       let data = this.editedItem;
-      if(data.initial_interview_date && data.screening_date && data.status > 0) {
-        // data.initial_interview_status = 0;
+      // if screening date has value and screening status is passed and initial interview date
+      if(data.screening_date && data.status == 1 && [null, '', 0].includes(data.initial_interview_status)) {
+        data.initial_interview_status = 0;
       }
-      else if(!data.initial_interview_date && ([null, 0, ''].includes(data.initial_interview_status)))
-      {
-        data.initial_interview_status = "";
-      }
+      // else if(!data.initial_interview_date && ([null, 0, ''].includes(data.initial_interview_status)))
+      // {
+      //   data.initial_interview_status = "";
+      // }
     },
     "editedItem.initial_interview_status"() {
       let data = this.editedItem;

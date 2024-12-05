@@ -636,7 +636,8 @@ export default {
             Object.assign(json_fields, {  
               'TOTAL_COUNT.total_orientation': 'total_count.total_orientation',
               'TOTAL_COUNT.total_reserve': 'total_count.total_reserve',
-              'TOTAL_COUNT.total_non_compliance': 'total_count.total_non_compliance',
+              // 'TOTAL_COUNT.total_non_compliance': 'total_count.total_non_compliance',
+              'TOTAL_COUNT.total_orientation_failed': 'total_count.total_orientation_failed',
               'TOTAL_COUNT.total_signed_contract': 'total_count.total_signed_contract',
             });
           }
@@ -681,7 +682,8 @@ export default {
               Object.assign(json_fields, { 
                 [ position.toUpperCase() + '.total_orientation' ]: pos.toLowerCase() + '.total_orientation',
                 [ position.toUpperCase() + '.total_reserve' ]: pos.toLowerCase() + '.total_reserve',
-                [ position.toUpperCase() + '.total_non_compliance' ]: pos.toLowerCase() + '.total_non_compliance',
+                // [ position.toUpperCase() + '.total_non_compliance' ]: pos.toLowerCase() + '.total_non_compliance',
+                [ position.toUpperCase() + '.total_orientation_failed' ]: pos.toLowerCase() + '.total_orientation_failed',
                 [ position.toUpperCase() + '.total_signed_contract' ]: pos.toLowerCase() + '.total_signed_contract',
               });
             }

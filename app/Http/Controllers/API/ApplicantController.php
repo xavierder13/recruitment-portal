@@ -1916,20 +1916,23 @@ class ApplicantController extends Controller
 
 			$for_orientation = $this->orientation_quantity($request, $branch->id, null);
 
-			$non_compliance = $this->orientation_non_compliance_quantity($request, $branch->id, null);
+			// $non_compliance = $this->orientation_non_compliance_quantity($request, $branch->id, null);
+										 
+			$orientation_failed = $this->failed_quantity($request, 'applicants.orientation_status', 'applicants.orientation_date', $branch->id, null, null); 
 	
 			$signed_contract = $this->signed_contract_quantity($request, $branch->id, null);
 																								 
 			$hired = $reserved + $for_orientation; 
 
-			$end_bal = $beg_bal + $hired - $non_compliance - $signed_contract;
+			$end_bal = $beg_bal + $hired - $orientation_failed - $signed_contract;
 																			
 			$arrApplicants[$branch->name] = [
 				'total_count' => [
 														'beg_bal' => $beg_bal,
 														'total_orientation' => $for_orientation,
 														'total_reserve' => $reserved,
-														'total_non_compliance' => $non_compliance,
+														// 'total_non_compliance' => $non_compliance,
+														'total_orientation_failed' => $orientation_failed,
 														'total_signed_contract' => $signed_contract,
 														'end_bal' => $end_bal,
 													]
@@ -1944,19 +1947,22 @@ class ApplicantController extends Controller
 
 				$for_orientation = $this->orientation_quantity($request, $branch->id, $position->name);
 
-				$non_compliance = $this->orientation_non_compliance_quantity($request, $branch->id, $position->name);
+				// $non_compliance = $this->orientation_non_compliance_quantity($request, $branch->id, $position->name);
+
+				$orientation_failed = $this->failed_quantity($request, 'applicants.orientation_status', 'applicants.orientation_date', $branch->id, $position->name, null); 
 
 				$signed_contract = $this->signed_contract_quantity($request, $branch->id, $position->name);
 																										
 				$hired = $reserved + $for_orientation; 
 	 
-				$end_bal = $beg_bal + $hired - $non_compliance - $signed_contract;
+				$end_bal = $beg_bal + $hired - $orientation_failed - $signed_contract;
 
 				$arrApplicants[$branch->name][$position->name] = [
 																														'beg_bal' => $beg_bal,
 																														'total_orientation' => $for_orientation,
 																														'total_reserve' => $reserved,
-																														'total_non_compliance' => $non_compliance,
+																														// 'total_non_compliance' => $non_compliance,
+																														'total_orientation_failed' => $orientation_failed,
 																														'total_signed_contract' => $signed_contract,
 																														'end_bal' => $end_bal,
 																													];
@@ -2014,6 +2020,7 @@ class ApplicantController extends Controller
 			}
 
 			$applicant->iq_status = $req->iq_status;
+			$applicant->iq_date = $req->iq_date;
 			$applicant->branch_complied = $req->branch_id_complied;
 			$applicant->bi_status = 0;
 			
@@ -2032,6 +2039,7 @@ class ApplicantController extends Controller
 			}
 			
 			$applicant->bi_status = $req->bi_status;
+			$applicant->bi_date = $req->bi_date;
 			$applicant->final_interview_status = 0;
 			if(in_array($req->bi_status, [0, 2, 3]))
 			{
