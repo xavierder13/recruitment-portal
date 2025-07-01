@@ -121,7 +121,7 @@
 import { mapState, mapGetters } from "vuex";
 
 export default {
-  props: ['job_applicants', 'loading', 'table_title'],
+  props: ['job_applicants', 'loading', 'table_title', 'api_url'],
   data() {
     return {
       headers: [
@@ -130,13 +130,13 @@ export default {
         { text: "Branch Applied", value: "branch_name" },
         { text: "Date Submitted", value: "created_at" },
         { text: "Screening Date", value: "screening_date" },
-        { text: "Init. Intrvw. Date", value: "initial_interview_date" },
         { text: "Position Pref.", value: "position_preference" },
         { text: "Branch Pref.", value: "branch_preference" },
         { text: "Init. Intrvw. Date", value: "initial_interview_date" },
         { text: "Exam Date", value: "iq_date" },
         { text: "BI Date", value: "bi_date" },
         { text: "Branch Complied", value: "branch_complied" },
+        { text: "Final Interview Date", value: "final_interview_date" },
         { text: "Employment Position", value: "employment_position" },
         { text: "Employment Branch", value: "employment_branch" },
         { text: "Officer Position", value: "hiring_officer_position" },
@@ -147,15 +147,7 @@ export default {
   
       ],
       selectedTableHeaders: [],
-      defaultTableHeaders: [
-        { text: "Full name", value: "name" },
-        { text: "Position", value: "position_name" },
-        { text: "Branch Applied", value: "branch_name" },
-        { text: "Branch Complied", value: "branch_complied" },
-        { text: "Employment Branch", value: "employment_branch" },
-        { text: "Date Submitted", value: "created_at" },
-        { text: "Status", value: "progress_status" },
-      ],
+      defaultTableHeaders: [],
       search: "",
     }
   },
@@ -230,6 +222,68 @@ export default {
       return { progress: applicant.progress_status, color: color, step: step };
 
     },
+    generateTableHeaders() {
+
+      this.defaultTableHeaders = [];
+      this.selectedTableHeaders = [];
+
+      this.defaultTableHeaders = [
+        { text: "Full name", value: "name" },
+        { text: "Position", value: "position_name" },
+        { text: "Branch Applied", value: "branch_name" },
+      ];     
+
+      if(['get_applicants_new', 'screening_list'].includes(this.api_url))
+      {
+        this.defaultTableHeaders.push({ text: "Date Submitted", value: "created_at" });
+      }
+      else if(this.api_url == 'initial_interview_list')
+      {
+        this.defaultTableHeaders.push({ text: "Screening Date", value: "screening_date" });
+        this.defaultTableHeaders.push({ text: "Init. Intrvw Date", value: "initial_interview_date" });
+      }
+      else if(['iq_test_list', 'bi_list', 'final_interview_list', 'orientation_list', 'hired_list', 'get_applicants_new'].includes(this.api_url))
+      {
+
+        if(this.api_url == 'iq_test_list')
+        {
+          this.defaultTableHeaders.push({ text: "Init. Intrvw Date", value: "initial_interview_date" });
+        }
+        else if(this.api_url == 'bi_list')
+        {
+          this.defaultTableHeaders.push({ text: "Branch Complied", value: "branch_complied" });
+          this.defaultTableHeaders.push({ text: "Exam Date", value: "iq_date" });
+        }
+        else if(this.api_url == 'final_interview_list')
+        {
+          this.defaultTableHeaders.push({ text: "Branch Complied", value: "branch_complied" });
+          this.defaultTableHeaders.push({ text: "Exam Date", value: "iq_date" });
+          this.defaultTableHeaders.push({ text: "BI Date", value: "bi_date" });
+          this.defaultTableHeaders.push({ text: "Final Interview Date", value: "final_interview_date" });
+        }
+        else if(this.api_url == 'orientation_list')
+        {
+          this.defaultTableHeaders.push({ text: "Branch Complied", value: "branch_complied" });
+          this.defaultTableHeaders.push({ text: "Employment Branch", value: "employment_branch" });
+          this.defaultTableHeaders.push({ text: "Final Interview Date", value: "final_interview_date" });
+          this.defaultTableHeaders.push({ text: "Orientation Date", value: "orientation_date" });
+        }
+        else if(this.api_url == 'hired_list')
+        {
+          this.defaultTableHeaders.push({ text: "Branch Complied", value: "branch_complied" });
+          this.defaultTableHeaders.push({ text: "Employment Branch", value: "employment_branch" });
+          this.defaultTableHeaders.push({ text: "Orientation Date", value: "orientation_date" });
+          this.defaultTableHeaders.push({ text: "Signed Contract Date", value: "signing_of_contract_date" });
+        }
+
+      }
+
+      this.defaultTableHeaders.push({ text: "Status", value: "progress_status" });
+
+      this.defaultTableHeaders.forEach(value => {
+        this.selectedTableHeaders.push(value)
+      });
+    },
     removeSelectedHeader(item) {
       let index = this.selectedTableHeaders.findIndex(header => header.value === item.value);
       this.selectedTableHeaders.splice(index, 1);
@@ -283,11 +337,13 @@ export default {
     },
     ...mapGetters("userRolesPermissions", ["hasRole", "hasPermission"]),
   },
+  watch: {
+    api_url() {
+      this.generateTableHeaders();
+    }
+  },
   mounted() {
-    
-    this.defaultTableHeaders.forEach(value => {
-      this.selectedTableHeaders.push(value)
-    });
+    this.generateTableHeaders();
   }
 }
 </script>
