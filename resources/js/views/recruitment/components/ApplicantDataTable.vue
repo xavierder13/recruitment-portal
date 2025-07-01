@@ -160,6 +160,7 @@ export default {
       selectedTableHeaders: [],
       defaultTableHeaders: [],
       search: "",
+      search_status: "All",
     }
   },
   methods: {
