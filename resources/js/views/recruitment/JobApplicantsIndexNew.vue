@@ -14,6 +14,7 @@
             :job_applicants="job_applicants"
             :loading="loading"
             :table_title="tableTitle"
+            :api_url="api_url"
             @getData="getApplicants"
             @exportData="openExportDialog"
             @applicationProgress="applicationProgress"
@@ -1079,7 +1080,7 @@ export default {
       axios.get(url).then(
         (response) => {
           this.view_applicant_loading = false;
-          const data = response.data;  
+          const data = response.data;          
                 
           if (data.success) {
             let step = this.applicationProgress(data.applicant).step;
