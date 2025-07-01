@@ -41,6 +41,7 @@
               data-aos="flip-left" 
               data-aos-duration="1000"
               height="auto" width="auto"
+              cycle
             >
               <v-carousel-item
                 v-for="(images, i) in images"

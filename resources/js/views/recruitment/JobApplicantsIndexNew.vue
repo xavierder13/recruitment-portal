@@ -1683,7 +1683,6 @@ export default {
       this.api_url = await splitted_route[2].split('-').join('_'); //e.g screening-list become screening_list
     }
     
-
     await this.getApplicants();
     
     // this.getBranch();

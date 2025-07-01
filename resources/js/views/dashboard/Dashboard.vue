@@ -24,13 +24,30 @@
                 <v-col cols="4" v-if="item.hasPermission">
                   <v-card elevation="2" class="rounded-lg">
                     <v-card-text class="d-flex justify-space-between align-center">
-                      <div>
-                        <strong>{{ item.text }}</strong> <br>
-                        <v-btn small color="info" class="mt-2" link :to="item.link">View </v-btn>
-                      </div>
-                      <v-avatar size="60" :color="item.color">
-                        <span style="color: white">{{ item.count }}</span>
-                      </v-avatar>
+                      <v-row>
+                        <v-col>
+                          <strong>{{ item.text }}</strong> <br>
+                          <v-btn small color="info" class="mt-2" link :to="item.link">View </v-btn>
+                        </v-col>
+                        <v-col align="right">
+                          <v-tooltip top v-if="hasPermission('jobapplicants-failed-list') && item.text != 'Hired (This Month)'">
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-avatar size="60" color="error">
+                                <span style="color: white" v-bind="attrs" v-on="on">{{ item.count_failed }}</span>
+                              </v-avatar>
+                            </template>
+                            <span>Failed</span>
+                          </v-tooltip>  
+                          <v-tooltip top>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-avatar size="60" :color="item.color">
+                                <span style="color: white" v-bind="attrs" v-on="on">{{ item.count }}</span>
+                              </v-avatar>
+                            </template>
+                            <span>On Process</span>
+                          </v-tooltip>  
+                        </v-col>
+                      </v-row>
                     </v-card-text>
                   </v-card>
                 </v-col>
@@ -73,13 +90,21 @@ export default {
       overlay: false,
       search: "",
       loading: true,
-      screening_ctr: 0,
-      initial_interview_ctr: 0,
-      iq_test_ctr: 0,
-      bi_ctr: 0,
-      final_interview_ctr: 0,
-      orientation_ctr: 0,
-      hired_ctr: 0,
+      totalCount: {
+        screening_ctr: 0,
+        screening_failed_ctr: 0,
+        initial_interview_ctr: 0,
+        initial_interview_failed_ctr: 0,
+        iq_test_ctr: 0,
+        iq_test_failed_ctr: 0,
+        bi_ctr: 0,
+        bi_failed_ctr: 0,
+        final_interview_ctr: 0,
+        final_interview_failed_ctr: 0,
+        orientation_ctr: 0,
+        orientation_failed_ctr: 0,
+        hired_ctr: 0,
+      }
     };
   },
 
@@ -91,14 +116,19 @@ export default {
       axios.get("/api/job_applicant/get_all_status_count").then(
         (response) => {
           let data = response.data
+          let fields = Object.keys(this.totalCount)
 
-          this.screening_ctr = data.screening_ctr;
-          this.initial_interview_ctr = data.initial_interview_ctr;
-          this.iq_test_ctr = data.iq_test_ctr;
-          this.bi_ctr = data.bi_ctr;
-          this.final_interview_ctr = data.final_interview_ctr;
-          this.orientation_ctr = data.orientation_ctr;
-          this.hired_ctr = data.hired_ctr;
+          fields.forEach(field => {
+            this.totalCount[field] = data[field];
+          });
+
+          // this.screening_ctr = data.screening_ctr;
+          // this.initial_interview_ctr = data.initial_interview_ctr;
+          // this.iq_test_ctr = data.iq_test_ctr;
+          // this.bi_ctr = data.bi_ctr;
+          // this.final_interview_ctr = data.final_interview_ctr;
+          // this.orientation_ctr = data.orientation_ctr;
+          // this.hired_ctr = data.hired_ctr;
           
         },
         (error) => {
@@ -163,6 +193,9 @@ export default {
   },
   computed: {
     dashboardCardList() {
+
+      let counter = this.totalCount
+
       let list = [
         // { 
         //   text: 'Total Applicants Today', 
@@ -175,42 +208,48 @@ export default {
           text: 'Screening', 
           color: 'warning', 
           hasPermission: this.hasPermission('jobapplicants-screening-list'), 
-          count: this.screening_ctr, 
+          count: counter.screening_ctr,
+          count_failed: counter.screening_failed_ctr,
           link: '/jobapplicants/screening-list'
         },
         { 
           text: 'Initial Interview', 
           color: 'purple', 
           hasPermission: this.hasPermission('jobapplicants-initial-interview-list'), 
-          count: this.initial_interview_ctr, 
+          count: counter.initial_interview_ctr, 
+          count_failed: counter.initial_interview_failed_ctr, 
           link: '/jobapplicants/initial-interview-list'
         },
         { 
           text: 'Exam', 
           color: 'teal', 
           hasPermission: this.hasPermission('jobapplicants-iq-test-list'), 
-          count: this.iq_test_ctr, 
+          count: counter.iq_test_ctr, 
+          count_failed: counter.iq_test_failed_ctr, 
           link: '/jobapplicants/iq-test-list'
         },
         { 
           text: 'Background Investigation', 
           color: 'lime', 
           hasPermission: this.hasPermission('jobapplicants-bi-list'), 
-          count: this.bi_ctr, 
+          count: counter.bi_ctr, 
+          count_failed: counter.bi_failed_ctr, 
           link: '/jobapplicants/bi-list'
         },
         { 
           text: 'Final Interview', 
           color: 'cyan', 
           hasPermission: this.hasPermission('jobapplicants-final-interview-list'), 
-          count: this.final_interview_ctr, 
+          count: counter.final_interview_ctr, 
+          count_failed: counter.final_interview_failed_ctr, 
           link: '/jobapplicants/final-interview-list'
         },
         { 
           text: 'Orientation', 
           color: 'secondary', 
           hasPermission: this.hasPermission('jobapplicants-orientation-list'), 
-          count: this.orientation_ctr, 
+          count: counter.orientation_ctr, 
+          count_failed: counter.orientation_failed_ctr, 
           link: '/jobapplicants/orientation-list'
         },
         { 

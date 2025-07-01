@@ -141,41 +141,41 @@ class ApplicantController extends Controller
   public function get_applicants_new(){
 
 		$job_applicants = $this->all_job_applicants()->where(function($query) {
-																										$user = Auth::user();
-																										if($user->hasRole('Branch Manager'))
-																										{
-																											//status 0 = on process, 1 = passed, 4 = reserved (final interview status)
-																											$query->where(function($qry){
-																												
-																																$qry->whereIn('initial_interview_status', [0, 1])
-																																	  ->orWhereIn('iq_status', [0, 1])
-																																		->orWhereIn('bi_status', [0, 1])
-																																		->orWhereIn('final_interview_status', [1, 4]);
-																															})
-																															->where(function($qry) use ($user) {
-																																// if employment_branch is null, then get branch_complied else branch_id
-																																$qry->where('employment_branch', $user->branch_id)
-																																		->orWhere(function($q) use ($user) {
-																																				$q->whereNull('employment_branch')
-																																					->where('branch_complied.id', $user->branch_id);
-																																		})
-																																		->orWhere(function($q) {
-																																				$q->whereNull('branch_complied.id')
-																																					->whereNotNull('branch_preference');
-																																		})
-																																		->orWhere(function ($q) use ($user) {
-																																				$q->whereNull('branch_preference')
-																																					->where('branch_id', $user->branch_id);
-																																		});
-																															});
-																										}
-																										
-																								})
-																								->orderBy('applicants.created_at', 'DESC')
-																								->get()
-																								->each(function ($row, $index) {
-																									$row->cnt_id = $index + 1;
-																								});
+								$user = Auth::user();
+								if($user->hasRole('Branch Manager'))
+								{
+									//status 0 = on process, 1 = passed, 4 = reserved (final interview status)
+									$query->where(function($qry){
+										
+														$qry->whereIn('initial_interview_status', [0, 1])
+																->orWhereIn('iq_status', [0, 1])
+																->orWhereIn('bi_status', [0, 1])
+																->orWhereIn('final_interview_status', [1, 4]);
+													})
+													->where(function($qry) use ($user) {
+														// if employment_branch is null, then get branch_complied else branch_id
+														$qry->where('employment_branch', $user->branch_id)
+																->orWhere(function($q) use ($user) {
+																		$q->whereNull('employment_branch')
+																			->where('branch_complied.id', $user->branch_id);
+																})
+																->orWhere(function($q) {
+																		$q->whereNull('branch_complied.id')
+																			->whereNotNull('branch_preference');
+																})
+																->orWhere(function ($q) use ($user) {
+																		$q->whereNull('branch_preference')
+																			->where('branch_id', $user->branch_id);
+																});
+													});
+								}
+								
+						})
+						->orderBy('applicants.created_at', 'DESC')
+						->get()
+						->each(function ($row, $index) {
+							$row->cnt_id = $index + 1;
+						});
 		$applicantsArr = [];
 		$user = Auth::user();
 
@@ -2315,23 +2315,34 @@ class ApplicantController extends Controller
 	}
 
 	public function get_all_status_count()
-	{
-
-		$screening_ctr = count($this->get_screening_list());
-		$initial_interview_ctr = count($this->get_initial_interview_list());
+	{	
+		$screening_ctr = $this->get_screening_list()->where('status', 0)->count();
+		$screening_failed_ctr = $this->get_screening_list()->where('status', 2)->count();
+		$initial_interview_ctr = $this->get_initial_interview_list()->where('initial_interview_status', 0)->count();
+		$initial_interview_failed_ctr = $this->get_initial_interview_list()->whereIn('initial_interview_status', [2, 3])->count();
 		$iq_test_ctr = count($this->get_iq_test_list());
-		$bi_ctr = count($this->get_bi_list());
-		$final_interview_ctr = count($this->get_final_interview_list());
-		$orientation_ctr = count($this->get_orientation_list());
+		$iq_test_failed_ctr = count($this->get_iq_test_failed_list());
+		$bi_ctr = $this->get_bi_list()->where('bi_status', 0)->count();
+		$bi_failed_ctr = $this->get_bi_list()->whereIn('bi_status', [2, 3])->count();
+		$final_interview_ctr = $this->get_final_interview_list()->where('final_interview_status', 0)->count();
+		$final_interview_failed_ctr = $this->get_final_interview_list()->whereIn('final_interview_status', [2, 3])->count();
+		$orientation_ctr = $this->get_orientation_list()->where('orientation_status', 0)->count();
+		$orientation_failed_ctr = $this->get_orientation_list()->whereIn('orientation_status', [2, 3])->count();
 		$hired_ctr = count($this->get_hired_list());
 
 		return response()->json([
 			'screening_ctr' => $screening_ctr,
+			'screening_failed_ctr' => $screening_failed_ctr,
 			'initial_interview_ctr' => $initial_interview_ctr,
+			'initial_interview_failed_ctr' => $initial_interview_failed_ctr,
 			'iq_test_ctr' => $iq_test_ctr,
+			'iq_test_failed_ctr' => $iq_test_failed_ctr,
 			'bi_ctr' => $bi_ctr,
+			'bi_failed_ctr' => $bi_failed_ctr,
 			'final_interview_ctr' => $final_interview_ctr,
+			'final_interview_failed_ctr' => $final_interview_failed_ctr,
 			'orientation_ctr' => $orientation_ctr,
+			'orientation_failed_ctr' => $orientation_failed_ctr,
 			'hired_ctr' => $hired_ctr,
 		]);
 	}
@@ -2346,51 +2357,124 @@ class ApplicantController extends Controller
 	}
 
 	public function get_screening_list() 
-	{
-		$job_applicants = $this->all_job_applicants()->where('applicants.status', 0)
-																								// ->whereIn('applicants.status', [0, 2])// where status 0 or 2 (on process or failed)
-																								->orderBy('applicants.created_at', 'DESC')
-																								->get()
-																								->each(function ($row, $index) {
-																										$row->cnt_id = $index + 1;
-																								}); 
-		return $job_applicants;
+	{	
+		$user = Auth::user();
+		$job_applicants = $this->all_job_applicants()
+							   ->where('applicants.status', 0)
+							   ->where(function($query) {
+									$user = Auth::user();
+									if($user->hasRole('Branch Manager'))
+									{
+										$query->where('applicants.branch_id', $user->branch_id);
+									}
+								});
+							// ->whereIn('applicants.status', [0, 2])// where status 0 or 2 (on process or failed)
+		
+		// get failed if user has specified roles
+		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		{
+			$job_applicants->orWhere('applicants.status', 2);
+		}
+							
+		return $job_applicants->orderBy('applicants.created_at', 'DESC')
+							  ->get()
+							  ->each(function ($row, $index) {
+									$row->cnt_id = $index + 1;
+							  });
 	}
 
-	public function get_initial_interview_list() 
-	{
-		$job_applicants = $this->all_job_applicants()->where('applicants.initial_interview_status', 0)
-																								 ->where(function($query) {
-																											$user = Auth::user();
-																											if($user->hasRole('Branch Manager'))
-																											{
-																												$query->where('applicants.branch_id', $user->branch_id);
-																											}
-																									})
-																									// ->where(function($query){
-																									// 		$query->where(function($qry) {
-																									// 							$qry->whereDate('applicants.initial_interview_date', '>=', Carbon::now()->format('Y-m-d'))
-																									// 									->orWhereNull('applicants.initial_interview_date');
-																									// 					});			
-																									// })
-																									->orderBy('applicants.initial_interview_date', 'DESC')
-																									->get()
-																									->each(function ($row, $index) {
-																											$row->cnt_id = $index + 1;
-																									});
 
-		return $job_applicants;
+	public function get_initial_interview_list() 
+	{	
+		$user = Auth::user();
+		$job_applicants = $this->all_job_applicants()
+						->where('applicants.initial_interview_status', 0)
+						->where(function($query) {
+							$user = Auth::user();
+							if($user->hasRole('Branch Manager'))
+							{
+								$query->where('applicants.branch_id', $user->branch_id);
+							}
+						});
+						// ->where(function($query){
+						// 		$query->where(function($qry) {
+						// 							$qry->whereDate('applicants.initial_interview_date', '>=', Carbon::now()->format('Y-m-d'))
+						// 									->orWhereNull('applicants.initial_interview_date');
+						// 					});			
+						// })
+						
+		// get failed if user has specified roles
+		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		{
+			$job_applicants->orWhereIn('applicants.initial_interview_status', [2, 3]);
+		}
+
+		return $job_applicants->orderBy('applicants.initial_interview_date', 'DESC')
+							->get()
+							->each(function ($row, $index) {
+									$row->cnt_id = $index + 1;
+							});
 	}
 
 	public function get_iq_test_list() 
-	{
-		$applicants = $this->all_job_applicants()->where('applicants.iq_status', 0)
-																					  // ->whereIn('iq_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or Non-Compliant)
-																						->orderBy('applicants.created_at', 'DESC')
-																						->get()
-																						->each(function ($row, $index) {
-																								$row->cnt_id = $index + 1;
-																						});
+	{	
+		$user = Auth::user();
+		$applicants = $this->all_job_applicants()
+					  ->where('applicants.iq_status', 0);
+					  // ->whereIn('iq_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or Non-Compliant)
+						
+		// get failed if user has specified roles
+		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		{
+			$applicants = $applicants->orWhereIn('applicants.iq_status', [2, 3]);
+		}
+
+		$applicants = $applicants->orderBy('applicants.created_at', 'DESC')
+								->get()
+								->each(function ($row, $index) {
+										$row->cnt_id = $index + 1;
+								});
+
+		$applicantsArr = [];
+		$user = Auth::user();
+
+		foreach ($applicants as $applicant) {
+			
+			$branch_preference = $applicant->branch_preference;
+
+			if($user->hasRole('Branch Manager'))
+			{
+				if($branch_preference)
+				{
+					$branch_ids = explode(',', $branch_preference);
+
+					if(in_array($user->branch_id, $branch_ids))
+					{
+						$applicantsArr[] = $applicant;
+					}
+				}
+			}
+			else
+			{
+				$applicantsArr[] = $applicant;
+			}
+
+		}
+
+		return $applicantsArr;
+	}
+
+	public function get_iq_test_failed_list() 
+	{	
+		$user = Auth::user();
+		$applicants = $this->all_job_applicants()
+						   ->whereIn('applicants.iq_status', [2, 3])
+					  	   ->orderBy('applicants.created_at', 'DESC')
+						   ->get()
+						   ->each(function ($row, $index) {
+								$row->cnt_id = $index + 1;
+						   });
+
 		$applicantsArr = [];
 		$user = Auth::user();
 
@@ -2422,95 +2506,117 @@ class ApplicantController extends Controller
 
 	public function get_bi_list() 
 	{
-		$job_applicants = $this->all_job_applicants()->where('applicants.bi_status', 0)
-																						// ->whereIn('bi_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or Non-Compliant)
-																						->where(function($query) {
-																							$user = Auth::user();
-																							if($user->hasRole('Branch Manager'))
-																							{
-																								$query->where('applicants.branch_complied', $user->branch_id);
-																							}
-																						})
-																						->orderBy('applicants.created_at', 'DESC')
-																						->get()
-																						->each(function ($row, $index) {
-																								$row->cnt_id = $index + 1;
-																						});
+		$user = Auth::user();
+		$job_applicants = $this->all_job_applicants()
+						->where('applicants.bi_status', 0)
+						// ->whereIn('bi_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or Non-Compliant)
+						->where(function($query) {
+							$user = Auth::user();
+							if($user->hasRole('Branch Manager'))
+							{
+								$query->where('applicants.branch_complied', $user->branch_id);
+							}
+						});
 
-		return $job_applicants;
+		// get failed if user has specified roles
+		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		{
+			$job_applicants->orWhereIn('applicants.bi_status', [2, 3]);
+		}
+
+		return $job_applicants->orderBy('applicants.created_at', 'DESC')
+							->get()
+							->each(function ($row, $index) {
+									$row->cnt_id = $index + 1;
+							});
 	}
 
 	public function get_final_interview_list() 
 	{
-		$job_applicants = $this->all_job_applicants()->where('applicants.final_interview_status', 0)
-																				    // ->whereIn('final_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or Non-Compliant)
-																						->where(function($query) {
-																							$user = Auth::user();
-																							if($user->hasRole('Branch Manager'))
-																							{
-																								$query->where('branch_complied.id', $user->branch_id);
-																							}
-																						})
-																						->orderBy('applicants.final_interview_date', 'DESC')
-																						->get()
-																						->each(function ($row, $index) {
-																								$row->cnt_id = $index + 1;
-																						});
+		$user = Auth::user();
+		$job_applicants = $this->all_job_applicants()
+							->where('applicants.final_interview_status', 0)
+							// ->whereIn('final_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or Non-Compliant)
+							->where(function($query) {
+								$user = Auth::user();
+								if($user->hasRole('Branch Manager'))
+								{
+									$query->where('branch_complied.id', $user->branch_id);
+								}
+							});
 
-		return $job_applicants;
+		// get failed if user has specified roles
+		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		{
+			$job_applicants->orWhereIn('applicants.final_interview_status', [2, 3]);
+		}
+
+		return $job_applicants->orderBy('applicants.final_interview_date', 'DESC')
+							->get()
+							->each(function ($row, $index) {
+									$row->cnt_id = $index + 1;
+							});
 	}
 
 	public function get_orientation_list() 
 	{
-		$job_applicants = $this->all_job_applicants()->where('applicants.orientation_status', 0)
-																				    // ->whereIn('final_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or Non-Compliant)
-																						->where(function($query) {
-																							$user = Auth::user();
-																							if($user->hasRole('Branch Manager'))
-																							{
-																								$query->where('applicants.employment_branch', $user->branch_id);
-																							}
-																						})
-																						// ->whereDate('applicants.orientation_date', '>=', Carbon::now()->format('Y-m-d'))'
-																						// ->whereIn('applicants.final_interview_status', [1, 4]) //Passed or Reserved
-																						// ->where(function($query){
-																						// 		$query->where(function($qry) {
-																						// 							$qry->whereDate('applicants.orientation_date', '>=', Carbon::now()->format('Y-m-d'))
-																						// 									->orWhereNull('applicants.orientation_date');
-																						// 					});	
-																						// })
-																						->orderBy('applicants.orientation_date', 'DESC')
-																						->get()
-																						->each(function ($row, $index) {
-																								$row->cnt_id = $index + 1;
-																						});
+		$user = Auth::user();
+		$job_applicants = $this->all_job_applicants()
+							->where('applicants.orientation_status', 0)
+							// ->whereIn('final_interview_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or Non-Compliant)
+							->where(function($query) {
+								$user = Auth::user();
+								if($user->hasRole('Branch Manager'))
+								{
+									$query->where('applicants.employment_branch', $user->branch_id);
+								}
+							})
+							// ->whereDate('applicants.orientation_date', '>=', Carbon::now()->format('Y-m-d'))'
+							// ->whereIn('applicants.final_interview_status', [1, 4]) //Passed or Reserved
+							// ->where(function($query){
+							// 		$query->where(function($qry) {
+							// 							$qry->whereDate('applicants.orientation_date', '>=', Carbon::now()->format('Y-m-d'))
+							// 									->orWhereNull('applicants.orientation_date');
+							// 					});	
+							// })
+							;
 
-		return $job_applicants;
+		// get failed if user has specified roles
+		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		{
+			$job_applicants->orWhereIn('applicants.orientation_status', [2, 3]);
+		}
+
+		return $job_applicants->orderBy('applicants.orientation_date', 'DESC')
+							  ->get()
+							  ->each(function ($row, $index) {
+									$row->cnt_id = $index + 1;
+							  });
 	}
 
 	public function get_hired_list() 
 	{
 		$job_applicants = $this->all_job_applicants()->where('applicants.orientation_status', 1)
-																						->where(function($query) {
-																							$user = Auth::user();
-																							if($user->hasRole('Branch Manager'))
-																							{
-																								$query->where('applicants.employment_branch', $user->branch_id);
-																							}
-																						})
-																						->where(function($query){
-																								$query->where(function($qry) {
-																													$dateNow = Carbon::now()->format('Y-m-d');
-																													$firstDayOfMonth = Carbon::now()->startOfMonth()->format('Y-m-d');
-																													$qry->whereDate('applicants.signing_of_contract_date', '>=', $firstDayOfMonth)
-																															->whereDate('applicants.signing_of_contract_date', '<=', $dateNow);
-																											});	
-																						})
-																						->orderBy('applicants.signing_of_contract_date', 'DESC')
-																						->get()
-																						->each(function ($row, $index) {
-																								$row->cnt_id = $index + 1;
-																						});
+							->where(function($query) {
+								$user = Auth::user();
+								if($user->hasRole('Branch Manager'))
+								{
+									$query->where('applicants.employment_branch', $user->branch_id);
+								}
+							})
+							->where(function($query){
+									$query->where(function($qry) {
+														$dateNow = Carbon::now()->format('Y-m-d');
+														$firstDayOfMonth = Carbon::now()->startOfMonth()->format('Y-m-d');
+														$qry->whereDate('applicants.signing_of_contract_date', '>=', $firstDayOfMonth)
+																->whereDate('applicants.signing_of_contract_date', '<=', $dateNow);
+												});	
+							})
+							->orderBy('applicants.signing_of_contract_date', 'DESC')
+							->get()
+							->each(function ($row, $index) {
+									$row->cnt_id = $index + 1;
+							});
 
 		return $job_applicants;
 	}

@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="tableHeaders"
-    :items="job_applicants"
+    :items="filteredEmployees"
     :search="search"
     :loading="loading"
   >
@@ -52,7 +52,15 @@
           single-line
           hide-details=""
         ></v-text-field>
-        
+
+        <v-autocomplete
+          class="mr-2"
+          v-model="search_status"
+          :items="['All', 'On Process', 'Failed', 'Non-Compliant']"
+          label="Status"
+          single-line
+          hide-details=""
+        ></v-autocomplete>
       </v-toolbar>
       <v-toolbar flat class="ma-0 pa-0" extended extension-height="30px">
         <v-autocomplete
@@ -81,6 +89,9 @@
           </template>
         </v-autocomplete>
       </v-toolbar>
+    </template>
+    <template v-slot:item.row_no="{ item, index }">
+      {{ index + 1 }}
     </template>
     <template v-slot:item.progress_status="{ item }">
       <v-chip
@@ -294,7 +305,7 @@ export default {
       
       let headers = [];
       
-      headers.push({ text: "#", value: "cnt_id" , sortable: false, width: "20px" })
+      headers.push({ text: "#", value: "row_no" , sortable: false, width: "20px" })
 
       this.selectedTableHeaders.forEach(value => {
         this.headers.forEach(header => {
@@ -334,6 +345,29 @@ export default {
       });      
       
       return headers;
+    },
+    filteredEmployees() {
+
+      return this.job_applicants.filter((value) => {  
+        // 0: On Process, 2: Failed/Not Qualified, 3: Non-Compliant
+        if(this.search_status == 'On Process')
+        {
+          return [value.status, value.initial_interview_status, value.iq_status, value.bi_status, value.final_interview_status, value.orientation_status].includes(0);
+        }
+        else if(this.search_status == 'Failed')
+        {
+          return [value.status, value.initial_interview_status, value.iq_status, value.bi_status, value.final_interview_status, value.orientation_status].includes(2);
+        }
+        else if(this.search_status == 'Non-Compliant')
+        {
+          return [value.status, value.initial_interview_status, value.iq_status, value.bi_status, value.final_interview_status, value.orientation_status].includes(3);
+        }
+        else
+        {
+          return value;
+        }
+         
+      });
     },
     ...mapGetters("userRolesPermissions", ["hasRole", "hasPermission"]),
   },

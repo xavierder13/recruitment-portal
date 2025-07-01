@@ -227,7 +227,7 @@
 
     <!-- Content -->
     <v-scroll-x-transition mode="out-in">
-      <router-view />
+      <router-view :key="$route.fullPath"/>
     </v-scroll-x-transition>
 
     <v-footer padless dense dark app id="footer">
@@ -328,13 +328,11 @@ export default {
     ...mapActions("auth", ["getUser"]),
     ...mapActions("userRolesPermissions", ["userRolesPermissions"]),
   },
-
   computed: {
     ...mapState("auth", ["user"]),
     ...mapState("userRolesPermissions", ["userRoles", "userPermissions"]),
     ...mapGetters("userRolesPermissions", ["hasRole", "hasPermission"]),
   },
-
   mounted() {
     axios.defaults.headers.common["Authorization"] =
       "Bearer " + localStorage.getItem("access_token");
