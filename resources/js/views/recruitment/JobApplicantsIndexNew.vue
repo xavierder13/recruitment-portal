@@ -44,13 +44,6 @@
               dark
               color="primary"
             >
-              <v-btn
-                icon
-                dark
-                @click="closeApplicantDialog()"
-              >
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
               <v-toolbar-title> Applicant's Details {{ applicant.progress_status }} </v-toolbar-title>
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
@@ -65,6 +58,14 @@
                 </template>
                 <span>Download PDF</span>
               </v-tooltip>  
+              <v-spacer></v-spacer>
+              <v-btn
+                icon
+                dark
+                @click="closeApplicantDialog()"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
             </v-toolbar>
             <v-card-text>
               <v-row>
