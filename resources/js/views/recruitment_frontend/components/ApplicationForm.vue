@@ -1754,18 +1754,16 @@
               </v-col>
             </v-row>
             <v-row>
-              <v-col cols="12" class="my-4 py-0 l">
-                <v-container>
-                  <v-checkbox 
-                    v-model="checkboxConfirm" 
-                    :error-messages="checkboxCofirmErrors"
-                    @click="$v.checkboxConfirm.$touch()"
-                  >
-                    <template v-slot:label>
-                      <span class="mt-2">I hereby certify that the encoded &#38; attached information is true and correct.</span>
-                    </template>
-                  </v-checkbox>
-                </v-container>
+              <v-col cols="12" class="my-4 py-0 ml-2">
+                <v-checkbox 
+                  v-model="checkboxConfirm" 
+                  :error-messages="checkboxConfirmErrors"
+                  @click="$v.checkboxConfirm.$touch()"
+                >
+                  <template v-slot:label>
+                    <span class="mt-2">I hereby certify that the encoded &#38; attached information is true and correct.</span>
+                  </template>
+                </v-checkbox>
               </v-col>
             </v-row>  
             <v-row>
@@ -3769,7 +3767,7 @@ export default {
       return errors;
     },
 
-    checkboxCofirmErrors() {
+    checkboxConfirmErrors() {
       const errors = [];
       if (!this.$v.checkboxConfirm.$dirty) return errors;
       !this.$v.checkboxConfirm.required &&

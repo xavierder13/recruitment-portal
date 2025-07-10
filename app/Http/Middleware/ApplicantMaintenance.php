@@ -156,6 +156,12 @@ class ApplicantMaintenance
 				}
 			}
 
+			if($request->is('api/job_applicant/get_all_hired')){
+				if($user->can('jobapplicants-list')){
+					return $next($request);
+				}
+			}
+
       return abort(401, 'Unauthorized');
     }
 }

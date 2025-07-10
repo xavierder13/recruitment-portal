@@ -2621,6 +2621,36 @@ class ApplicantController extends Controller
 		return $job_applicants;
 	}
 
+	public function get_all_hired(Request $request) 
+	{
+
+		$job_applicants = $this->all_job_applicants()->where('applicants.orientation_status', 1)
+							->where(function($query) {
+								$user = Auth::user();
+								if($user->hasRole('Branch Manager'))
+								{
+									$query->where('applicants.employment_branch', $user->branch_id);
+								}
+							})
+							->where(function($query){
+									$query->where(function($qry) {
+														$dateNow = Carbon::now()->format('Y-m-d');
+														$firstDayOfMonth = Carbon::now()->startOfMonth()->format('Y-m-d');
+														// $qry->whereDate('applicants.signing_of_contract_date', '>=', $firstDayOfMonth)
+																$qry->whereDate('applicants.signing_of_contract_date', '<=', $dateNow);
+												});	
+							})
+							->orderBy('applicants.signing_of_contract_date', 'DESC')
+							->get()
+							->each(function ($row, $index) {
+									$row->cnt_id = $index + 1;
+							});
+
+		return $job_applicants;
+	}
+
+
+
 
 	public function screening_list() 
 	{
