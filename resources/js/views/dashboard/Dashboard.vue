@@ -256,7 +256,7 @@ export default {
           text: 'Hired (This Month)', 
           color: 'success', 
           hasPermission: this.hasPermission('jobapplicants-hired-list'), 
-          count: this.hired_ctr, 
+          count: counter.hired_ctr, 
           link: '/jobapplicants/hired-list'
         },
        ];

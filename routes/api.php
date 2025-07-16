@@ -358,6 +358,11 @@ Route::group(['prefix' => 'job_applicant', 'middleware' => ['auth:api', 'applica
         'as' => 'job_applicant.get_all_status_count',
     ]);
 
+    Route::post('/get_all_hired', [
+        'uses' => 'API\ApplicantController@get_all_hired',
+        'as' => 'job_applicant.get_all_hired',
+    ]);
+
 });
 
 Route::get('/job_applicant/delete_applicants_old', [

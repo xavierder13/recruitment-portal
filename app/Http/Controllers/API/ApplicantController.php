@@ -85,6 +85,10 @@ class ApplicantController extends Controller
 																 DB::raw("DATE_FORMAT(applicants.created_at, '%m/%d/%Y') AS created_at"),
 																 'branches.name AS branch_name',
 																 'applicants.status',
+																 'applicants.sss_no',
+																 'applicants.philhealth_no',
+																 'applicants.pagibig_no',
+																 'applicants.tin_no',
 																 DB::raw('DATE_FORMAT(applicants.screening_date, "%m/%d/%Y") as screening_date'),
 														 		 DB::raw('applicants.status as screening_status'),
 																 'applicants.initial_interview_status',
@@ -2235,6 +2239,10 @@ class ApplicantController extends Controller
 																 DB::raw("DATE_FORMAT(applicants.created_at, '%m/%d/%Y') AS created_at"),
 																 'branches.name AS branch_name',
 																 'applicants.status',
+																 'applicants.sss_no',
+																 'applicants.philhealth_no',
+																 'applicants.pagibig_no',
+																 'applicants.tin_no',
 																 DB::raw('DATE_FORMAT(applicants.screening_date, "%m/%d/%Y") as screening_date'),
 														 		 DB::raw('applicants.status as screening_status'),
 																 'applicants.initial_interview_status',
@@ -2623,7 +2631,7 @@ class ApplicantController extends Controller
 
 	public function get_all_hired(Request $request) 
 	{
-
+		$synced_employee_id = $request->synced_employee_id; //array
 		$job_applicants = $this->all_job_applicants()->where('applicants.orientation_status', 1)
 							->where(function($query) {
 								$user = Auth::user();
@@ -2640,6 +2648,7 @@ class ApplicantController extends Controller
 																$qry->whereDate('applicants.signing_of_contract_date', '<=', $dateNow);
 												});	
 							})
+							->whereNotIn('id', $synced_employee_id)
 							->orderBy('applicants.signing_of_contract_date', 'DESC')
 							->get()
 							->each(function ($row, $index) {
