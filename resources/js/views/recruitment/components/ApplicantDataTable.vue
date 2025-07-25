@@ -230,6 +230,10 @@ export default {
       {
         color = "error";
       }
+      else if(status == 4)
+      {
+        color = "#1A237E";
+      }
 
       return { progress: applicant.progress_status, color: color, step: step };
 

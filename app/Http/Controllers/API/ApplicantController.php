@@ -118,6 +118,7 @@ class ApplicantController extends Controller
 																		WHEN applicants.status = 0 THEN 'Screening on Process' 
 																		WHEN applicants.status = 2 THEN 'Not Qualified'
 																		WHEN applicants.status = 3 THEN 'Non-Compliant - Screening'
+																		WHEN applicants.status = 4 THEN 'Screening - Reserved'
 																		WHEN applicants.initial_interview_status = 0 THEN 'Initial Interview on Process'
 																		WHEN applicants.initial_interview_status = 2 THEN 'Initial Interview Failed'
 																		WHEN applicants.initial_interview_status = 3 THEN 'Non-Compliant - Initial Interview'
@@ -130,7 +131,7 @@ class ApplicantController extends Controller
 																		WHEN applicants.final_interview_status = 0 THEN 'Final Interview on Process'
 																		WHEN applicants.final_interview_status = 2 THEN 'Final Interview Failed'
 																		WHEN applicants.final_interview_status = 3 THEN 'Non-Compliant - Final Interview'
-																		WHEN applicants.final_interview_status = 4 THEN 'Reserved'
+																		WHEN applicants.final_interview_status = 4 THEN 'Final Interview - Reserved'
 																		WHEN applicants.orientation_status = 0 || (applicants.final_interview_status = 1 && applicants.orientation_status IS NULL) THEN 'Orientation on Process'  
 																		WHEN applicants.orientation_status = 2 THEN 'Orientation Failed' 
 																		WHEN applicants.orientation_status = 3 THEN 'Non-Compliant - Orientation' 
@@ -812,6 +813,7 @@ class ApplicantController extends Controller
 																		WHEN applicants.status = 0 THEN 'Screening on Process' 
 																		WHEN applicants.status = 2 THEN 'Not Qualified'
 																		WHEN applicants.status = 3 THEN 'Non-Compliant - Screening'
+																		WHEN applicants.status = 4 THEN 'Screening - Reserved'
 																		WHEN applicants.initial_interview_status = 0 THEN 'Initial Interview on Process'
 																		WHEN applicants.initial_interview_status = 2 THEN 'Initial Interview Failed'
 																		WHEN applicants.initial_interview_status = 3 THEN 'Non-Compliant - Initial Interview'
@@ -824,7 +826,7 @@ class ApplicantController extends Controller
 																		WHEN applicants.final_interview_status = 0 THEN 'Final Interview on Process'
 																		WHEN applicants.final_interview_status = 2 THEN 'Final Interview Failed'
 																		WHEN applicants.final_interview_status = 3 THEN 'Non-Compliant - Final Interview'
-																		WHEN applicants.final_interview_status = 4 THEN 'Reserved'
+																		WHEN applicants.final_interview_status = 4 THEN 'Final Interview - Reserved'
 																		WHEN applicants.orientation_status = 0 || (applicants.final_interview_status = 1 && applicants.orientation_status IS NULL) THEN 'Orientation on Process'  
 																		WHEN applicants.orientation_status = 2 THEN 'Orientation Failed' 
 																		WHEN applicants.orientation_status = 3 THEN 'Non-Compliant - Orientation' 
@@ -1992,7 +1994,7 @@ class ApplicantController extends Controller
 
 			$applicant->status = $req->status;
 			$applicant->initial_interview_status = 0;
-			if(in_array($req->status, [0, 2]))
+			if(in_array($req->status, [0, 2, 4]))
 			{
 				$applicant->initial_interview_date = null;
 				$applicant->initial_interview_status = null;
@@ -2115,7 +2117,7 @@ class ApplicantController extends Controller
 	{
 
 		$valid_fields = [
-			'status' => 'required|integer|between:0, 2',
+			'status' => 'required|integer|between:0, 4',
 			'screening_date' => 'nullable|date_format:Y-m-d',
 			'initial_interview_date' => 'nullable|date_format:Y-m-d',
 			'initial_interview_status' => 'nullable|integer|between:0, 4',
@@ -2142,7 +2144,7 @@ class ApplicantController extends Controller
 		$rules = [
 			'status.required' => 'Screening Status is required',
 			'status.integer' => $status_msg,
-			'status.between' => 'Enter a valid value. Value must be 0 (On Process), 1 (Passed) or 2 (Failed)',
+			'status.between' => $between_msg,
 			'screening_date.date_format' => $date_format_msg,
 			'initial_interview_date.date_format' => $date_format_msg,
 			'initial_interview_status.integer' => $status_msg,
@@ -2273,6 +2275,7 @@ class ApplicantController extends Controller
 																		WHEN applicants.status = 0 THEN 'Screening on Process' 
 																		WHEN applicants.status = 2 THEN 'Not Qualified'
 																		WHEN applicants.status = 3 THEN 'Non-Compliant - Screening'
+																		WHEN applicants.status = 4 THEN 'Screening - Reserved'
 																		WHEN applicants.initial_interview_status = 0 THEN 'Initial Interview on Process'
 																		WHEN applicants.initial_interview_status = 2 THEN 'Initial Interview Failed'
 																		WHEN applicants.initial_interview_status = 3 THEN 'Non-Compliant - Initial Interview'
@@ -2285,7 +2288,7 @@ class ApplicantController extends Controller
 																		WHEN applicants.final_interview_status = 0 THEN 'Final Interview on Process'
 																		WHEN applicants.final_interview_status = 2 THEN 'Final Interview Failed'
 																		WHEN applicants.final_interview_status = 3 THEN 'Non-Compliant - Final Interview'
-																		WHEN applicants.final_interview_status = 4 THEN 'Reserved'
+																		WHEN applicants.final_interview_status = 4 THEN 'Final Intervier - Reserved'
 																		WHEN applicants.orientation_status = 0 || (applicants.final_interview_status = 1 && applicants.orientation_status IS NULL) THEN 'Orientation on Process'  
 																		WHEN applicants.orientation_status = 2 THEN 'Orientation Failed' 
 																		WHEN applicants.orientation_status = 3 THEN 'Non-Compliant - Orientation' 
@@ -2773,7 +2776,7 @@ class ApplicantController extends Controller
 			$applicant->initial_interview_date = null;
 			$applicant->initial_interview_status = null;
 			
-			if(in_array($req->status, [0, 2]))
+			if(in_array($req->status, [0, 2, 4]))
 			{
 				$applicant->initial_interview_status = 0; // initial interview on process
 				$applicant->initial_interview_date = null;			}
@@ -2839,9 +2842,9 @@ class ApplicantController extends Controller
 
 	public function delete_applicants_old() {
 
-		$two_months_old = (Carbon::now())->addDays(-60);
+		$six_months = (Carbon::now())->addDays(-180);
 												
-		Applicant::whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $two_months_old)
+		Applicant::whereDate(DB::raw('DATE_FORMAT(applicants.created_at, "%Y-%m-%d")'), '<=', $six_months)
 							->where(function($query){
 								$query->where('orientation_status', '<>', 1)
 											->orWhereNull('orientation_status');

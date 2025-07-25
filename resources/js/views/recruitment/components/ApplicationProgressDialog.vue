@@ -41,7 +41,7 @@
                 type="date"
                 prepend-icon="mdi-calendar"
                 v-model="editedItem.initial_interview_date"
-                :disabled="editedItem.status == 2 || !editedItem.screening_date"
+                :disabled="initialFieldDisabled"
                 :error-messages="initialInterviewDateErrors"
                 @input="validateDate('initial_interview_date')"
                 @blur="$v.editedItem.initial_interview_date.$touch()"
@@ -56,7 +56,7 @@
                 item-text="text"
                 label="Initial Interview Status"
                 v-model="editedItem.initial_interview_status"
-                :disabled="editedItem.status == 2 || !editedItem.screening_date"
+                :disabled="initialFieldDisabled"
               ></v-autocomplete>
             </v-col>
           </v-row>
@@ -639,7 +639,7 @@ export default {
 
       axios.post("/api/job_applicant/" + url, data).then(
         (response) => {
-
+          
           if(response.data.success){
             
             this.$toaster.success('You have successfully updated the status of the applicant.', {
@@ -808,6 +808,10 @@ export default {
       else if(status == 2) // not qualified
       {
         color = "error";
+      }
+      else if(status == 4)
+      {
+        color = "#1A237E";
       }
 
       return { progress: applicant.progress_status, color: color, step: step };
@@ -1228,6 +1232,9 @@ export default {
     hasPermissionToUpdateHiringDetails() {
       return this.hasPermission('jobapplicants-update-hiring-details');
     },
+    initialFieldDisabled() {
+      return [2, 4].includes(this.editedItem.status) || !this.editedItem.screening_date
+    },
     ...mapState("auth", ["user", "userIsLoaded"]),
     ...mapGetters("userRolesPermissions", ["hasRole", "hasPermission"]),
   },
@@ -1268,8 +1275,9 @@ export default {
         data.final_interview_status = "";
         data.orientation_status = "";
       }
-      else if(data.status == 2) {
+      else if([2, 4].includes(data.status)) {
         data.initial_interview_status = "";
+        data.initial_interview_date = "";
       }
       //  if screening is passed and screening_date is not null (1 value) and ( initial interview status is null, '' or 0 value)
       else if(data.status == 1 && data.screening_date  && ([null, 0, ''].includes(data.initial_interview_status)))

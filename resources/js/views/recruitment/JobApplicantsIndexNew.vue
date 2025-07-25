@@ -1082,6 +1082,7 @@ export default {
         (response) => {
           this.view_applicant_loading = false;
           const data = response.data;          
+                console.log();
                 
           if (data.success) {
             let step = this.applicationProgress(data.applicant).step;
@@ -1401,6 +1402,10 @@ export default {
       {
         color = "error";
       }
+      else if(status == 4)
+      {
+        color = "#1A237E";
+      }
 
       return { progress: applicant.progress_status, color: color, step: step };
 
@@ -1523,17 +1528,19 @@ export default {
         { value: 0, text: 'On Process' },
         { value: 1, text: 'Passed' },
         { value: 2, text: 'Failed' },
+        { value: 3, text: 'Non-Compliant' },
+        { value: 4, text: 'Reserved' }
       ];
 
-      if(this.currentProgress > 0)
-      {
-        status_items.push({ value: 3, text: 'Non-Compliant' });
+      // if(this.currentProgress > 0)
+      // {
+      //   status_items.push({ value: 3, text: 'Non-Compliant' });
+      // }
 
-        if(this.currentProgress == 4)
-        {
-          status_items.push({ value: 4, text: 'Reserved' });
-        }
-      }
+      // if([0, 4].includes(this.currentProgress))
+      // {
+      //   status_items.push({ value: 4, text: 'Reserved' });
+      // }
 
       return status_items
     },
