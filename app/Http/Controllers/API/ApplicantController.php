@@ -2328,7 +2328,16 @@ class ApplicantController extends Controller
 		$screening_failed_ctr = $this->get_screening_list()->where('status', 2)->count();
 		$initial_interview_ctr = $this->get_initial_interview_list()->where('initial_interview_status', 0)->count();
 		$initial_interview_failed_ctr = $this->get_initial_interview_list()->whereIn('initial_interview_status', [2, 3])->count();
-		$iq_test_ctr = count($this->get_iq_test_list());
+
+		$iq_open_ctr = count($this->get_iq_test_list());
+		
+		// if Adminsitrator then exclude the failed qty in get_iq_test_list quantity
+		if(Auth::user()->hasRole('Administrator'))
+		{
+			$iq_open_ctr = count($this->get_iq_test_list()) - count($this->get_iq_test_failed_list());
+		}
+
+		$iq_test_ctr = $iq_open_ctr;
 		$iq_test_failed_ctr = count($this->get_iq_test_failed_list());
 		$bi_ctr = $this->get_bi_list()->where('bi_status', 0)->count();
 		$bi_failed_ctr = $this->get_bi_list()->whereIn('bi_status', [2, 3])->count();
@@ -2379,7 +2388,7 @@ class ApplicantController extends Controller
 							// ->whereIn('applicants.status', [0, 2])// where status 0 or 2 (on process or failed)
 		
 		// get failed if user has specified roles
-		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		if($user->hasAnyRole('Administrator'))
 		{
 			$job_applicants->orWhere('applicants.status', 2);
 		}
@@ -2412,7 +2421,7 @@ class ApplicantController extends Controller
 						// })
 						
 		// get failed if user has specified roles
-		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		if($user->hasAnyRole('Administrator'))
 		{
 			$job_applicants->orWhereIn('applicants.initial_interview_status', [2, 3]);
 		}
@@ -2432,7 +2441,7 @@ class ApplicantController extends Controller
 					  // ->whereIn('iq_status', [0, 2, 3]) // where status 0, 2 or 3 (on process or failed or Non-Compliant)
 						
 		// get failed if user has specified roles
-		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		if($user->hasAnyRole('Administrator'))
 		{
 			$applicants = $applicants->orWhereIn('applicants.iq_status', [2, 3]);
 		}
@@ -2527,7 +2536,7 @@ class ApplicantController extends Controller
 						});
 
 		// get failed if user has specified roles
-		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		if($user->hasAnyRole('Administrator'))
 		{
 			$job_applicants->orWhereIn('applicants.bi_status', [2, 3]);
 		}
@@ -2554,7 +2563,7 @@ class ApplicantController extends Controller
 							});
 
 		// get failed if user has specified roles
-		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		if($user->hasAnyRole('Administrator'))
 		{
 			$job_applicants->orWhereIn('applicants.final_interview_status', [2, 3]);
 		}
@@ -2590,7 +2599,7 @@ class ApplicantController extends Controller
 							;
 
 		// get failed if user has specified roles
-		if($user->hasAnyRole('Administrator', 'Career Admin'))
+		if($user->hasAnyRole('Administrator'))
 		{
 			$job_applicants->orWhereIn('applicants.orientation_status', [2, 3]);
 		}
@@ -2602,7 +2611,7 @@ class ApplicantController extends Controller
 							  });
 	}
 
-	public function get_hired_list() 
+	public function get_hired_list()
 	{
 		$job_applicants = $this->all_job_applicants()->where('applicants.orientation_status', 1)
 							->where(function($query) {
